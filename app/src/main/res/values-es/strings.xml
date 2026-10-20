@@ -177,4 +177,13 @@
     <string name="send">Enviar</string>
     <string name="switch_tab">Cambiar</string>
     <string name="tab_overview">Todas las pestañas</string>
+
+    <string name="settings_keystore_security_note">Los secretos usan AES-GCM con una clave no exportable de Android Keystore. Un error de metadatos no desactiva el cifrado que funciona. No se usa una alternativa en texto plano ni un cifrado más débil.</string>
+    <string name="settings_keystore_save_disabled_note">El guardado seguro de credenciales está desactivado hasta que Keystore esté en buen estado. El texto cifrado existente no se elimina silenciosamente.</string>
+    <string name="settings_keystore_recovery_note">La clave original falta o se ha invalidado. No se pueden recuperar las credenciales cifradas existentes.</string>
+    <string name="settings_diagnostics_description">Consulta registros locales, metadatos HTTP del proveedor saneados, salidas históricas de procesos, estado de red y exporta un informe. Android restringe el acceso al Logcat completo del sistema.</string>
+    <string name="settings_provider_requests_note">Las solicitudes al proveedor se envían directamente desde este dispositivo mediante HTTPS. Mantén privadas las claves API y rota cualquier clave que sospeches que se ha expuesto.</string>
+    <string name="diagnostics_app_logcat_notice">Esta pantalla solo muestra registros recopilados por la aplicación. Las aplicaciones normales instaladas desde Play no pueden leer todo el Logcat del dispositivo.</string>
+    <string name="diagnostics_no_matching_records">Ningún registro coincide con estos filtros. Los errores y metadatos de red se recopilan a partir de ahora; la aplicación no puede recuperar registros anteriores.</string>
+    <string name="toolbox_privacy_note">Las herramientas se ejecutan localmente salvo que una herramienta indique explícitamente una acción de red. Decodificar un JWT no lo valida; las referencias HTTP/MIME son compactas y pueden no ser exhaustivas.</string>
 </resources>

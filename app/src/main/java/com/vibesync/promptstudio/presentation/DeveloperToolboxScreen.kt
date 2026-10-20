@@ -227,7 +227,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                     }
                 }
                 Text(
-                    "Tools run locally unless a future tool explicitly identifies a network action. JWT decoding is not validation; HTTP/MIME reference data is compact and may not be exhaustive.",
+                    stringResource(R.string.toolbox_privacy_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

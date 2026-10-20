@@ -177,4 +177,13 @@
     <string name="send">Send</string>
     <string name="switch_tab">Switch</string>
     <string name="tab_overview">All tabs</string>
+
+    <string name="settings_keystore_security_note">Secrets use AES-GCM with a non-exportable Android Keystore key. A metadata-check failure does not disable working encryption. No plaintext or weaker-cipher fallback is used.</string>
+    <string name="settings_keystore_save_disabled_note">Secure credential saving is disabled until the Keystore status is healthy. Existing ciphertext is not silently deleted.</string>
+    <string name="settings_keystore_recovery_note">The original key is missing or invalidated. Existing encrypted credentials cannot be recovered from the ciphertext.</string>
+    <string name="settings_diagnostics_description">Inspect app-collected logs, sanitized provider HTTP metadata, historical process-exit details, network state, and export a diagnostic report. Full system Logcat remains restricted by Android.</string>
+    <string name="settings_provider_requests_note">Provider requests are sent directly from this device over HTTPS. Keep API keys private and rotate any key you suspect is exposed.</string>
+    <string name="diagnostics_app_logcat_notice">This screen shows app-collected records only. Ordinary Play-installed apps cannot read unrestricted, device-wide Logcat.</string>
+    <string name="diagnostics_no_matching_records">No diagnostic records match these filters. Errors and network metadata are collected going forward; this app cannot recover logs from before collection was enabled.</string>
+    <string name="toolbox_privacy_note">Tools run locally unless a tool explicitly identifies a network action. JWT decoding is not validation; HTTP/MIME reference data is compact and may not be exhaustive.</string>
 </resources>

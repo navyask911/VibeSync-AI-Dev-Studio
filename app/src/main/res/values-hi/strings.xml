@@ -177,4 +177,13 @@
     <string name="send">भेजें</string>
     <string name="switch_tab">बदलें</string>
     <string name="tab_overview">सभी टैब</string>
+
+    <string name="settings_keystore_security_note">गुप्त मान non-exportable Android Keystore कुंजी के साथ AES-GCM का उपयोग करते हैं। मेटाडेटा जाँच विफल होने पर भी काम कर रहा एन्क्रिप्शन बंद नहीं होता। प्लेनटेक्स्ट या कमज़ोर एन्क्रिप्शन का विकल्प नहीं अपनाया जाता।</string>
+    <string name="settings_keystore_save_disabled_note">Keystore की स्थिति ठीक होने तक सुरक्षित क्रेडेंशियल सहेजना बंद है। मौजूदा एन्क्रिप्टेड डेटा चुपचाप नहीं हटाया जाता।</string>
+    <string name="settings_keystore_recovery_note">मूल कुंजी नहीं मिली या अमान्य हो गई है। मौजूदा एन्क्रिप्टेड क्रेडेंशियल वापस प्राप्त नहीं किए जा सकते।</string>
+    <string name="settings_diagnostics_description">ऐप के स्थानीय लॉग, साफ़ किए गए प्रदाता HTTP मेटाडेटा, पुराने प्रोसेस-समाप्ति विवरण और नेटवर्क स्थिति देखें तथा रिपोर्ट निर्यात करें। Android पूरे सिस्टम Logcat तक पहुँच सीमित करता है।</string>
+    <string name="settings_provider_requests_note">प्रदाता अनुरोध इस डिवाइस से सीधे HTTPS पर भेजे जाते हैं। API कुंजियाँ निजी रखें और संदिग्ध रूप से उजागर कुंजियों को बदलें।</string>
+    <string name="diagnostics_app_logcat_notice">यह स्क्रीन केवल ऐप द्वारा एकत्र किए गए रिकॉर्ड दिखाती है। सामान्य Play ऐप पूरे डिवाइस का Logcat नहीं पढ़ सकते।</string>
+    <string name="diagnostics_no_matching_records">इन फ़िल्टर से कोई निदान रिकॉर्ड मेल नहीं खाता। आगे के त्रुटि और नेटवर्क मेटाडेटा रिकॉर्ड होंगे; पुराने लॉग वापस प्राप्त नहीं किए जा सकते।</string>
+    <string name="toolbox_privacy_note">टूल स्थानीय रूप से चलते हैं, जब तक कोई टूल स्पष्ट रूप से नेटवर्क कार्रवाई न बताए। JWT डिकोड करना सत्यापन नहीं है; HTTP/MIME संदर्भ सीमित हैं और पूर्ण न भी हों।</string>
 </resources>

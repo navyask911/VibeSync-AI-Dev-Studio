@@ -177,4 +177,13 @@
     <string name="send">إرسال</string>
     <string name="switch_tab">تبديل</string>
     <string name="tab_overview">كل علامات التبويب</string>
+
+    <string name="settings_keystore_security_note">تستخدم الأسرار AES-GCM مع مفتاح Android Keystore غير قابل للتصدير. لا يؤدي فشل فحص البيانات الوصفية إلى تعطيل التشفير العامل. لا يُستخدم بديل بالنص الصريح أو بتشفير أضعف.</string>
+    <string name="settings_keystore_save_disabled_note">تم تعطيل حفظ بيانات الاعتماد الآمن حتى تصبح حالة Keystore سليمة. لا تُحذف البيانات المشفرة الموجودة بصمت.</string>
+    <string name="settings_keystore_recovery_note">المفتاح الأصلي مفقود أو أُبطل. لا يمكن استعادة بيانات الاعتماد المشفرة الموجودة.</string>
+    <string name="settings_diagnostics_description">اعرض سجلات التطبيق المحلية وبيانات HTTP المنقحة للمزوّد وتفاصيل خروج العمليات السابقة وحالة الشبكة، وصدّر تقريرًا. يقيّد Android الوصول إلى سجل النظام الكامل.</string>
+    <string name="settings_provider_requests_note">تُرسل طلبات المزوّد مباشرةً من هذا الجهاز عبر HTTPS. حافظ على سرية مفاتيح API وبدّل أي مفتاح يُشتبه في انكشافه.</string>
+    <string name="diagnostics_app_logcat_notice">تعرض هذه الشاشة السجلات التي جمعها التطبيق فقط. لا تستطيع التطبيقات العادية المثبتة من Play قراءة سجل النظام الكامل للجهاز.</string>
+    <string name="diagnostics_no_matching_records">لا تطابق أي سجلات تشخيص هذه المرشحات. سيُجمع الخطأ وبيانات الشبكة من الآن فصاعدًا؛ لا يمكن استرجاع السجلات السابقة.</string>
+    <string name="toolbox_privacy_note">تعمل الأدوات محليًا ما لم تحدد الأداة صراحةً إجراءً عبر الشبكة. فك ترميز JWT ليس تحققًا من صحته؛ مراجع HTTP/MIME موجزة وقد لا تكون شاملة.</string>
 </resources>

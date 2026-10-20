@@ -124,7 +124,7 @@ class TabManagerViewModel : ViewModel() {
             webViews.keys.toList().forEach(::destroyTabWebView)
         }
         if (Looper.myLooper() == Looper.getMainLooper()) cleanup()
-        else Handler(Looper.getMainLooper()).post(cleanup)
+        else Handler(Looper.getMainLooper()).post { cleanup() }
         super.onCleared()
     }
 

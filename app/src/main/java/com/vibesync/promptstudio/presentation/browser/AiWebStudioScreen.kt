@@ -535,7 +535,9 @@ private fun configureWebView(
                     runCatching { (window.parent as? ViewGroup)?.removeView(window) }
                     runCatching { window.stopLoading(); window.removeAllViews(); window.destroy() }
                     popupPool[tab.id]?.remove(window)
-                    manager.webViewFor(tab.id)?.visibility = View.VISIBLE
+                    if (manager.activeTabId.value == tab.id) {
+                        manager.webViewFor(tab.id)?.visibility = View.VISIBLE
+                    }
                 }
             }
             host.addView(popup, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))

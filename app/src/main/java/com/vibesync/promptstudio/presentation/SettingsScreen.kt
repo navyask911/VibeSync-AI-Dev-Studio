@@ -90,20 +90,20 @@ fun SettingsScreen(
                     }
                     Text(state.vaultStatus.message, style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        "Secrets use AES-GCM with a non-exportable Android Keystore key. A metadata-check failure does not disable working encryption. No plaintext or weaker-cipher fallback is used.",
+                        stringResource(R.string.settings_keystore_security_note),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (!state.vaultStatus.initialized) {
                         Text(
-                            "Secure credential saving is disabled until the Keystore status is healthy. Existing ciphertext is not silently deleted.",
+                            stringResource(R.string.settings_keystore_save_disabled_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                     if (state.vaultStatus.recoveryRequired) {
                         Text(
-                            "The original key is missing or invalidated. Existing encrypted credentials cannot be recovered from the ciphertext.",
+                            stringResource(R.string.settings_keystore_recovery_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -205,7 +205,7 @@ fun SettingsScreen(
                         Text(stringResource(R.string.developer_tools), style = MaterialTheme.typography.titleMedium)
                     }
                     Text(
-                        "Inspect app-collected logs, sanitized provider HTTP metadata, historical process-exit details, network state, and export a diagnostic report. Full system Logcat remains restricted by Android.",
+                        stringResource(R.string.settings_diagnostics_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -224,7 +224,7 @@ fun SettingsScreen(
                 }
             }
             Text(
-                "Provider requests are sent directly from this device over HTTPS. Keep API keys private and rotate any key you suspect is exposed.",
+                stringResource(R.string.settings_provider_requests_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -237,7 +237,7 @@ fun SettingsScreen(
             title = { Text(stringResource(R.string.reset_vault_title)) },
             text = {
                 Text(
-                    "The original Android Keystore key is missing or invalidated. Credentials encrypted with that key cannot be recovered. Continuing deletes the remaining encrypted vault entries and key alias from this app, so you must re-enter every API key. This does not affect saved prompt templates or run history."
+                    stringResource(R.string.reset_vault_message)
                 )
             },
             confirmButton = {

@@ -177,4 +177,13 @@
     <string name="send">Senden</string>
     <string name="switch_tab">Wechseln</string>
     <string name="tab_overview">Alle Tabs</string>
+
+    <string name="settings_keystore_security_note">Geheimnisse verwenden AES-GCM mit einem nicht exportierbaren Android-Keystore-Schlüssel. Ein Metadatenfehler deaktiviert funktionierende Verschlüsselung nicht. Es gibt keinen Klartext- oder schwächeren Verschlüsselungs-Fallback.</string>
+    <string name="settings_keystore_save_disabled_note">Das sichere Speichern von Zugangsdaten ist deaktiviert, bis der Keystore ordnungsgemäß funktioniert. Vorhandener Chiffretext wird nicht stillschweigend gelöscht.</string>
+    <string name="settings_keystore_recovery_note">Der ursprüngliche Schlüssel fehlt oder wurde ungültig. Vorhandene verschlüsselte Zugangsdaten können nicht wiederhergestellt werden.</string>
+    <string name="settings_diagnostics_description">Zeigt app-eigene Protokolle, bereinigte HTTP-Metadaten, historische Prozessbeendigungen und Netzwerkstatus und ermöglicht den Export eines Berichts. Android beschränkt den vollständigen System-Logcat.</string>
+    <string name="settings_provider_requests_note">Provider-Anfragen werden direkt von diesem Gerät über HTTPS gesendet. Halte API-Schlüssel geheim und rotiere Schlüssel, deren Offenlegung du vermutest.</string>
+    <string name="diagnostics_app_logcat_notice">Dieser Bildschirm zeigt nur von der App gesammelte Einträge. Normale Play-Apps können nicht den gesamten geräteweiten Logcat lesen.</string>
+    <string name="diagnostics_no_matching_records">Keine Diagnoseeinträge passen zu diesen Filtern. Fehler und Netzwerkmetadaten werden ab jetzt erfasst; frühere Protokolle kann die App nicht wiederherstellen.</string>
+    <string name="toolbox_privacy_note">Werkzeuge laufen lokal, sofern ein Werkzeug nicht ausdrücklich eine Netzwerkaktion kennzeichnet. JWT-Decodierung ist keine Validierung; HTTP/MIME-Referenzen sind kompakt und möglicherweise nicht vollständig.</string>
 </resources>

@@ -132,7 +132,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                         Text(stringResource(R.string.diagnostics_app_device_details), style = MaterialTheme.typography.titleMedium)
                         store.environmentSummary().take(8).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                         Text(
-                            "This screen shows app-collected records only. Ordinary Play-installed apps cannot read unrestricted, device-wide Logcat.",
+                            stringResource(R.string.diagnostics_app_logcat_notice),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -266,7 +266,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                 item {
                     Card {
                         Text(
-                            "No diagnostic records match these filters. Errors and network metadata are collected going forward; this app cannot recover logs from before collection was enabled.",
+                            stringResource(R.string.diagnostics_no_matching_records),
                             modifier = Modifier.padding(16.dp),
                             style = MaterialTheme.typography.bodyMedium
                         )
