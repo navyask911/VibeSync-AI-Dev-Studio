@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Tab
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -105,6 +106,7 @@ fun AiWebStudioScreen(
     val activeTab = tabs.firstOrNull { it.id == activeId }
     var showProviderSheet by remember { mutableStateOf(false) }
     var showTabOverview by remember { mutableStateOf(false) }
+    var browserMenuExpanded by remember { mutableStateOf(false) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var prompt by remember { mutableStateOf("") }
     var feedback by remember { mutableStateOf<String?>(null) }
@@ -132,14 +134,30 @@ fun AiWebStudioScreen(
                         }
                     },
                     navigationIcon = {
-                        IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back)) }
+                        IconButton(onClick = {
+                            val webView = activeTab?.let { manager.webViewFor(it.id) }
+                            if (webView?.canGoBack() == true) webView.goBack() else onBack()
+                        }) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back)) }
                     },
                     actions = {
-                        IconButton(onClick = { manager.goBack() }, enabled = activeTab?.canGoBack == true) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back)) }
                         IconButton(onClick = { manager.goForward() }, enabled = activeTab?.canGoForward == true) { Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.browser_forward)) }
                         IconButton(onClick = { manager.reload() }, enabled = activeTab != null) { Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.browser_reload)) }
-                        IconButton(onClick = { openExternalBrowser(context, activeTab?.url) }, enabled = activeTab != null) { Icon(Icons.Default.OpenInBrowser, contentDescription = stringResource(R.string.open_external_browser)) }
-                        IconButton(onClick = onOpenDeveloperApi) { Icon(Icons.Default.Code, contentDescription = stringResource(R.string.mode_api)) }
+                        Box {
+                            IconButton(onClick = { browserMenuExpanded = true }) {
+                                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.mode_api))
+                            }
+                            DropdownMenu(expanded = browserMenuExpanded, onDismissRequest = { browserMenuExpanded = false }) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.open_external_browser)) },
+                                    onClick = { browserMenuExpanded = false; openExternalBrowser(context, activeTab?.url) },
+                                    enabled = activeTab != null
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.mode_api)) },
+                                    onClick = { browserMenuExpanded = false; onOpenDeveloperApi() }
+                                )
+                            }
+                        }
                     }
                 )
                 Row(

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Web
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
@@ -60,6 +61,7 @@ fun PromptStudioScreen(
     val context = LocalContext.current
     val exportChooserTitle = stringResource(R.string.export_response_chooser)
     var modelMenuExpanded by remember { mutableStateOf(false) }
+    var topBarMenuExpanded by remember { mutableStateOf(false) }
     LaunchedEffect(state.provider) { viewModel.refreshModels() }
     val bannerLoadFailed by adMobManager.bannerLoadFailed.collectAsStateWithLifecycle()
     val bannerLoaded by adMobManager.bannerLoaded.collectAsStateWithLifecycle()
@@ -81,10 +83,15 @@ fun PromptStudioScreen(
                 }
             },
             actions = {
-                IconButton(onClick = onOpenDiagnostics) { Icon(Icons.Default.BugReport, contentDescription = stringResource(R.string.diagnostics)) }
                 IconButton(onClick = onOpenWebStudio) { Icon(Icons.Default.Web, contentDescription = stringResource(R.string.ai_web_studio)) }
-                IconButton(onClick = onOpenToolbox) { Icon(Icons.Default.Code, contentDescription = stringResource(R.string.tools)) }
-                IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
+                Box {
+                    IconButton(onClick = { topBarMenuExpanded = true }) { Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.settings)) }
+                    DropdownMenu(expanded = topBarMenuExpanded, onDismissRequest = { topBarMenuExpanded = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.diagnostics)) }, onClick = { topBarMenuExpanded = false; onOpenDiagnostics() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.tools)) }, onClick = { topBarMenuExpanded = false; onOpenToolbox() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.settings)) }, onClick = { topBarMenuExpanded = false; onOpenSettings() })
+                    }
+                }
             }
         )
     }) { padding ->
