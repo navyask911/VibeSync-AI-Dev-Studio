@@ -40,7 +40,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -54,6 +53,12 @@ android {
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -77,8 +82,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.browser:browser:1.9.0")
-    // Security Crypto is retained as an AndroidX security reference; credential values use direct
-    // AndroidKeyStore AES/GCM because EncryptedSharedPreferences is deprecated.
+    // Values use direct AndroidKeyStore AES/GCM because EncryptedSharedPreferences is deprecated.
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("javax.inject:javax.inject:1")
 
