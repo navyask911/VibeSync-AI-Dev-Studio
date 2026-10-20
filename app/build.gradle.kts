@@ -90,7 +90,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
-    val ktorVersion = "3.6.0"
+    // Ktor 3.4.3 uses OkHttp 5.1-era artifacts compatible with compileSdk 36.
+    val ktorVersion = "3.4.3"
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")

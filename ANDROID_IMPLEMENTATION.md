@@ -3,7 +3,7 @@
 ## Project
 
 - Application ID: com.vibesync.promptstudio
-- Kotlin 2.3.21, Android Gradle Plugin 8.13.2, Compose BOM 2026.08.00, Ktor 3.6.0, Room 2.8.5.
+- Kotlin 2.3.21, Android Gradle Plugin 8.13.2, Compose BOM 2025.12.01, Ktor 3.4.3, Room 2.8.5.
 - Minimum Android API 26, compile/target API 36, Java 17.
 - Main packages: domain models/contracts/use cases, data Room/Keystore/provider clients/repositories, and presentation Compose screens/ViewModels.
 
