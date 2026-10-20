@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.lang.ref.WeakReference
 import java.util.UUID
 
 data class AiTabItem(
@@ -32,7 +31,7 @@ class TabManagerViewModel : ViewModel() {
 
     // WebViews are created with the current Activity context by AndroidView. Weak references let
     // the screen own attachment/layout while this ViewModel controls tab lifetime and destruction.
-    private val webViews = linkedMapOf<String, WeakReference<WebView>>()
+    private val webViews = linkedMapOf<String, WebView>()
 
     fun openTab(provider: AiProvider, customUrl: String? = null) {
         val startUrl = customUrl?.let(::normalizeHttpUrl) ?: if (customUrl == null) provider.startUrl else null
@@ -81,10 +80,10 @@ class TabManagerViewModel : ViewModel() {
         }
     }
 
-    fun webViewFor(tabId: String): WebView? = webViews[tabId]?.get()
+    fun webViewFor(tabId: String): WebView? = webViews[tabId]
 
     fun registerWebView(tabId: String, webView: WebView) {
-        webViews[tabId] = WeakReference(webView)
+        webViews[tabId] = webView
     }
 
     fun registeredWebViewIds(): Set<String> = webViews.keys.toSet()
@@ -112,7 +111,7 @@ class TabManagerViewModel : ViewModel() {
     }
 
     private fun destroyTabWebView(tabId: String) {
-        val view = webViews.remove(tabId)?.get() ?: return
+        val view = webViews.remove(tabId) ?: return
         runCatching { view.stopLoading() }
         runCatching { (view.parent as? ViewGroup)?.removeView(view) }
         runCatching { view.removeAllViews() }

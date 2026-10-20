@@ -100,6 +100,26 @@ fun PromptStudioScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item(key = "engine-mode-switcher") {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    FilterChip(
+                        selected = false,
+                        onClick = onOpenWebStudio,
+                        label = { Text(stringResource(R.string.mode_browser)) },
+                        leadingIcon = { Icon(Icons.Default.Web, contentDescription = null) }
+                    )
+                    FilterChip(
+                        selected = true,
+                        onClick = {},
+                        label = { Text(stringResource(R.string.mode_api)) },
+                        leadingIcon = { Icon(Icons.Default.Code, contentDescription = null) }
+                    )
+                }
+            }
             if (connectivityStatus != ConnectivityStatus.ONLINE) {
                 item(key = "connectivity-banner") {
                     Surface(
