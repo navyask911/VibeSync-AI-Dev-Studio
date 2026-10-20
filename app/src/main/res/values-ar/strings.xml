@@ -15,7 +15,7 @@
     <string name="clear_local_logs">مسح السجلات المحلية</string>
     <string name="coffee_footer">الدعم اختياري بالكامل، ولا يلزم لاستخدام التطبيق.</string>
     <string name="coffee_message">تبقى الأدوات المحلية والمنسّقات والمولّدات والعمل المحفوظ على هذا الجهاز. لا تُرسل طلبات الذكاء الاصطناعي البعيدة إلا عند اختيارك تشغيل مطالبة.</string>
-    <string name="coffee_offline_badge">الأدوات المحلية تعمل دون اتصال 100%</string>
+    <string name="coffee_offline_badge">تعمل الأدوات المحلية دون اتصال</string>
     <string name="coffee_title">ادعم VibeSync</string>
     <string name="component_tag_optional">المكوّن/الوسم (اختياري)</string>
     <string name="connect_account_browser">ربط الحساب عبر المتصفح</string>

@@ -15,7 +15,7 @@
     <string name="clear_local_logs">Clear local logs</string>
     <string name="coffee_footer">Voluntary support only. Supporting the project is never required to use the app.</string>
     <string name="coffee_message">Local tools, formatters, generators, and saved work stay on this device. Remote AI requests are sent only when you choose to run a prompt.</string>
-    <string name="coffee_offline_badge">100% offline for local tools</string>
+    <string name="coffee_offline_badge">Local tools work offline</string>
     <string name="coffee_title">Support VibeSync</string>
     <string name="component_tag_optional">Component/tag (optional)</string>
     <string name="connect_account_browser">Connect account with browser</string>

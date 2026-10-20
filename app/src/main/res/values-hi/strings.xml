@@ -15,7 +15,7 @@
     <string name="clear_local_logs">स्थानीय लॉग साफ़ करें</string>
     <string name="coffee_footer">सहयोग पूरी तरह स्वैच्छिक है। ऐप का उपयोग करने के लिए सहयोग आवश्यक नहीं है।</string>
     <string name="coffee_message">स्थानीय टूल, फ़ॉर्मेटर, जनरेटर और सहेजा गया काम इसी डिवाइस पर रहते हैं। दूरस्थ AI अनुरोध केवल तब भेजे जाते हैं जब आप प्रॉम्प्ट चलाते हैं।</string>
-    <string name="coffee_offline_badge">स्थानीय टूल 100% ऑफ़लाइन</string>
+    <string name="coffee_offline_badge">स्थानीय टूल ऑफ़लाइन काम करते हैं</string>
     <string name="coffee_title">VibeSync का समर्थन करें</string>
     <string name="component_tag_optional">कंपोनेंट/टैग (वैकल्पिक)</string>
     <string name="connect_account_browser">ब्राउज़र से खाता जोड़ें</string>

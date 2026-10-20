@@ -15,7 +15,7 @@
     <string name="clear_local_logs">Borrar registros locales</string>
     <string name="coffee_footer">Apoyo voluntario. No es necesario apoyar el proyecto para usar la aplicación.</string>
     <string name="coffee_message">Las herramientas locales, los formateadores, los generadores y el trabajo guardado permanecen en este dispositivo. Las solicitudes de IA remota solo se envían cuando ejecutas un prompt.</string>
-    <string name="coffee_offline_badge">Herramientas locales 100 % sin conexión</string>
+    <string name="coffee_offline_badge">Las herramientas locales funcionan sin conexión</string>
     <string name="coffee_title">Apoya a VibeSync</string>
     <string name="component_tag_optional">Componente/etiqueta (opcional)</string>
     <string name="connect_account_browser">Conectar cuenta con el navegador</string>

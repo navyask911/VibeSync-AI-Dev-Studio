@@ -15,7 +15,7 @@
     <string name="clear_local_logs">Lokale Protokolle löschen</string>
     <string name="coffee_footer">Freiwillige Unterstützung. Zum Verwenden der App ist keine Unterstützung erforderlich.</string>
     <string name="coffee_message">Lokale Werkzeuge, Formatierer, Generatoren und gespeicherte Arbeit bleiben auf diesem Gerät. Remote-KI-Anfragen werden nur gesendet, wenn du einen Prompt ausführst.</string>
-    <string name="coffee_offline_badge">Lokale Werkzeuge zu 100 % offline</string>
+    <string name="coffee_offline_badge">Lokale Werkzeuge funktionieren offline</string>
     <string name="coffee_title">VibeSync unterstützen</string>
     <string name="component_tag_optional">Komponente/Tag (optional)</string>
     <string name="connect_account_browser">Konto im Browser verbinden</string>
