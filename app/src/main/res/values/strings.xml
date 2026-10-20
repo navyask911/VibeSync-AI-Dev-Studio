@@ -120,7 +120,7 @@
     <string name="model_discovery_note">If discovery is unavailable, the standard model suggestions remain available.</string>
     <string name="model_options">Available model options</string>
     <string name="no_open_tabs">No open tabs</string>
-    <string name="oauth_api_key_note">This provider&apos;s public developer API uses an API key in VibeSync. Browser Mode is for signing in to the provider website; this card does not claim native API OAuth for this provider.</string>
+    <string name="oauth_api_key_note">The public developer API for this provider uses an API key in VibeSync. Browser Mode is for signing in to the provider website; this card does not claim native API OAuth for this provider.</string>
     <string name="oauth_authorize_endpoint">Authorization endpoint</string>
     <string name="oauth_client_id">Developer app Client ID</string>
     <string name="oauth_connect_unavailable">This provider does not offer a configured public OAuth flow for API access. Use Browser Mode or save an API key.</string>
