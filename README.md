@@ -112,3 +112,113 @@ The searchable toolbox is separate from the prompt editor and stores favorites/r
 - English, Spanish, German, Hindi, and Arabic resource files are provided. RTL support is enabled in the manifest.
 - Ad units are exposed through variant-specific BuildConfig fields. Debug uses Google's official test IDs. Release reads `ADMOB_APP_ID`, `ADMOB_BANNER_UNIT_ID`, and `ADMOB_INTERSTITIAL_UNIT_ID` Gradle properties (the current publisher IDs are defaults); override with `-P...` or in `~/.gradle/gradle.properties`.
 - When offline, ad consent is unavailable, SDK initialization is pending, or an ad load fails, the ad area uses a stable-height, animated Coffee Sponsor fallback. Ads are not required for any local workflow.
+
+# VibeSync AI Dev Studio ⚡
+
+<p align="center">
+  <em>Universal AI Multi-Browser Shell, Developer Studio & Privacy-First Prompt Workspace</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-green.svg" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Min_SDK-26_(Android_8.0)-blue.svg" alt="Min SDK"/>
+  <img src="https://img.shields.io/badge/Target_SDK-36_(Android_15)-blue.svg" alt="Target SDK"/>
+  <img src="https://img.shields.io/badge/Language-Kotlin_100%25-purple.svg" alt="Language"/>
+  <img src="https://img.shields.io/badge/UI-Jetpack_Compose_Material_3-orange.svg" alt="UI Framework"/>
+  <img src="https://img.shields.io/badge/License-Proprietary_%2F_Source--Available-red.svg" alt="License"/>
+</p>
+
+---
+
+## Overview
+
+**VibeSync AI Dev Studio** is an advanced, dual-mode native Android workspace developed by **Navyask911** and **Vibesyncro Technologies Pvt Ltd**. Engineered to eliminate the barrier between paid developer APIs and consumer AI access, it unifies worldwide conversational AI engines into a high-performance, single-app experience while protecting user privacy.
+
+Built on an uncompromising **Strict Privacy-First, Zero-Telemetry Mandate**, VibeSync guarantees that all user prompts, web session cookies, API tokens, and local utilities remain entirely confined to the device.
+
+---
+
+## Dual-Mode Architecture
+
+### 1. Universal "AI Multi-Browser" Shell (Zero API Keys Required)
+- **Global AI Directory:** Direct, instant access to leading free conversational web platforms:
+  - Google Gemini, OpenAI ChatGPT, Anthropic Claude, Microsoft Copilot, DeepSeek (V3 & R1), Mistral Le Chat, Meta AI, Perplexity AI, HuggingChat, DuckDuckGo AI (Private/No-Login), Poe, Qwen Chat, and Phind.
+- **Drop & Close Multi-Tab Workspace:**
+  - Dynamic horizontal tab strip with provider favicons and active indicator glow.
+  - Tab Drawer supporting **drag-and-drop reordering** and **swipe-to-dismiss** close mechanics.
+  - Inactive `WebView` instance pooling (`View.GONE`) to preserve authentication states, active drafts, and streaming text without reloading.
+- **Unified Floating Prompt Bar:**
+  - Write queries or code directives once in the persistent studio prompt bar.
+  - Automatic JavaScript DOM injection evaluates and triggers submission directly into the active AI provider's chatbox.
+- **Seamless Authentication:**
+  - Desktop/Mobile Chrome User-Agent masking eliminates Google, Microsoft, and Apple OAuth "disallowed user-agent" blocks.
+  - Native cookie synchronization via `CookieManager` maintains persistent sessions across app restarts.
+
+### 2. Developer API & Custom OAuth 2.0 PKCE Studio
+- **Direct Multi-Provider Streaming:** Low-latency HTTPS Server-Sent Events (SSE) streaming for Google Gemini (`generateContent` & `streamGenerateContent`), OpenAI Chat Completions, and Anthropic Messages.
+- **Dynamic Model Fallback:** Built-in endpoint resolution preventing HTTP 404 connection drops with automated routing to stable models.
+- **Custom OAuth 2.0 / PKCE Flow:** Configurable authorization code flow with PKCE S256 verification for developers bringing their own registered client credentials.
+
+---
+
+## Key Platform Features
+
+### Hardware-Grade Security Vault
+- **Android Keystore AES-GCM:** User-supplied API keys and sensitive tokens are encrypted using non-exportable hardware-backed keys with per-entry authenticated data (AAD).
+- **Zero Remote Proxies:** All API calls and web sessions establish direct, end-to-end TLS/HTTPS connections with official provider servers.
+
+### Offline Developer Toolbox
+Integrated, zero-network developer utilities that execute 100% locally on-device:
+- **Data & Schema:** JSON formatting, schema minification, and XML formatting with external entities disabled.
+- **Security & Hashes:** SHA-256 and SHA-512 cryptographic digests, Base64 encode/decode, and URI component transforms.
+- **Parsing & Evaluation:** Linear-time RE2/J regex tester with capture group extraction, unverified JWT header/payload inspector, JSON Pointer query tool, and bounded text diff comparisons.
+- **Utilities:** UUID generation, UTC timestamp converters, HEX contrast analyzers, and Unicode character inspectors.
+
+### Resilient, Polished UI & Monetization
+- **Edge-to-Edge Material 3:** Adaptive dynamic coloring, system dark mode, glassmorphic accents, and responsive layout constraints that prevent header title truncation.
+- **Zero-Shift Sponsor Fallback:** Reactive `ConnectivityManager` detection; if the device goes offline or ad loading fails, ad slots gracefully fold into a stable-height "Coffee Sponsor" card (GitHub Sponsors, Ko-fi, Buy Me a Coffee).
+- **AdMob Next-Gen SDK & UMP:** Strict European and global User Messaging Platform consent checks with variant-specific build configurations (Google sample IDs on Debug, live IDs on Release).
+- **Google Play In-App Updates:** Integrated `app-update-ktx` supporting both flexible background downloads and immediate rollouts.
+
+---
+
+## Global Localization (i18n)
+
+VibeSync AI Dev Studio extracts 100% of user-facing strings into resource files and supports:
+- **English** (`values/strings.xml`)
+- **Spanish** (`values-es/strings.xml`)
+- **German** (`values-de/strings.xml`)
+- **Hindi** (`values-hi/strings.xml`)
+- **Arabic** (`values-ar/strings.xml`) with comprehensive Right-to-Left (RTL) layout rendering.
+
+---
+
+## Repository Structure
+
+```text
+VibeSync-AI-Dev-Studio/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/vibesync/devstudio/
+│   │   │   │   ├── core/
+│   │   │   │   │   ├── ads/          # AdMob Next-Gen controller & consent managers
+│   │   │   │   │   ├── crypto/       # Android Keystore AES/GCM vault & PKCE utilities
+│   │   │   │   │   ├── network/      # ConnectivityManager reactive monitor
+│   │   │   │   │   └── update/       # Play In-App Update & Review handlers
+│   │   │   │   ├── data/
+│   │   │   │   │   ├── browser/      # Multi-provider directory & DOM injection scripts
+│   │   │   │   │   ├── local/        # Room Database, history, and variable sets
+│   │   │   │   │   ├── remote/       # SSE network clients for Gemini, OpenAI, Claude
+│   │   │   │   │   └── security/     # Keystore encryption & verification
+│   │   │   │   ├── domain/           # Clean Architecture Use Cases & Models
+│   │   │   │   └── presentation/
+│   │   │   │       ├── browser/      # Multi-tab WebView pool & gesture drawer
+│   │   │   │       ├── common/       # Coffee sponsor fallback, headers, cards
+│   │   │   │       ├── developer/    # Prompt canvas & OAuth settings
+│   │   │   │       └── toolbox/      # Offline developer tools suite
+│   │   │   ├── res/                  # Multi-lingual strings & Material 3 drawables
+│   │   │   └── AndroidManifest.xml
+│   └── build.gradle.kts
+├── .github/workflows/                # CI workflow: Unit tests, Lint, Emulator, Release Builds
+└── README.md
