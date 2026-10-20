@@ -1,6 +1,12 @@
-# VibeSync Prompt Studio ⚡
+# VibeSync AI Dev Studio ⚡
 
-A local-first native Android prompt engineering workspace built with Kotlin, Jetpack Compose, Material 3, Clean Architecture, MVVM, Ktor streaming, Room, and Android Keystore.
+A local-first native Android AI prompt engineering and developer workspace built with Kotlin, Jetpack Compose, Material 3, Clean Architecture, MVVM, Ktor streaming, Room, and Android Keystore.
+
+## Product direction
+
+**Official app name:** VibeSync AI Dev Studio.
+
+The current release focuses on the prompt studio, provider streaming, local templates/history, and secure credential storage. Broader developer utilities and the diagnostics center are planned work, not yet shipped functionality. See [FEATURE_UPGRADE_SPEC.md](FEATURE_UPGRADE_SPEC.md) for the proposed phased scope and security/QA acceptance criteria.
 
 ## What is implemented
 
