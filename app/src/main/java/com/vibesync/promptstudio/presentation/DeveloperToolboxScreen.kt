@@ -274,12 +274,12 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                     OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text(stringResource(R.string.search_tools)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         categories.take(3).forEach { group ->
-                            FilterChip(selected = category == group, onClick = { category = group }, label = { Text(stringResource(group.labelRes)) })
+                            FilterChip(selected = category == group.id, onClick = { category = group.id }, label = { Text(stringResource(group.labelRes)) })
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         categories.drop(3).forEach { group ->
-                            FilterChip(selected = category == group, onClick = { category = group }, label = { Text(group) })
+                            FilterChip(selected = category == group.id, onClick = { category = group.id }, label = { Text(stringResource(group.labelRes)) })
                         }
                     }
                     if (recent.isNotEmpty()) {
