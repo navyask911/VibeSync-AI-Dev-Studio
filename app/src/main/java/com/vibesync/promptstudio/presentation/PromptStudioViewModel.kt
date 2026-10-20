@@ -28,6 +28,8 @@ data class PromptStudioUiState(
     val variablesText: String = "topic=secure Android app architecture\naudience=junior developers",
     val provider: ProviderType = ProviderType.OPENAI,
     val modelId: String = ProviderType.OPENAI.defaultModel,
+    val availableModels: List<String> = emptyList(),
+    val isLoadingModels: Boolean = false,
     val inputRateText: String = "",
     val outputRateText: String = "",
     val response: String = "",
@@ -74,8 +76,25 @@ class PromptStudioViewModel(
     fun updateOutputRate(value: String) { mutableState.update { it.copy(outputRateText = value) }; recalculate() }
 
     fun updateProvider(provider: ProviderType) {
-        mutableState.update { it.copy(provider = provider, modelId = provider.defaultModel) }
+        mutableState.update {
+            it.copy(provider = provider, modelId = provider.defaultModel, availableModels = emptyList(), isLoadingModels = false)
+        }
         recalculate()
+    }
+
+    fun refreshModels() {
+        val provider = mutableState.value.provider
+        viewModelScope.launch {
+            mutableState.update { it.copy(isLoadingModels = true) }
+            val discovered = runCatching { repository.listModels(provider) }.getOrDefault(emptyList())
+            mutableState.update { current ->
+                if (current.provider != provider) current
+                else current.copy(
+                    availableModels = discovered.ifEmpty { provider.modelOptions },
+                    isLoadingModels = false
+                )
+            }
+        }
     }
 
     fun updateModel(value: String) {
@@ -91,6 +110,7 @@ class PromptStudioViewModel(
                 userPrompt = prompt.userPrompt,
                 variablesText = substituteVariables.formatVariableLines(prompt.variables),
                 response = "",
+                availableModels = emptyList(),
                 error = null
             )
         }

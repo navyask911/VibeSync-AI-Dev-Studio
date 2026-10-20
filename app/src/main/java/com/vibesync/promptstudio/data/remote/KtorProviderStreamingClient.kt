@@ -10,6 +10,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
@@ -63,15 +64,18 @@ class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = n
 
     fun stream(request: PromptRequest, apiKey: String): Flow<String> = flow {
         require(apiKey.isNotBlank()) { "API key is blank." }
-        val endpoint = endpointFor(request)
-        val payload = bodyFor(request)
         val requestStartedAt = SystemClock.elapsedRealtime()
         var firstChunkElapsed: Long? = null
+        var activeRequest = request
+        var fallbackAttempted = false
+        var completed = false
+
         diagnostics?.record(
             DiagnosticSeverity.INFO, "network", "provider_request", "started",
             "Started HTTPS streaming request; credentials, prompts, and response bodies are not recorded.",
             request.config.provider.displayName
         )
+
         suspend fun emitDiagnosticChunk(chunk: String?) {
             if (chunk == null) return
             if (firstChunkElapsed == null) {
@@ -84,58 +88,86 @@ class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = n
             }
             emit(chunk)
         }
-        try {
-            httpClient.preparePost(endpoint) {
-                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-                header(HttpHeaders.Accept, "text/event-stream")
-                when (request.config.provider) {
-                    ProviderType.OPENAI -> header(HttpHeaders.Authorization, "Bearer " + apiKey)
-                    ProviderType.ANTHROPIC -> {
-                        header("x-api-key", apiKey)
-                        header("anthropic-version", "2023-06-01")
-                    }
-                    ProviderType.GEMINI -> header("x-goog-api-key", apiKey)
-                }
-                setBody(payload.toString())
-            }.execute { response ->
-                val requestId = response.headers["x-request-id"] ?: response.headers["request-id"]
-                diagnostics?.record(
-                    if (response.status.isSuccess()) DiagnosticSeverity.INFO else DiagnosticSeverity.WARNING,
-                    "network", "provider_response", "http_response",
-                    "HTTP " + response.status.value + " after " + (SystemClock.elapsedRealtime() - requestStartedAt) + " ms" +
-                        (requestId?.takeIf { it.matches(Regex("[A-Za-z0-9._:-]{1,120}")) }?.let { "; request_id=" + it }.orEmpty()),
-                    request.config.provider.displayName
-                )
-                if (!response.status.isSuccess()) {
-                    val retryAfter = response.headers[HttpHeaders.RetryAfter]?.toLongOrNull()
-                    when (response.status.value) {
-                        401, 403 -> throw PromptFailure.Unauthorized()
-                        429 -> throw PromptFailure.RateLimited(retryAfter)
-                        else -> throw PromptFailure.ProviderError(providerErrorMessage(request.config.provider, response.status.value))
-                    }
-                }
 
-                val channel = response.bodyAsChannel()
-                val dataLines = mutableListOf<String>()
-                while (true) {
-                    currentCoroutineContext().ensureActive()
-                    val line = channel.readUTF8Line() ?: break
-                    when {
-                        line.isEmpty() -> {
-                            emitDiagnosticChunk(consumeEvent(request.config.provider, dataLines))
-                            dataLines.clear()
+        try {
+            while (!completed) {
+                val attemptRequest = activeRequest
+                val endpoint = endpointFor(attemptRequest)
+                val payload = bodyFor(attemptRequest)
+                try {
+                    httpClient.preparePost(endpoint) {
+                        header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                        header(HttpHeaders.Accept, "text/event-stream")
+                        when (attemptRequest.config.provider) {
+                            ProviderType.OPENAI -> header(HttpHeaders.Authorization, "Bearer " + apiKey)
+                            ProviderType.ANTHROPIC -> {
+                                header("x-api-key", apiKey)
+                                header("anthropic-version", "2023-06-01")
+                            }
+                            ProviderType.GEMINI -> header("x-goog-api-key", apiKey)
                         }
-                        line.startsWith("data:") -> dataLines += line.substringAfter("data:").trimStart()
-                        line.startsWith(":") -> Unit
+                        setBody(payload.toString())
+                    }.execute { response ->
+                        val requestId = response.headers["x-request-id"] ?: response.headers["request-id"]
+                        diagnostics?.record(
+                            if (response.status.isSuccess()) DiagnosticSeverity.INFO else DiagnosticSeverity.WARNING,
+                            "network", "provider_response", "http_response",
+                            "HTTP " + response.status.value + " after " + (SystemClock.elapsedRealtime() - requestStartedAt) + " ms" +
+                                (requestId?.takeIf { it.matches(Regex("[A-Za-z0-9._:-]{1,120}")) }?.let { "; request_id=" + it }.orEmpty()),
+                            attemptRequest.config.provider.displayName
+                        )
+                        if (!response.status.isSuccess()) {
+                            if (
+                                attemptRequest.config.provider == ProviderType.GEMINI &&
+                                response.status.value == 404 &&
+                                !fallbackAttempted &&
+                                attemptRequest.config.modelId != GEMINI_FALLBACK_MODEL
+                            ) {
+                                throw GeminiModelFallbackRequired()
+                            }
+                            val retryAfter = response.headers[HttpHeaders.RetryAfter]?.toLongOrNull()
+                            when (response.status.value) {
+                                401, 403 -> throw PromptFailure.Unauthorized()
+                                429 -> throw PromptFailure.RateLimited(retryAfter)
+                                else -> throw PromptFailure.ProviderError(providerErrorMessage(attemptRequest.config.provider, response.status.value))
+                            }
+                        }
+
+                        val channel = response.bodyAsChannel()
+                        val dataLines = mutableListOf<String>()
+                        while (true) {
+                            currentCoroutineContext().ensureActive()
+                            val line = channel.readUTF8Line() ?: break
+                            when {
+                                line.isEmpty() -> {
+                                    emitDiagnosticChunk(consumeEvent(attemptRequest.config.provider, dataLines))
+                                    dataLines.clear()
+                                }
+                                line.startsWith("data:") -> dataLines += line.substringAfter("data:").trimStart()
+                                line.startsWith(":") -> Unit
+                            }
+                        }
+                        emitDiagnosticChunk(consumeEvent(attemptRequest.config.provider, dataLines))
+                        diagnostics?.record(
+                            DiagnosticSeverity.INFO, "network", "provider_stream", "completed",
+                            "Streaming response completed after " + (SystemClock.elapsedRealtime() - requestStartedAt) +
+                                " ms; first chunk latency=" + (firstChunkElapsed?.toString() ?: "no chunks") + " ms.",
+                            attemptRequest.config.provider.displayName
+                        )
+                        completed = true
                     }
+                } catch (_: GeminiModelFallbackRequired) {
+                    fallbackAttempted = true
+                    val previousModel = activeRequest.config.modelId
+                    activeRequest = activeRequest.copy(
+                        config = activeRequest.config.copy(modelId = GEMINI_FALLBACK_MODEL)
+                    )
+                    diagnostics?.record(
+                        DiagnosticSeverity.WARNING, "network", "provider_model_fallback", "gemini_404_fallback",
+                        "Gemini model " + previousModel + " returned HTTP 404; retrying with " + GEMINI_FALLBACK_MODEL + ".",
+                        ProviderType.GEMINI.displayName
+                    )
                 }
-                emitDiagnosticChunk(consumeEvent(request.config.provider, dataLines))
-                diagnostics?.record(
-                    DiagnosticSeverity.INFO, "network", "provider_stream", "completed",
-                    "Streaming response completed after " + (SystemClock.elapsedRealtime() - requestStartedAt) +
-                        " ms; first chunk latency=" + (firstChunkElapsed?.toString() ?: "no chunks") + " ms.",
-                    request.config.provider.displayName
-                )
             }
         } catch (cancelled: CancellationException) {
             diagnostics?.record(
@@ -164,6 +196,52 @@ class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = n
             diagnostics?.record(DiagnosticSeverity.ERROR, "network", "provider_stream", "parse_or_transport_error", "Provider stream failed: " + error.javaClass.simpleName, request.config.provider.displayName)
             throw PromptFailure.ProviderError("Could not parse the provider response. It may have been interrupted or malformed.", error)
         }
+    }
+
+    /**
+     * Lists a user's models without recording prompts, authorization headers, or response bodies.
+     * An empty credential should be handled by the caller through its local suggestions.
+     */
+    suspend fun listModels(provider: ProviderType, apiKey: String): List<String> {
+        require(apiKey.isNotBlank()) { "API key is blank." }
+        val url = when (provider) {
+            ProviderType.OPENAI -> "https://api.openai.com/v1/models"
+            ProviderType.ANTHROPIC -> "https://api.anthropic.com/v1/models?limit=100"
+            ProviderType.GEMINI -> "https://generativelanguage.googleapis.com/v1beta/models"
+        }
+        val response = httpClient.get(url) {
+            when (provider) {
+                ProviderType.OPENAI -> header(HttpHeaders.Authorization, "Bearer " + apiKey)
+                ProviderType.ANTHROPIC -> {
+                    header("x-api-key", apiKey)
+                    header("anthropic-version", "2023-06-01")
+                }
+                ProviderType.GEMINI -> header("x-goog-api-key", apiKey)
+            }
+        }
+        if (!response.status.isSuccess()) {
+            throw IOException(providerErrorMessage(provider, response.status.value))
+        }
+        val root = Json.parseToJsonElement(response.bodyAsText()).jsonObject
+        val models = root["data"]?.let { (it as? JsonArray)?.toList() }
+            ?: root["models"]?.let { (it as? JsonArray)?.toList() }
+            ?: emptyList()
+        return models.mapNotNull { element ->
+            val model = runCatching { element.jsonObject }.getOrNull() ?: return@mapNotNull null
+            val rawId = when (provider) {
+                ProviderType.GEMINI -> model["name"]?.jsonPrimitive?.contentOrNull?.substringAfter("models/")
+                else -> model["id"]?.jsonPrimitive?.contentOrNull
+            } ?: return@mapNotNull null
+            val canGenerate = model["supportedGenerationMethods"]?.jsonArray?.any {
+                it.jsonPrimitive.contentOrNull == "generateContent"
+            } ?: true
+            val supportedName = when (provider) {
+                ProviderType.OPENAI -> rawId.startsWith("gpt-") || rawId.startsWith("o1") || rawId.startsWith("o3") || rawId.startsWith("o4")
+                ProviderType.ANTHROPIC -> rawId.startsWith("claude-")
+                ProviderType.GEMINI -> canGenerate && rawId.matches(Regex("[A-Za-z0-9._-]{1,120}"))
+            }
+            rawId.takeIf { supportedName && it.length <= 120 }
+        }.distinct().sorted().take(MAX_DISCOVERED_MODELS)
     }
 
     private fun endpointFor(request: PromptRequest): String = when (request.config.provider) {
@@ -293,7 +371,11 @@ class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = n
         }
     }
 
+    private class GeminiModelFallbackRequired : Exception()
+
     companion object {
+        private const val GEMINI_FALLBACK_MODEL = "gemini-3.8-flash"
+        private const val MAX_DISCOVERED_MODELS = 100
         private const val CONNECT_TIMEOUT_MS = 15_000L
         private const val REQUEST_TIMEOUT_MS = 180_000L
         private const val SOCKET_TIMEOUT_MS = 180_000L

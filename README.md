@@ -222,3 +222,14 @@ VibeSync-AI-Dev-Studio/
 │   └── build.gradle.kts
 ├── .github/workflows/                # CI workflow: Unit tests, Lint, Emulator, Release Builds
 └── README.md
+
+
+## AI Web Studio
+
+AI Web Studio provides multi-tab browsing for the provider websites in the app directory. WebView tabs remain alive when inactive and their views are destroyed when their tabs are closed. The prompt helper uses best-effort DOM selectors on known provider hosts; providers may change their pages, so the helper may not work on every page. It never exposes a JavaScript bridge to provider pages.
+
+The app retains Android WebView's platform user-agent instead of spoofing Chrome to bypass sign-in restrictions. Use **Open in system browser** when a provider requires a full browser. System-browser sessions are not copied to the embedded WebView.
+
+Website sign-in is separate from provider API credentials. API mode continues to use the encrypted Android Keystore vault. Google sign-in in OAuth settings is identity-only; it is not a replacement for a Gemini API key. OpenAI and Anthropic API presets explain their API-key requirement, while custom OAuth settings are for a developer-owned public client and endpoint.
+
+Model discovery uses each provider's models endpoint when a saved API key is available and falls back to curated suggestions offline. Gemini streaming keeps the documented `streamGenerateContent` endpoint; a 404 on the selected model triggers one retry with `gemini-3.8-flash` and an app-local diagnostic event.

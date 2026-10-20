@@ -9,6 +9,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Web
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
@@ -41,6 +44,7 @@ fun PromptStudioScreen(
     onOpenSettings: () -> Unit,
     onOpenDiagnostics: () -> Unit,
     onOpenToolbox: () -> Unit,
+    onOpenWebStudio: () -> Unit,
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
     adMobManager: AdMobManager,
@@ -54,23 +58,33 @@ fun PromptStudioScreen(
     }
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
+    val exportChooserTitle = stringResource(R.string.export_response_chooser)
+    var modelMenuExpanded by remember { mutableStateOf(false) }
+    LaunchedEffect(state.provider) { viewModel.refreshModels() }
     val bannerLoadFailed by adMobManager.bannerLoadFailed.collectAsStateWithLifecycle()
     val bannerLoaded by adMobManager.bannerLoaded.collectAsStateWithLifecycle()
     val canRequestAds by adMobManager.canRequestAds.collectAsStateWithLifecycle()
     val adsReady by adMobManager.adsReady.collectAsStateWithLifecycle()
     LaunchedEffect(isOnline) { if (isOnline) adMobManager.resetBannerFailure() }
     Scaffold(topBar = {
-        CenterAlignedTopAppBar(
-            title = { Text(stringResource(R.string.app_name), maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            actions = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onOpenDiagnostics) {
-                        Icon(Icons.Default.BugReport, contentDescription = null)
-                        Text(stringResource(R.string.diagnostics))
-                    }
-                    TextButton(onClick = onOpenToolbox) { Text(stringResource(R.string.tools)) }
-                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
+        TopAppBar(
+            title = {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.app_name),
+                        modifier = Modifier.weight(1f, fill = false),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleSmall
+                    )
                 }
+            },
+            actions = {
+                IconButton(onClick = onOpenDiagnostics) { Icon(Icons.Default.BugReport, contentDescription = stringResource(R.string.diagnostics)) }
+                IconButton(onClick = onOpenWebStudio) { Icon(Icons.Default.Web, contentDescription = stringResource(R.string.ai_web_studio)) }
+                IconButton(onClick = onOpenToolbox) { Icon(Icons.Default.Code, contentDescription = stringResource(R.string.tools)) }
+                IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
             }
         )
     }) { padding ->
@@ -113,7 +127,46 @@ fun PromptStudioScreen(
                             ProviderPicker(state.provider.displayName) { label ->
                                 viewModel.updateProvider(ProviderType.entries.firstOrNull { it.displayName == label } ?: state.provider)
                             }
-                            OutlinedTextField(value = state.modelId, onValueChange = viewModel::updateModel, label = { Text(stringResource(R.string.model_id)) }, singleLine = true, modifier = Modifier.weight(1f))
+                            Box(Modifier.weight(1f)) {
+                                OutlinedTextField(
+                                    value = state.modelId,
+                                    onValueChange = viewModel::updateModel,
+                                    label = { Text(stringResource(R.string.model_id)) },
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    trailingIcon = {
+                                        IconButton(onClick = {
+                                            modelMenuExpanded = true
+                                            viewModel.refreshModels()
+                                        }) {
+                                            Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.model_options))
+                                        }
+                                    }
+                                )
+                                DropdownMenu(
+                                    expanded = modelMenuExpanded,
+                                    onDismissRequest = { modelMenuExpanded = false }
+                                ) {
+                                    if (state.isLoadingModels) {
+                                        DropdownMenuItem(text = { Text(stringResource(R.string.model_discovery_loading)) }, onClick = {}, enabled = false)
+                                    }
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.discover_models)) },
+                                        onClick = { modelMenuExpanded = false; viewModel.refreshModels() }
+                                    )
+                                    (state.availableModels.ifEmpty { state.provider.modelOptions }).forEach { model ->
+                                        DropdownMenuItem(
+                                            text = { Text(model) },
+                                            onClick = { viewModel.updateModel(model); modelMenuExpanded = false }
+                                        )
+                                    }
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.model_discovery_note)) },
+                                        onClick = {},
+                                        enabled = false
+                                    )
+                                }
+                            }
                         }
                         Text(stringResource(R.string.saved_templates), style = MaterialTheme.typography.labelLarge)
                         if (state.savedTemplates.isEmpty()) Text(stringResource(R.string.save_prompt_offline), style = MaterialTheme.typography.bodySmall)
@@ -157,7 +210,7 @@ fun PromptStudioScreen(
                             IconButton(onClick = { clipboard.setText(AnnotatedString(state.response)) }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy_response)) }
                             IconButton(onClick = {
                                 val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, state.response) }
-                                if (state.response.isNotEmpty()) ContextCompat.startActivity(context, Intent.createChooser(send, context.getString(R.string.export_response_chooser)), null)
+                                if (state.response.isNotEmpty()) ContextCompat.startActivity(context, Intent.createChooser(send, exportChooserTitle), null)
                             }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.IosShare, contentDescription = stringResource(R.string.export_response_content_description)) }
                         }
                         HorizontalDivider()

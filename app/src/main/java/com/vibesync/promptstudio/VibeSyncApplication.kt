@@ -67,7 +67,7 @@ class AppContainer(application: Application, val diagnostics: DiagnosticsStore) 
     private val tokenCounter = TokenCounterUseCase()
     private val executePrompt = ExecutePromptUseCase(promptRepository)
     private val manageCredentials = ManageCredentialsUseCase(credentialRepository)
-    val oauthManager = OAuthManager(vault, streamingClient.httpClient)
+    val oauthManager = OAuthManager(application, vault, streamingClient.httpClient)
 
     val promptStudioFactory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

@@ -8,6 +8,8 @@ import com.vibesync.promptstudio.domain.model.RunHistory
 import kotlinx.coroutines.flow.Flow
 
 interface PromptRepository {
+    /** Returns provider-verified model IDs when a stored API credential is available. */
+    suspend fun listModels(provider: ProviderType): List<String> = emptyList()
     fun execute(request: PromptRequest): Flow<String>
     suspend fun saveTemplate(prompt: PromptEntity)
     fun observeTemplates(): Flow<List<PromptEntity>>

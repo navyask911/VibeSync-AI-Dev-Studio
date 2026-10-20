@@ -18,6 +18,8 @@ import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
 import com.vibesync.promptstudio.data.diagnostics.PlayExperienceManager
 import com.vibesync.promptstudio.data.diagnostics.InAppUpdateManager
 import com.vibesync.promptstudio.presentation.DiagnosticsScreen
+import com.vibesync.promptstudio.presentation.browser.AiWebStudioScreen
+import com.vibesync.promptstudio.presentation.auth.OAuthClientConfiguration
 import com.vibesync.promptstudio.presentation.DeveloperToolboxScreen
 import com.vibesync.promptstudio.presentation.PromptStudioScreen
 import com.vibesync.promptstudio.presentation.PromptStudioViewModel
@@ -47,9 +49,9 @@ class MainActivity : ComponentActivity() {
                     navController = rememberNavController(),
                     connectivityStatus = connectivity,
                     isOnline = isOnline,
-                    onConnectOAuth = {
+                    onConnectOAuth = { configuration ->
                         lifecycleScope.launch {
-                            runCatching { container.oauthManager.launch(this@MainActivity) }
+                            runCatching { container.oauthManager.launch(this@MainActivity, configuration) }
                                 .onFailure {
                                     container.diagnostics.record(
                                         DiagnosticSeverity.WARNING,
@@ -96,12 +98,21 @@ private fun AppNavigation(
     navController: NavHostController,
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
-    onConnectOAuth: () -> Unit,
+    onConnectOAuth: (OAuthClientConfiguration) -> Unit,
     onManageAdsPrivacy: () -> Unit,
     onSuccessfulPromptRun: (String, Boolean) -> Unit
 ) {
     val container = (androidx.compose.ui.platform.LocalContext.current.applicationContext as VibeSyncApplication).container
-    NavHost(navController = navController, startDestination = "studio") {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    NavHost(navController = navController, startDestination = "webstudio") {
+        composable("webstudio") {
+            AiWebStudioScreen(
+                onOpenDeveloperApi = { navController.navigate("studio") },
+                onBack = {
+                    if (!navController.popBackStack()) (context as? android.app.Activity)?.finish()
+                }
+            )
+        }
         composable("studio") {
             val studioViewModel: PromptStudioViewModel = viewModel(factory = container.promptStudioFactory)
             PromptStudioScreen(
@@ -109,6 +120,7 @@ private fun AppNavigation(
                 onOpenSettings = { navController.navigate("settings") },
                 onOpenDiagnostics = { navController.navigate("diagnostics") },
                 onOpenToolbox = { navController.navigate("toolbox") },
+                onOpenWebStudio = { navController.navigate("webstudio") },
                 connectivityStatus = connectivityStatus,
                 isOnline = isOnline,
                 adMobManager = container.adMobManager,

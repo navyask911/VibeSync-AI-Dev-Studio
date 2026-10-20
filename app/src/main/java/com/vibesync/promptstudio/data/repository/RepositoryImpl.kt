@@ -30,6 +30,11 @@ class PromptRepositoryImpl(
 ) : PromptRepository {
     private val json = Json { ignoreUnknownKeys = true }
 
+    override suspend fun listModels(provider: ProviderType): List<String> = withContext(Dispatchers.IO) {
+        val key = vault.getSecret(EncryptedVault.apiKeyName(provider.name)) ?: return@withContext emptyList()
+        streamingClient.listModels(provider, key)
+    }
+
     override fun execute(request: PromptRequest): Flow<String> = flow {
         val key = withContext(Dispatchers.IO) {
             try {

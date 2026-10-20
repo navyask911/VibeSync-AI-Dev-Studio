@@ -24,13 +24,28 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vibesync.promptstudio.domain.model.ProviderType
 import com.vibesync.promptstudio.data.ads.AdMobManager
+import com.vibesync.promptstudio.presentation.auth.OAuthClientConfiguration
+
+private enum class OAuthProviderPreset(
+    val titleRes: Int,
+    val authorizeEndpoint: String,
+    val tokenEndpoint: String,
+    val scopes: String,
+    val supportsPublicOAuth: Boolean,
+    val editableEndpoints: Boolean
+) {
+    GOOGLE_AI_STUDIO(R.string.provider_google_ai_studio, "https://accounts.google.com/o/oauth2/v2/auth", "https://oauth2.googleapis.com/token", "openid email profile", true, false),
+    OPENAI_API(R.string.provider_openai_api, "", "", "", false, false),
+    ANTHROPIC_API(R.string.provider_anthropic_api, "", "", "", false, false),
+    CUSTOM_ENDPOINT(R.string.provider_custom_endpoint, "", "", "", true, true)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onConnectOAuth: () -> Unit,
+    onConnectOAuth: (OAuthClientConfiguration) -> Unit,
     onOpenDiagnostics: () -> Unit,
     adMobManager: AdMobManager,
     onManageAdsPrivacy: () -> Unit
@@ -39,7 +54,22 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val privacyOptionsRequired by adMobManager.privacyOptionsRequired.collectAsStateWithLifecycle()
     var providerMenuExpanded by remember { mutableStateOf(false) }
+    var oauthProviderMenuExpanded by remember { mutableStateOf(false) }
     var showVaultResetConfirmation by remember { mutableStateOf(false) }
+    val oauthPrefs = remember(context) { context.getSharedPreferences("vibesync_oauth_settings", 0) }
+    val initialOAuthProvider = remember(oauthPrefs) {
+        runCatching { OAuthProviderPreset.valueOf(oauthPrefs.getString("provider", "GOOGLE_AI_STUDIO").orEmpty()) }
+            .getOrDefault(OAuthProviderPreset.GOOGLE_AI_STUDIO)
+    }
+    var oauthProvider by remember { mutableStateOf(initialOAuthProvider) }
+    var oauthClientId by remember(oauthProvider) { mutableStateOf(oauthPrefs.getString(oauthProvider.name + ".client_id", "").orEmpty()) }
+    var oauthAuthorizeEndpoint by remember(oauthProvider) { mutableStateOf(oauthPrefs.getString(oauthProvider.name + ".authorize_endpoint", oauthProvider.authorizeEndpoint).orEmpty()) }
+    var oauthTokenEndpoint by remember(oauthProvider) { mutableStateOf(oauthPrefs.getString(oauthProvider.name + ".token_endpoint", oauthProvider.tokenEndpoint).orEmpty()) }
+    var oauthScopes by remember(oauthProvider) { mutableStateOf(oauthPrefs.getString(oauthProvider.name + ".scopes", oauthProvider.scopes).orEmpty()) }
+    var oauthRedirectUri by remember(oauthProvider) { mutableStateOf(oauthPrefs.getString(oauthProvider.name + ".redirect_uri", OAuthClientConfiguration.DEFAULT_REDIRECT_URI).orEmpty()) }
+    val oauthReady = oauthProvider.supportsPublicOAuth && oauthClientId.isNotBlank() &&
+        isHttpsEndpoint(oauthAuthorizeEndpoint) && isHttpsEndpoint(oauthTokenEndpoint) &&
+        oauthScopes.isNotBlank() && oauthRedirectUri == OAuthClientConfiguration.DEFAULT_REDIRECT_URI
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
@@ -126,19 +156,44 @@ fun SettingsScreen(
             Card {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(stringResource(R.string.oauth_pkce), style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "This is generic OAuth Authorization Code + PKCE plumbing, not a provider sign-in integration. No OpenAI, Anthropic, or Gemini OAuth support is implied by filling in endpoints. Only use a documented provider-supported public-client flow; identity tokens are never used as model API keys.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Button(onClick = onConnectOAuth, enabled = state.oauthConfigured, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.oauth_login_browser_notice), style = MaterialTheme.typography.bodyMedium)
+                    Box {
+                        OutlinedButton(onClick = { oauthProviderMenuExpanded = true }, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(oauthProvider.titleRes), modifier = Modifier.weight(1f))
+                        }
+                        DropdownMenu(expanded = oauthProviderMenuExpanded, onDismissRequest = { oauthProviderMenuExpanded = false }) {
+                            OAuthProviderPreset.entries.forEach { option ->
+                                DropdownMenuItem(text = { Text(stringResource(option.titleRes)) }, onClick = {
+                                    oauthProvider = option
+                                    oauthPrefs.edit().putString("provider", option.name).apply()
+                                    oauthProviderMenuExpanded = false
+                                })
+                            }
+                        }
+                    }
+                    OutlinedTextField(value = oauthClientId, onValueChange = { oauthClientId = it; oauthPrefs.edit().putString(oauthProvider.name + ".client_id", it).apply() }, label = { Text(stringResource(R.string.oauth_client_id)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = oauthProvider.supportsPublicOAuth)
+                    OutlinedTextField(value = oauthAuthorizeEndpoint, onValueChange = { oauthAuthorizeEndpoint = it; oauthPrefs.edit().putString(oauthProvider.name + ".authorize_endpoint", it).apply() }, label = { Text(stringResource(R.string.oauth_authorize_endpoint)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = oauthProvider.editableEndpoints)
+                    OutlinedTextField(value = oauthTokenEndpoint, onValueChange = { oauthTokenEndpoint = it; oauthPrefs.edit().putString(oauthProvider.name + ".token_endpoint", it).apply() }, label = { Text(stringResource(R.string.oauth_token_endpoint)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = oauthProvider.editableEndpoints)
+                    OutlinedTextField(value = oauthScopes, onValueChange = { oauthScopes = it; oauthPrefs.edit().putString(oauthProvider.name + ".scopes", it).apply() }, label = { Text(stringResource(R.string.oauth_scopes)) }, modifier = Modifier.fillMaxWidth(), enabled = oauthProvider.supportsPublicOAuth)
+                    OutlinedTextField(value = oauthRedirectUri, onValueChange = { oauthRedirectUri = it; oauthPrefs.edit().putString(oauthProvider.name + ".redirect_uri", it).apply() }, label = { Text(stringResource(R.string.oauth_redirect_uri)) }, modifier = Modifier.fillMaxWidth(), singleLine = true, enabled = oauthProvider.editableEndpoints)
+                    when (oauthProvider) {
+                        OAuthProviderPreset.GOOGLE_AI_STUDIO -> Text(stringResource(R.string.oauth_google_identity_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        OAuthProviderPreset.OPENAI_API, OAuthProviderPreset.ANTHROPIC_API -> Text(stringResource(R.string.oauth_api_key_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        OAuthProviderPreset.CUSTOM_ENDPOINT -> Text(stringResource(R.string.oauth_custom_endpoint_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Button(onClick = {
+                        onConnectOAuth(OAuthClientConfiguration(
+                            clientId = oauthClientId.trim(),
+                            authorizeEndpoint = oauthAuthorizeEndpoint.trim(),
+                            tokenEndpoint = oauthTokenEndpoint.trim(),
+                            redirectUri = oauthRedirectUri.trim(),
+                            scopes = oauthScopes.trim()
+                        ))
+                    }, enabled = oauthReady, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.connect_account_browser))
                     }
-                    if (!state.oauthConfigured) {
-                        Text(
-                            "Set VIBESYNC_OAUTH_CLIENT_ID, VIBESYNC_OAUTH_AUTHORIZE_ENDPOINT, and VIBESYNC_OAUTH_TOKEN_ENDPOINT only to values issued for an OAuth client authorized by that provider.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    if (!oauthProvider.supportsPublicOAuth) {
+                        Text(stringResource(R.string.oauth_connect_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -197,3 +252,6 @@ fun SettingsScreen(
         )
     }
 }
+
+
+private fun isHttpsEndpoint(value: String): Boolean = runCatching { Uri.parse(value).let { it.scheme == "https" && !it.host.isNullOrBlank() } }.getOrDefault(false)
