@@ -73,4 +73,19 @@ class SettingsViewModel(
                 .onFailure { error -> mutableState.update { it.copy(message = error.message ?: "Could not remove API key.") } }
         }
     }
+
+    fun resetVaultAfterKeyLoss() {
+        viewModelScope.launch {
+            mutableState.update { it.copy(busy = true, message = null) }
+            runCatching { manageCredentials.resetVaultAfterKeyLoss() }
+                .onSuccess {
+                    mutableState.update { it.copy(secretInput = "", message = "Vault reset. Re-enter each provider API key in Settings.") }
+                    refresh()
+                }
+                .onFailure { error ->
+                    mutableState.update { it.copy(message = error.message ?: "Vault reset failed; encrypted data was not intentionally discarded.") }
+                }
+            mutableState.update { it.copy(busy = false) }
+        }
+    }
 }

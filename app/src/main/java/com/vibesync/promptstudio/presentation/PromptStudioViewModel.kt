@@ -36,7 +36,8 @@ data class PromptStudioUiState(
     val unresolvedVariables: Set<String> = emptySet(),
     val estimate: TokenEstimate = TokenEstimate(0, 0, null, null),
     val savedTemplates: List<PromptEntity> = emptyList(),
-    val recentRuns: List<RunHistory> = emptyList()
+    val recentRuns: List<RunHistory> = emptyList(),
+    val successfulRunCount: Int = 0
 ) {
     val canRun: Boolean get() = !isStreaming && userPrompt.isNotBlank() && unresolvedVariables.isEmpty()
 }
@@ -133,6 +134,7 @@ class PromptStudioViewModel(
         streamJob = viewModelScope.launch {
             mutableState.update { it.copy(isStreaming = true, response = "", error = null) }
             val responseBuffer = StringBuilder()
+            var completedSuccessfully = false
             try {
                 executePrompt(request).collect { chunk ->
                     responseBuffer.append(chunk)
@@ -151,6 +153,7 @@ class PromptStudioViewModel(
                         responseText = responseBuffer.toString()
                     )
                 )
+                completedSuccessfully = true
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Throwable) {
@@ -162,9 +165,13 @@ class PromptStudioViewModel(
                 }
             } finally {
                 mutableState.update {
-                    it.copy(isStreaming = false, estimate = tokenCounter.estimate(
-                        system.text + "\n" + user.text, responseBuffer.toString(), config
-                    ))
+                    it.copy(
+                        isStreaming = false,
+                        successfulRunCount = it.successfulRunCount + if (completedSuccessfully) 1 else 0,
+                        estimate = tokenCounter.estimate(
+                            system.text + "\n" + user.text, responseBuffer.toString(), config
+                        )
+                    )
                 }
             }
         }

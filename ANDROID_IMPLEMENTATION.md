@@ -35,3 +35,14 @@ The app sends HTTPS requests directly to OpenAI Chat Completions, Anthropic Mess
 ## Verification still required
 
 Run unit tests and a debug/release build in Android Studio or CI with SDK 36 installed. Also verify the deployed OAuth client/redirect registration and test streaming, rate limits, malformed provider events, network loss, process recreation, and Keystore behavior on representative physical devices. This environment did not run an Android Gradle build or physical-device tests.
+
+## Upgrade implementation (version 1.0.4)
+
+- Android Keystore AES/GCM diagnostics use SecretKeyFactory for symmetric-key KeyInfo; AES-GCM encryption/decryption is verified independently of optional hardware-backing metadata. The vault never falls back to plaintext or a weaker cipher. If the original key is missing/invalidated while ciphertext remains, Settings offers an explicit destructive reset with a warning that credentials cannot be recovered.
+- App-owned logs are bounded, locally persisted, sanitized, searchable, and exportable via FileProvider. This cannot retrieve logs from before collection began and is not device-wide Logcat.
+- Provider streaming emits sanitized lifecycle diagnostics including HTTP status, duration, first chunk latency, failures, timeout, cancellation, and a safe request ID where available. Response bodies and secret headers are not persisted.
+- A lifecycle-safe connectivity observer distinguishes validated internet access, a not-yet-validated network, and offline state.
+- Google Play update/review APIs use best-effort flows. Review requests are gated to repeated successful use and deferred on a transition where an interstitial is started.
+- AdMob uses Google Mobile Ads SDK 25.4.0 and UMP 4.0.0. UMP consent update/form resolution precedes Mobile Ads SDK initialization and ad requests. Debug uses Google's official test IDs; release uses the configured publisher IDs. Banner is visually separated at the bottom of the prompt screen. Interstitial is loaded asynchronously and only shown when already loaded, after at least three successful prompt runs, with a ten-minute minimum interval. No ad blocks editing, saving, network calls, or navigation.
+- CI runs JVM unit tests, Android lint, Android instrumentation tests on an API 36 Google APIs emulator, and signed bundle/APK builds on pushes to main. Real-device Keystore characteristics, consent UI, ad delivery, Play update/review service behavior, and Play Console publisher compliance require on-device/account verification.
+- Default version code/name for this upgrade: 20261023 / 1.0.4. Verify uniqueness against the actual Play Console before rollout.

@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
@@ -27,18 +28,40 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vibesync.promptstudio.domain.model.ProviderType
+import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
+import com.vibesync.promptstudio.data.ads.AdMobManager
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PromptStudioScreen(viewModel: PromptStudioViewModel, onOpenSettings: () -> Unit) {
+fun PromptStudioScreen(
+    viewModel: PromptStudioViewModel,
+    onOpenSettings: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
+    connectivityStatus: ConnectivityStatus,
+    adMobManager: AdMobManager,
+    onSuccessfulPromptRun: (String) -> Unit
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var lastHandledSuccess by remember { mutableIntStateOf(state.successfulRunCount) }
+    LaunchedEffect(state.successfulRunCount) {
+        if (state.successfulRunCount > lastHandledSuccess) onSuccessfulPromptRun(state.provider.displayName)
+        lastHandledSuccess = state.successfulRunCount
+    }
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = { Text("VibeSync Prompt Studio") },
-            actions = { IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") } }
+            actions = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = onOpenDiagnostics) {
+                        Icon(Icons.Default.BugReport, contentDescription = null)
+                        Text("Diagnostics")
+                    }
+                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") }
+                }
+            }
         )
     }) { padding ->
         LazyColumn(
@@ -46,6 +69,25 @@ fun PromptStudioScreen(viewModel: PromptStudioViewModel, onOpenSettings: () -> U
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (connectivityStatus != ConnectivityStatus.ONLINE) {
+                item(key = "connectivity-banner") {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            if (connectivityStatus == ConnectivityStatus.OFFLINE)
+                                "You're offline. Prompt editing, saved templates, and local history still work; remote AI requests need internet access."
+                            else
+                                "Internet access is not yet validated. Local prompt editing works; remote AI requests may fail until internet connectivity is available.",
+                            modifier = Modifier.padding(12.dp),
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
             item {
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -124,6 +166,9 @@ fun PromptStudioScreen(viewModel: PromptStudioViewModel, onOpenSettings: () -> U
                         Text(run.responseText.take(180), maxLines = 3, overflow = TextOverflow.Ellipsis)
                     } }
                 }
+            }
+            item(key = "admob-banner-slot") {
+                AdMobBanner(adMobManager = adMobManager, modifier = Modifier.fillMaxWidth())
             }
         }
     }

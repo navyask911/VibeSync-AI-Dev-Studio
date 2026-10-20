@@ -5,6 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.vibesync.promptstudio.data.local.AppDatabase
+import com.vibesync.promptstudio.data.diagnostics.ConnectivityMonitor
+import com.vibesync.promptstudio.data.ads.AdMobManager
+import com.vibesync.promptstudio.data.diagnostics.DiagnosticUncaughtExceptionHandler
+import com.vibesync.promptstudio.data.diagnostics.DiagnosticsStore
 import com.vibesync.promptstudio.data.remote.KtorProviderStreamingClient
 import com.vibesync.promptstudio.data.repository.CredentialRepositoryImpl
 import com.vibesync.promptstudio.data.repository.PromptRepositoryImpl
@@ -18,8 +22,25 @@ import com.vibesync.promptstudio.presentation.SettingsViewModel
 import com.vibesync.promptstudio.presentation.auth.OAuthManager
 
 class VibeSyncApplication : Application() {
-    private val containerDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) { AppContainer(this) }
+    private val diagnosticsDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) { DiagnosticsStore(this) }
+    val diagnostics: DiagnosticsStore by diagnosticsDelegate
+    private val containerDelegate = lazy(LazyThreadSafetyMode.SYNCHRONIZED) { AppContainer(this, diagnostics) }
     val container: AppContainer by containerDelegate
+
+    override fun onCreate() {
+        super.onCreate()
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        if (previous !is DiagnosticUncaughtExceptionHandler) {
+            Thread.setDefaultUncaughtExceptionHandler(DiagnosticUncaughtExceptionHandler(diagnostics, previous))
+        }
+        diagnostics.record(
+            com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity.INFO,
+            "lifecycle",
+            "process",
+            "application_created",
+            "Application process started."
+        )
+    }
 
     override fun onTerminate() {
         if (containerDelegate.isInitialized()) container.close()
@@ -27,15 +48,17 @@ class VibeSyncApplication : Application() {
     }
 }
 
-class AppContainer(application: Application) {
+class AppContainer(application: Application, val diagnostics: DiagnosticsStore) {
+    val connectivityMonitor = ConnectivityMonitor(application, diagnostics)
+    val adMobManager = AdMobManager(application, diagnostics)
     private val database: AppDatabase = Room.databaseBuilder(
         application,
         AppDatabase::class.java,
         "vibesync_local.db"
     ).build()
 
-    private val vault = EncryptedVault(application)
-    private val streamingClient = KtorProviderStreamingClient()
+    private val vault = EncryptedVault(application, diagnostics = diagnostics)
+    private val streamingClient = KtorProviderStreamingClient(diagnostics)
     private val promptRepository = PromptRepositoryImpl(database.promptDao(), vault, streamingClient)
     private val credentialRepository = CredentialRepositoryImpl(vault)
     private val substituteVariables = SubstituteVariablesUseCase()

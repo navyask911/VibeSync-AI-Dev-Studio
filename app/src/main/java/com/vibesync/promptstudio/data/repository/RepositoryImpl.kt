@@ -135,8 +135,11 @@ class CredentialRepositoryImpl(private val vault: EncryptedVault) : CredentialRe
     }
 
     override suspend fun vaultStatus(): VaultStatus = withContext(Dispatchers.IO) {
-        val (initialized, message) = vault.keyStatus()
-        val hardware = if (initialized) message.contains("hardware-backed", ignoreCase = true) else null
-        VaultStatus(initialized, hardware, message)
+        val status = vault.keyStatus()
+        VaultStatus(status.initialized, status.hardwareBacked, status.message, status.recoveryRequired)
+    }
+
+    override suspend fun resetVaultAfterKeyLoss() = withContext(Dispatchers.IO) {
+        vault.resetVaultAfterKeyLoss()
     }
 }

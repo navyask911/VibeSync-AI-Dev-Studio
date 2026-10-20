@@ -59,8 +59,18 @@ class OAuthManager(
     }
 
     suspend fun handleCallback(uri: Uri) {
-        require(uri.scheme == "vibesync" && uri.host == "auth" && uri.path == "/callback") {
-            "Unexpected OAuth callback URI."
+        require(
+            uri.scheme == "vibesync" &&
+                uri.host == "auth" &&
+                uri.encodedPath == "/callback" &&
+                uri.userInfo == null &&
+                uri.port == -1 &&
+                uri.fragment == null &&
+                uri.getQueryParameters("state").size == 1 &&
+                uri.getQueryParameters("code").size <= 1 &&
+                uri.getQueryParameters("error").size <= 1
+        ) {
+            "Unexpected or malformed OAuth callback URI."
         }
         val returnedState = uri.getQueryParameter("state")
             ?: throw IllegalStateException("OAuth callback did not contain a state value.")

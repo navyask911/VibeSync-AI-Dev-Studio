@@ -95,5 +95,6 @@ class ManageCredentialsUseCase @Inject constructor(private val repository: Crede
     suspend fun removeApiKey(provider: ProviderType) = repository.deleteApiKey(provider)
     suspend fun hasApiKey(provider: ProviderType) = repository.hasApiKey(provider)
     suspend fun vaultStatus() = repository.vaultStatus()
+    suspend fun resetVaultAfterKeyLoss() = repository.resetVaultAfterKeyLoss()
     suspend fun saveOAuthAccessToken(token: String) = repository.saveOAuthAccessToken(token)
 }

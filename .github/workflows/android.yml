@@ -45,6 +45,7 @@ jobs:
             "platforms;android-36" \
             "build-tools;35.0.0" \
             "build-tools;36.0.0" \
+            "system-images;android-36;google_apis;x86_64" \
             "platform-tools"
 
       - name: Make Gradle wrapper executable
@@ -52,6 +53,16 @@ jobs:
 
       - name: Run unit tests and lint
         run: ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug
+
+      - name: Run Android Keystore instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
 
       - name: Build debug APK for pull requests
         if: github.event_name == 'pull_request'
@@ -93,6 +104,19 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon --stacktrace bundleRelease assembleRelease assembleDebug
 
+      - name: Verify APK package, version, and release signature
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/release/app-release.apk"
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -s "$APK"
+          "$AAPT" dump badging "$APK" | grep -F "package: name='com.vibesync.promptstudio' versionCode='20261023' versionName='1.0.4'"
+          "$APKSIGNER" verify --verbose "$APK"
+          jarsigner -verify -verbose "app/build/outputs/bundle/release/app-release.aab" >/dev/null
+
       - name: Upload signed release bundle
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v4
@@ -112,3 +136,13 @@ jobs:
             app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Upload release mapping file
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibesync-release-mapping
+          path: app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: warn
+          retention-days: 14
+

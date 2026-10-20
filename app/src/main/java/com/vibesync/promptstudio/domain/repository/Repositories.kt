@@ -23,10 +23,12 @@ interface CredentialRepository {
     suspend fun saveOAuthAccessToken(token: String)
     suspend fun clearOAuthAccessToken()
     suspend fun vaultStatus(): VaultStatus
+    suspend fun resetVaultAfterKeyLoss()
 }
 
 data class VaultStatus(
     val initialized: Boolean,
     val hardwareBacked: Boolean?,
-    val message: String
+    val message: String,
+    val recoveryRequired: Boolean = false
 )

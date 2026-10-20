@@ -1,6 +1,8 @@
 package com.vibesync.promptstudio.data.remote
 
 import com.vibesync.promptstudio.domain.model.PromptFailure
+import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
+import com.vibesync.promptstudio.data.diagnostics.DiagnosticsStore
 import com.vibesync.promptstudio.domain.model.PromptRequest
 import com.vibesync.promptstudio.domain.model.ProviderType
 import io.ktor.client.HttpClient
@@ -18,6 +20,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.utils.io.readUTF8Line
+import android.os.SystemClock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -38,7 +41,7 @@ import kotlinx.serialization.json.put
 import java.io.IOException
 import java.net.SocketTimeoutException
 
-class KtorProviderStreamingClient {
+class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = null) {
     val httpClient = HttpClient(OkHttp) {
         expectSuccess = false
         followRedirects = false
@@ -62,6 +65,25 @@ class KtorProviderStreamingClient {
         require(apiKey.isNotBlank()) { "API key is blank." }
         val endpoint = endpointFor(request)
         val payload = bodyFor(request)
+        val requestStartedAt = SystemClock.elapsedRealtime()
+        var firstChunkElapsed: Long? = null
+        diagnostics?.record(
+            DiagnosticSeverity.INFO, "network", "provider_request", "started",
+            "Started HTTPS streaming request; credentials, prompts, and response bodies are not recorded.",
+            request.config.provider.displayName
+        )
+        suspend fun emitDiagnosticChunk(chunk: String?) {
+            if (chunk == null) return
+            if (firstChunkElapsed == null) {
+                firstChunkElapsed = SystemClock.elapsedRealtime() - requestStartedAt
+                diagnostics?.record(
+                    DiagnosticSeverity.INFO, "network", "provider_stream", "first_chunk",
+                    "First response chunk received after " + firstChunkElapsed + " ms.",
+                    request.config.provider.displayName
+                )
+            }
+            emit(chunk)
+        }
         try {
             httpClient.preparePost(endpoint) {
                 header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
@@ -76,13 +98,20 @@ class KtorProviderStreamingClient {
                 }
                 setBody(payload.toString())
             }.execute { response ->
+                val requestId = response.headers["x-request-id"] ?: response.headers["request-id"]
+                diagnostics?.record(
+                    if (response.status.isSuccess()) DiagnosticSeverity.INFO else DiagnosticSeverity.WARNING,
+                    "network", "provider_response", "http_response",
+                    "HTTP " + response.status.value + " after " + (SystemClock.elapsedRealtime() - requestStartedAt) + " ms" +
+                        (requestId?.takeIf { it.matches(Regex("[A-Za-z0-9._:-]{1,120}")) }?.let { "; request_id=" + it } .orEmpty(),
+                    request.config.provider.displayName
+                )
                 if (!response.status.isSuccess()) {
-                    val errorBody = response.bodyAsText().take(MAX_ERROR_BODY_CHARS)
                     val retryAfter = response.headers[HttpHeaders.RetryAfter]?.toLongOrNull()
                     when (response.status.value) {
                         401, 403 -> throw PromptFailure.Unauthorized()
                         429 -> throw PromptFailure.RateLimited(retryAfter)
-                        else -> throw PromptFailure.ProviderError(providerErrorMessage(request.config.provider, response.status.value, errorBody))
+                        else -> throw PromptFailure.ProviderError(providerErrorMessage(request.config.provider, response.status.value))
                     }
                 }
 
@@ -93,26 +122,46 @@ class KtorProviderStreamingClient {
                     val line = channel.readUTF8Line() ?: break
                     when {
                         line.isEmpty() -> {
-                            consumeEvent(request.config.provider, dataLines)?.let { emit(it) }
+                            emitDiagnosticChunk(consumeEvent(request.config.provider, dataLines))
                             dataLines.clear()
                         }
                         line.startsWith("data:") -> dataLines += line.substringAfter("data:").trimStart()
                         line.startsWith(":") -> Unit
                     }
                 }
-                consumeEvent(request.config.provider, dataLines)?.let { emit(it) }
+                emitDiagnosticChunk(consumeEvent(request.config.provider, dataLines))
+                diagnostics?.record(
+                    DiagnosticSeverity.INFO, "network", "provider_stream", "completed",
+                    "Streaming response completed after " + (SystemClock.elapsedRealtime() - requestStartedAt) +
+                        " ms; first chunk latency=" + (firstChunkElapsed?.toString() ?: "no chunks") + " ms.",
+                    request.config.provider.displayName
+                )
             }
         } catch (cancelled: CancellationException) {
+            diagnostics?.record(
+                DiagnosticSeverity.WARNING, "network", "provider_stream", "cancelled",
+                "Streaming request cancelled after " + (SystemClock.elapsedRealtime() - requestStartedAt) + " ms.",
+                request.config.provider.displayName
+            )
             throw cancelled
         } catch (failure: PromptFailure) {
+            diagnostics?.record(
+                DiagnosticSeverity.ERROR, "network", "provider_stream", "failed",
+                failure.javaClass.simpleName + ": " + (failure.message ?: "provider request failed"),
+                request.config.provider.displayName
+            )
             throw failure
         } catch (timeout: HttpRequestTimeoutException) {
+            diagnostics?.record(DiagnosticSeverity.ERROR, "network", "provider_stream", "timeout", "HTTP request timed out.", request.config.provider.displayName)
             throw PromptFailure.Timeout(timeout)
         } catch (timeout: SocketTimeoutException) {
+            diagnostics?.record(DiagnosticSeverity.ERROR, "network", "provider_stream", "timeout", "Socket response timed out.", request.config.provider.displayName)
             throw PromptFailure.Timeout(timeout)
         } catch (io: IOException) {
+            diagnostics?.record(DiagnosticSeverity.ERROR, "network", "provider_stream", "network_error", "Provider connection failed: " + io.javaClass.simpleName, request.config.provider.displayName)
             throw PromptFailure.Network(io)
         } catch (error: Exception) {
+            diagnostics?.record(DiagnosticSeverity.ERROR, "network", "provider_stream", "parse_or_transport_error", "Provider stream failed: " + error.javaClass.simpleName, request.config.provider.displayName)
             throw PromptFailure.ProviderError("Could not parse the provider response. It may have been interrupted or malformed.", error)
         }
     }
@@ -188,18 +237,18 @@ class KtorProviderStreamingClient {
             throw PromptFailure.ProviderError("The provider sent malformed streaming JSON.", error)
         }
         if (root is JsonObject && root["error"] != null) {
-            throw PromptFailure.ProviderError("The provider returned an error: " + root["error"].toString().take(MAX_ERROR_BODY_CHARS))
+            throw PromptFailure.ProviderError("The provider reported a streaming error. Check provider status, request limits, and API-key permissions.")
         }
         return when (provider) {
             ProviderType.OPENAI -> {
                 val type = (root as? JsonObject)?.get("type")?.jsonPrimitive?.contentOrNull
-                if (type == "error") throw PromptFailure.ProviderError("OpenAI returned a streaming error: " + data.take(MAX_ERROR_BODY_CHARS))
+                if (type == "error") throw PromptFailure.ProviderError("OpenAI reported a streaming error. Check status, usage limits, and API-key permissions.")
                 (root as? JsonObject)?.get("choices")?.jsonArray?.firstOrNull()
                     ?.jsonObject?.get("delta")?.jsonObject?.get("content")?.jsonPrimitive?.contentOrNull
             }
             ProviderType.ANTHROPIC -> {
                 val type = (root as? JsonObject)?.get("type")?.jsonPrimitive?.contentOrNull
-                if (type == "error") throw PromptFailure.ProviderError("Anthropic returned a streaming error: " + data.take(MAX_ERROR_BODY_CHARS))
+                if (type == "error") throw PromptFailure.ProviderError("Anthropic reported a streaming error. Check status, usage limits, and API-key permissions.")
                 if (type == "content_block_delta") {
                     (root as? JsonObject)?.get("delta")?.jsonObject?.get("text")?.jsonPrimitive?.contentOrNull
                 } else null
@@ -231,7 +280,7 @@ class KtorProviderStreamingClient {
         }?.joinToString("")
     }
 
-    private fun providerErrorMessage(provider: ProviderType, statusCode: Int, body: String): String {
+    private fun providerErrorMessage(provider: ProviderType, statusCode: Int): String {
         val label = when (provider) {
             ProviderType.OPENAI -> "OpenAI"
             ProviderType.ANTHROPIC -> "Anthropic"
@@ -240,7 +289,7 @@ class KtorProviderStreamingClient {
         return when {
             statusCode in 400..499 -> "$label rejected the request (HTTP $statusCode). Check the model ID, API key, and usage limits."
             statusCode >= 500 -> "$label is temporarily unavailable (HTTP $statusCode). Try again later."
-            else -> "$label returned HTTP $statusCode." + if (body.isNotBlank()) " " + body.take(160) else ""
+            else -> "$label returned HTTP $statusCode. Check the provider status and request settings."
         }
     }
 
@@ -248,6 +297,5 @@ class KtorProviderStreamingClient {
         private const val CONNECT_TIMEOUT_MS = 15_000L
         private const val REQUEST_TIMEOUT_MS = 180_000L
         private const val SOCKET_TIMEOUT_MS = 180_000L
-        private const val MAX_ERROR_BODY_CHARS = 1_200
     }
 }

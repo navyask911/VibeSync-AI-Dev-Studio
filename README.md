@@ -11,7 +11,7 @@ A local-first native Android prompt engineering workspace built with Kotlin, Jet
 - **Lifecycle-safe state:** StateFlow UI models, ViewModel-owned CoroutineScopes, cancellation support, and streaming flow backpressure.
 - **OAuth foundation:** generic Authorization Code + PKCE utilities, a state-verifying deep-link callback, and a configurable token exchange. OAuth is disabled in the default build and its identity token is not used as a provider API key.
 - **Material 3 UI:** system dark mode, Android 12+ dynamic colors, edge-to-edge layout, Markdown-style headings/lists/code fences, copy, and share/export.
-- **Build validation:** GitHub Actions workflow compiles, lints, runs unit tests, and uploads the debug APK.
+- **Build validation:** GitHub Actions runs unit tests and lint, runs instrumentation tests on an Android emulator, and on main builds and uploads signed release AAB/APK artifacts plus the debug APK.
 
 ## Architecture
 
@@ -72,3 +72,28 @@ A CI workflow is included for Gradle compilation, Android lint, and unit tests. 
 Copyright (c) 2026 Vibesyncrotechnologies Pvt Ltd. All rights reserved.
 
 PROPRIETARY AND CONFIDENTIAL. This software, its source code, assets, UI designs, and related documentation are the sole proprietary property of Vibesyncrotechnologies Pvt Ltd. Unauthorized copying, reverse engineering, redistribution, sublicensing, or public deployment without explicit written consent is prohibited.
+
+## Developer diagnostics, connectivity, and release features
+
+- **Developer Diagnostics** is available from the prompt screen and Settings. It stores a bounded local record history for app-owned events, provider HTTP status/duration/first-stream-chunk/failure metadata, vault results, connectivity transitions, and uncaught crash summaries. Prompts, generated responses, API keys, and authorization headers are not intentionally recorded.
+- Diagnostic exports are written under app-private storage and shared with temporary FileProvider read permission. The viewer can filter severity, component, keyword, and time range. Android restricts full device-wide Logcat access for ordinary apps; use Android Studio/ADB or an Android bug report when system logs are required.
+- Connectivity status distinguishes offline, connecting/unvalidated, and validated internet access. Local prompt editing, saved templates, and local history remain available offline.
+- Google Play In-App Updates and In-App Review are best-effort integrations. They are not available on every sideloaded installation and do not block core app use.
+- Google Mobile Ads banner and interstitial components use the official Google Mobile Ads SDK. UMP consent is checked before ads are requested. Debug builds use Google's sample app/banner/interstitial identifiers; release builds use the configured publisher IDs. Interstitials are considered only after at least three successful prompt runs and no more than once per ten minutes, and are skipped if no ad is already loaded.
+- Google Play reviews are requested only after repeated successful use. Google Play chooses whether to show its review dialog.
+- Version defaults: VERSION_CODE=20261023, VERSION_NAME=1.0.4. If the Google Play Console has a later used version code, set a greater -PVERSION_CODE=... before release.
+
+### Ad privacy and configuration
+
+Google's User Messaging Platform (UMP) handles consent-information refresh and any configured required consent form. If UMP reports a privacy-options entry point is required, Settings > Developer tools / Ad privacy choices opens that form. Publisher-specific privacy messages and policy settings must still be configured in the AdMob account; inclusion of the SDK alone does not prove that the publisher's account consent configuration is complete.
+
+Ad IDs are split by build variant:
+- Release App ID: ca-app-pub-4783826505860771~3225002433
+- Release banner: ca-app-pub-4783826505860771/3927535003
+- Release interstitial: ca-app-pub-4783826505860771/4941233773
+
+The debug build uses the official Google sample IDs. Do not click live release ads during testing. CI validates code/configuration and APK/AAB signatures, but real ad serving and consent presentation still require an appropriate test device, network access, and a correctly configured AdMob account.
+
+### CI artifacts and tests
+
+CI runs unit tests and lint, boots an API 36 Google APIs emulator for Android instrumentation tests, builds debug and signed release outputs on main, verifies the release package/version/signature, and uploads the release bundle, APKs, and (when present) R8 mapping file.

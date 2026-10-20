@@ -1,9 +1,12 @@
 package com.vibesync.promptstudio.presentation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
@@ -11,19 +14,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vibesync.promptstudio.domain.model.ProviderType
+import com.vibesync.promptstudio.data.ads.AdMobManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBack: () -> Unit,
-    onConnectOAuth: () -> Unit
+    onConnectOAuth: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
+    adMobManager: AdMobManager,
+    onManageAdsPrivacy: () -> Unit
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val privacyOptionsRequired by adMobManager.privacyOptionsRequired.collectAsStateWithLifecycle()
     var providerMenuExpanded by remember { mutableStateOf(false) }
+    var showVaultResetConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
@@ -32,7 +46,7 @@ fun SettingsScreen(
         )
     }) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
@@ -44,10 +58,29 @@ fun SettingsScreen(
                     }
                     Text(state.vaultStatus.message, style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        "Secrets are encrypted with AES-GCM before storage. Android Keystore backing depends on the device; credentials are not logged or sent to a proxy.",
+                        "Secrets use AES-GCM with a non-exportable Android Keystore key. A metadata-check failure does not disable working encryption. No plaintext or weaker-cipher fallback is used.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (!state.vaultStatus.initialized) {
+                        Text(
+                            "Secure credential saving is disabled until the Keystore status is healthy. Existing ciphertext is not silently deleted.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    if (state.vaultStatus.recoveryRequired) {
+                        Text(
+                            "The original key is missing or invalidated. Existing encrypted credentials cannot be recovered from the ciphertext.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        OutlinedButton(onClick = { showVaultResetConfirmation = true }, enabled = !state.busy) {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                            Spacer(Modifier.width(6.dp))
+                            Text("Reset lost-key vault")
+                        }
+                    }
                 }
             }
             Card {
@@ -74,7 +107,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = viewModel::saveKey, enabled = !state.busy && state.secretInput.isNotBlank()) {
+                        Button(onClick = viewModel::saveKey, enabled = state.vaultStatus.initialized && !state.busy && state.secretInput.isNotBlank()) {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
                             Text("Save key")
@@ -92,7 +125,7 @@ fun SettingsScreen(
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("OAuth 2.0 / PKCE", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        "OAuth is disabled until an authorized public-client ID, HTTPS authorization endpoint, and HTTPS token endpoint are supplied at build time. The flow validates state and PKCE, but its identity token is stored separately and is not used as an API key.",
+                        "This is generic OAuth Authorization Code + PKCE plumbing, not a provider sign-in integration. No OpenAI, Anthropic, or Gemini OAuth support is implied by filling in endpoints. Only use a documented provider-supported public-client flow; identity tokens are never used as model API keys.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Button(onClick = onConnectOAuth, enabled = state.oauthConfigured, modifier = Modifier.fillMaxWidth()) {
@@ -107,12 +140,58 @@ fun SettingsScreen(
                     }
                 }
             }
-            Spacer(Modifier.weight(1f))
+            Card {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Developer tools", style = MaterialTheme.typography.titleMedium)
+                    }
+                    Text(
+                        "Inspect app-collected logs, sanitized provider HTTP metadata, historical process-exit details, network state, and export a diagnostic report. Full system Logcat remains restricted by Android.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(onClick = onOpenDiagnostics, modifier = Modifier.fillMaxWidth()) { Text("Open Developer Diagnostics") }
+                    if (privacyOptionsRequired) {
+                        TextButton(onClick = onManageAdsPrivacy, modifier = Modifier.fillMaxWidth()) {
+                            Text("Manage ad privacy choices")
+                        }
+                    }
+                    TextButton(onClick = {
+                        val listing = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.packageName))
+                        runCatching { ContextCompat.startActivity(context, listing, null) }
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Open Google Play listing / feedback")
+                    }
+                }
+            }
             Text(
                 "Provider requests are sent directly from this device over HTTPS. Keep API keys private and rotate any key you suspect is exposed.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+
+    if (showVaultResetConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showVaultResetConfirmation = false },
+            title = { Text("Reset encrypted credential vault?") },
+            text = {
+                Text(
+                    "The original Android Keystore key is missing or invalidated. Credentials encrypted with that key cannot be recovered. Continuing deletes the remaining encrypted vault entries and key alias from this app, so you must re-enter every API key. This does not affect saved prompt templates or run history."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showVaultResetConfirmation = false
+                    viewModel.resetVaultAfterKeyLoss()
+                }) { Text("Reset vault") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showVaultResetConfirmation = false }) { Text("Cancel") }
+            }
+        )
     }
 }

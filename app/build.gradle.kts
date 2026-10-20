@@ -26,11 +26,12 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        manifestPlaceholders["adsApplicationId"] = "ca-app-pub-3940256099942544~3347511713"
         applicationId = "com.vibesync.promptstudio"
         minSdk = 26
         targetSdk = 36
-        versionCode = providers.gradleProperty("VERSION_CODE").orElse("20261022").get().toInt()
-        versionName = providers.gradleProperty("VERSION_NAME").orElse("1.0.3").get()
+        versionCode = providers.gradleProperty("VERSION_CODE").orElse("20261023").get().toInt()
+        versionName = providers.gradleProperty("VERSION_NAME").orElse("1.0.4").get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "OAUTH_CLIENT_ID", "\"" + oauthClientId.get().replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
@@ -52,6 +53,7 @@ android {
 
     buildTypes {
         release {
+            manifestPlaceholders["adsApplicationId"] = "ca-app-pub-4783826505860771~3225002433"
             isMinifyEnabled = true
             signingConfig = if (releaseSigningAvailable) signingConfigs.getByName("release") else null
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -106,6 +108,10 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.browser:browser:1.9.0")
+    // Google Mobile Ads and User Messaging Platform: current supported Android SDKs.
+    implementation("com.google.android.gms:play-services-ads:25.4.0")
+    implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+
     // Direct AndroidKeyStore AES/GCM is used because EncryptedSharedPreferences is deprecated.
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("javax.inject:javax.inject:1")
