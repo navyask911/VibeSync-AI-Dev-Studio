@@ -10,6 +10,7 @@ import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
 import com.google.android.libraries.ads.mobile.sdk.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.common.ExperimentalApi
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
 
+@OptIn(ExperimentalApi::class)
 class AdMobManager(
     private val application: Application,
     private val diagnostics: DiagnosticsStore
@@ -114,7 +116,7 @@ class AdMobManager(
         }
     }
 
-    fun recordBannerFailure(errorCode: Int) {
+    fun recordBannerFailure(errorCode: String) {
         diagnostics.record(
             DiagnosticSeverity.DEBUG, "ads", "banner", "load_failed",
             "Banner ad failed to load (code " + errorCode + "). Core app functionality remains available."
@@ -239,7 +241,7 @@ class AdMobManager(
         try {
             InterstitialAd.load(
                 AdRequest.Builder(AdMobConfig.interstitialUnitId).build(),
-                object : AdLoadCallback<InterstitialAd>() {
+                object : AdLoadCallback<InterstitialAd> {
                     override fun onAdLoaded(ad: InterstitialAd) {
                         interstitialLoadStarted.set(false)
                         interstitialAd = ad

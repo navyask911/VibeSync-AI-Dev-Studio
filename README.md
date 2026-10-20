@@ -97,3 +97,8 @@ The debug build uses the official Google sample IDs. Do not click live release a
 ### CI artifacts and tests
 
 CI runs unit tests and lint, boots an API 36 Google APIs emulator for Android instrumentation tests, builds debug and signed release outputs on main, verifies the release package/version/signature, and uploads the release bundle, APKs, and (when present) R8 mapping file.
+
+
+### Offline Developer Toolbox (initial phase)
+
+The searchable toolbox is separate from the prompt editor and stores favorites/recent tools locally. The initial offline tools include JSON format/minify, XML formatting with external entities disabled, bounded text diff, Base64, URI component encoding, JSON Pointer, linear-time RE2/J regex testing with capture groups, JWT header/payload decoding (explicitly unverified), SHA-256/SHA-512 digests, capped UUID generation, UTC timestamp conversion, HEX contrast ratios, Unicode inspection, text transformations, and compact HTTP status/MIME references. The URI inspector redacts common secret query values and never launches a link. Tools enforce input/output bounds and have unit-test coverage. Tools not listed here remain future implementation work; this is not yet the entire catalogue proposed in the master prompt.

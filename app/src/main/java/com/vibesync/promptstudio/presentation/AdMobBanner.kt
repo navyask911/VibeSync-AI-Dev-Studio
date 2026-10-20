@@ -57,19 +57,19 @@ fun AdMobBanner(
             val request = BannerAdRequest.Builder(AdMobConfig.bannerUnitId, size).build()
             adView.loadAd(
                 request,
-                object : AdLoadCallback<BannerAd>() {
+                object : AdLoadCallback<BannerAd> {
                     override fun onAdLoaded(ad: BannerAd) {
                         onLoadStateChanged.value(true)
                     }
 
                     override fun onAdFailedToLoad(error: LoadAdError) {
-                        adMobManager.recordBannerFailure(error.code)
+                        adMobManager.recordBannerFailure(error.code.toString())
                         onLoadStateChanged.value(false)
                     }
                 }
             )
         } catch (error: Exception) {
-            adMobManager.recordBannerFailure(-1)
+            adMobManager.recordBannerFailure("unknown")
             onLoadStateChanged.value(false)
         }
     }

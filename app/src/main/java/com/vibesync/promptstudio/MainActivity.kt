@@ -17,6 +17,7 @@ import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
 import com.vibesync.promptstudio.data.diagnostics.PlayExperienceManager
 import com.vibesync.promptstudio.presentation.DiagnosticsScreen
+import com.vibesync.promptstudio.presentation.DeveloperToolboxScreen
 import com.vibesync.promptstudio.presentation.PromptStudioScreen
 import com.vibesync.promptstudio.presentation.PromptStudioViewModel
 import com.vibesync.promptstudio.presentation.SettingsScreen
@@ -101,6 +102,7 @@ private fun AppNavigation(
                 viewModel = studioViewModel,
                 onOpenSettings = { navController.navigate("settings") },
                 onOpenDiagnostics = { navController.navigate("diagnostics") },
+                onOpenToolbox = { navController.navigate("toolbox") },
                 connectivityStatus = connectivityStatus,
                 adMobManager = container.adMobManager,
                 onSuccessfulPromptRun = { provider ->
@@ -121,6 +123,9 @@ private fun AppNavigation(
         }
         composable("diagnostics") {
             DiagnosticsScreen(store = container.diagnostics, onBack = { navController.popBackStack() })
+        }
+        composable("toolbox") {
+            DeveloperToolboxScreen(onBack = { navController.popBackStack() })
         }
     }
 }

@@ -111,6 +111,8 @@ dependencies {
     // Google Mobile Ads and User Messaging Platform: current supported Android SDKs.
     implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
     implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+    // RE2/J provides predictable linear-time matching for the in-app regex utility.
+    implementation("com.google.re2j:re2j:1.8")
 
     // Official Google Play Core APIs for flexible in-app updates and in-app review.
     implementation("com.google.android.play:app-update:2.1.0")

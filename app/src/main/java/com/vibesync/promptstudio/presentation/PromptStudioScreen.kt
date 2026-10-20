@@ -40,6 +40,7 @@ fun PromptStudioScreen(
     viewModel: PromptStudioViewModel,
     onOpenSettings: () -> Unit,
     onOpenDiagnostics: () -> Unit,
+    onOpenToolbox: () -> Unit,
     connectivityStatus: ConnectivityStatus,
     adMobManager: AdMobManager,
     onSuccessfulPromptRun: (String) -> Unit
@@ -61,6 +62,7 @@ fun PromptStudioScreen(
                         Icon(Icons.Default.BugReport, contentDescription = null)
                         Text("Diagnostics")
                     }
+                    TextButton(onClick = onOpenToolbox) { Text("Tools") }
                     IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") }
                 }
             }
