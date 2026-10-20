@@ -520,7 +520,7 @@ private fun configureWebView(
         safeBrowsingEnabled = true
         // Preserve the platform WebView identity. Spoofing Chrome does not make an embedded WebView
         // a supported OAuth user-agent and can violate provider sign-in restrictions.
-        userAgentString = WebSettings.getDefaultUserAgent(context) + " VibeSyncWebStudio/1.0"
+        // Keep the platform default user-agent; do not spoof Chrome to bypass provider sign-in restrictions.
     }
     webView.webChromeClient = object : WebChromeClient() {
         override fun onProgressChanged(view: WebView?, newProgress: Int) {
@@ -541,13 +541,12 @@ private fun configureWebView(
                 javaScriptCanOpenWindowsAutomatically = true
                 setSupportMultipleWindows(true)
                 safeBrowsingEnabled = true
-                userAgentString = WebSettings.getDefaultUserAgent(context) + " VibeSyncWebStudio/1.0"
+                // Keep the platform default user-agent; do not spoof Chrome to bypass provider sign-in restrictions.
             }
             popup.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                     val uri = request.url
-                    if (uri.scheme == "http" || uri.scheme == "https") return false
-                    return openExternalIntent(context, uri)
+                    return routeWebNavigation(context, uri)
                 }
             }
             popup.webChromeClient = object : WebChromeClient() {
@@ -571,8 +570,7 @@ private fun configureWebView(
     webView.webViewClient = object : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val uri = request.url
-            if (uri.scheme == "http" || uri.scheme == "https") return false
-            return openExternalIntent(context, uri)
+            return routeWebNavigation(context, uri)
         }
 
         override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
@@ -588,6 +586,19 @@ private fun configureWebView(
             if (request.isForMainFrame) manager.updatePage(tab.id, view.url ?: tab.url, browserPageFailedText, false, view.canGoBack(), view.canGoForward())
         }
     }
+}
+
+private fun routeWebNavigation(context: Context, uri: Uri): Boolean {
+    if (uri.scheme == "http" || uri.scheme == "https") {
+        val host = uri.host?.lowercase().orEmpty()
+        val identityHost = host == "accounts.google.com" || host == "login.microsoftonline.com" ||
+            host == "login.live.com" || host == "appleid.apple.com" || host == "auth.openai.com" || host.endsWith(".auth0.com")
+        if (!identityHost) return false
+        // Google OAuth forbids authorization inside an app-controlled embedded user-agent.
+        openExternalBrowser(context, uri.toString())
+        return true
+    }
+    return openExternalIntent(context, uri)
 }
 
 private fun openExternalIntent(context: android.content.Context, uri: Uri): Boolean {
@@ -645,17 +656,19 @@ private fun makePromptInjectionScript(prompt: String, provider: AiProvider): Str
             target.dispatchEvent(new InputEvent('input', {bubbles:true, inputType:'insertText', data:text}));
             target.dispatchEvent(new Event('change', {bubbles:true}));
           }
-          setTimeout(() => {
-            const buttons = [...document.querySelectorAll('button')].filter(b => !b.disabled && b.getClientRects().length);
-            const send = buttons.find(b => /send|submit|send message/i.test((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + (b.innerText || ''))) ||
-              document.querySelector('button[data-testid*=send],button[type=submit]');
-            if (send && !send.disabled) send.click();
-            else {
-              const form = target.closest('form');
-              if (form && form.requestSubmit) form.requestSubmit();
-            }
-          }, 120);
-          return 'sent';
+          const buttons = [...document.querySelectorAll('button')].filter(b => !b.disabled && b.getClientRects().length);
+          const send = buttons.find(b => /send|submit|send message/i.test((b.getAttribute('aria-label') || '') + ' ' + (b.getAttribute('title') || '') + ' ' + (b.innerText || ''))) ||
+            document.querySelector('button[data-testid*=send],button[type=submit]');
+          if (send && !send.disabled) {
+            send.click();
+            return 'sent';
+          }
+          const form = target.closest('form');
+          if (form && form.requestSubmit) {
+            form.requestSubmit();
+            return 'sent';
+          }
+          return 'no-send';
         })();
     """.trimIndent()
 }
