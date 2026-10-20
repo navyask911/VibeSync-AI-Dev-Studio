@@ -10,6 +10,16 @@ val oauthClientId = providers.gradleProperty("VIBESYNC_OAUTH_CLIENT_ID").orElse(
 val oauthAuthorizeEndpoint = providers.gradleProperty("VIBESYNC_OAUTH_AUTHORIZE_ENDPOINT").orElse("")
 val oauthTokenEndpoint = providers.gradleProperty("VIBESYNC_OAUTH_TOKEN_ENDPOINT").orElse("")
 
+val productionAdMobAppId = providers.gradleProperty("ADMOB_APP_ID")
+    .orElse("ca-app-pub-4783826505860771~3225002433").get()
+val productionAdMobBannerId = providers.gradleProperty("ADMOB_BANNER_UNIT_ID")
+    .orElse("ca-app-pub-4783826505860771/3927535003").get()
+val productionAdMobInterstitialId = providers.gradleProperty("ADMOB_INTERSTITIAL_UNIT_ID")
+    .orElse("ca-app-pub-4783826505860771/4941233773").get()
+
+fun buildConfigString(value: String): String =
+    "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 // CI materializes this ignored file from the base64 GitHub secret.
 // Without all signing inputs, local release builds remain available as unsigned artifacts.
 val releaseKeystoreFile = rootProject.file("release-keystore.jks")
@@ -38,6 +48,9 @@ android {
         buildConfigField("String", "OAUTH_AUTHORIZE_ENDPOINT", "\"" + oauthAuthorizeEndpoint.get().replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
         buildConfigField("String", "OAUTH_TOKEN_ENDPOINT", "\"" + oauthTokenEndpoint.get().replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
         buildConfigField("String", "OAUTH_REDIRECT_URI", "\"vibesync://auth/callback\"")
+        buildConfigField("String", "ADMOB_APP_ID", "\"ca-app-pub-3940256099942544~3347511713\"")
+        buildConfigField("String", "ADMOB_BANNER_UNIT_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
     }
 
     signingConfigs {
@@ -53,12 +66,20 @@ android {
 
     buildTypes {
         release {
-            manifestPlaceholders["adsApplicationId"] = "ca-app-pub-4783826505860771~3225002433"
+            manifestPlaceholders["adsApplicationId"] = productionAdMobAppId
+            buildConfigField("String", "ADMOB_APP_ID", buildConfigString(productionAdMobAppId))
+            buildConfigField("String", "ADMOB_BANNER_UNIT_ID", buildConfigString(productionAdMobBannerId))
+            buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", buildConfigString(productionAdMobInterstitialId))
             isMinifyEnabled = true
             signingConfig = if (releaseSigningAvailable) signingConfigs.getByName("release") else null
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
-        debug { }
+        debug {
+            manifestPlaceholders["adsApplicationId"] = "ca-app-pub-3940256099942544~3347511713"
+            buildConfigField("String", "ADMOB_APP_ID", "\"ca-app-pub-3940256099942544~3347511713\"")
+            buildConfigField("String", "ADMOB_BANNER_UNIT_ID", "\"ca-app-pub-3940256099942544/9214589741\"")
+            buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
+        }
     }
 
     compileOptions {
@@ -108,6 +129,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.browser:browser:1.9.0")
+    implementation("com.google.android.material:material:1.13.0")
     // Google Mobile Ads and User Messaging Platform: current supported Android SDKs.
     implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
     implementation("com.google.android.ump:user-messaging-platform:4.0.0")

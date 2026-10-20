@@ -102,3 +102,13 @@ CI runs unit tests and lint, boots an API 36 Google APIs emulator for Android in
 ### Offline Developer Toolbox (initial phase)
 
 The searchable toolbox is separate from the prompt editor and stores favorites/recent tools locally. The initial offline tools include JSON format/minify, XML formatting with external entities disabled, bounded text diff, Base64, URI component encoding, JSON Pointer, linear-time RE2/J regex testing with capture groups, JWT header/payload decoding (explicitly unverified), SHA-256/SHA-512 digests, capped UUID generation, UTC timestamp conversion, HEX contrast ratios, Unicode inspection, text transformations, and compact HTTP status/MIME references. The URI inspector redacts common secret query values and never launches a link. Tools enforce input/output bounds and have unit-test coverage. Tools not listed here remain future implementation work; this is not yet the entire catalogue proposed in the master prompt.
+
+
+## Offline operation, privacy, localization, and support
+
+- JSON/XML formatting, diffing, Base64/URI transforms, JSON Pointer, regex testing, JWT decoding, hashes, timestamps, contrast, Unicode inspection, and other Developer Toolbox utilities execute locally on this device and do not issue network requests.
+- The app adds no analytics, crash-reporting, or remote diagnostic SDK and does not upload app-collected diagnostics. Logs remain local unless explicitly exported/shared. Provider API requests go directly to the selected provider only when a user runs a prompt; prompts and responses are excluded from the app diagnostics.
+- Optional AdMob/UMP and Google Play update/review integrations contact Google services when active. The app is therefore offline-capable rather than a completely network-isolated sandbox: local tools and saved work remain available without internet, while provider requests, ads, and Play update checks require connectivity. Sponsor links open only after a user taps them.
+- English, Spanish, German, Hindi, and Arabic resource files are provided. RTL support is enabled in the manifest.
+- Ad units are exposed through variant-specific BuildConfig fields. Debug uses Google's official test IDs. Release reads `ADMOB_APP_ID`, `ADMOB_BANNER_UNIT_ID`, and `ADMOB_INTERSTITIAL_UNIT_ID` Gradle properties (the current publisher IDs are defaults); override with `-P...` or in `~/.gradle/gradle.properties`.
+- When offline, ad consent is unavailable, SDK initialization is pending, or an ad load fails, the ad area uses a stable-height, animated Coffee Sponsor fallback. Ads are not required for any local workflow.

@@ -46,6 +46,11 @@ class AdMobManager(
     private val mutablePrivacyOptionsRequired = MutableStateFlow(false)
     val privacyOptionsRequired: StateFlow<Boolean> = mutablePrivacyOptionsRequired.asStateFlow()
 
+    private val mutableBannerLoadFailed = MutableStateFlow(false)
+    val bannerLoadFailed: StateFlow<Boolean> = mutableBannerLoadFailed.asStateFlow()
+    private val mutableBannerLoaded = MutableStateFlow(false)
+    val bannerLoaded: StateFlow<Boolean> = mutableBannerLoaded.asStateFlow()
+
     @Volatile
     private var interstitialAd: InterstitialAd? = null
 
@@ -116,7 +121,19 @@ class AdMobManager(
         }
     }
 
+    fun resetBannerFailure() {
+        mutableBannerLoadFailed.value = false
+        mutableBannerLoaded.value = false
+    }
+
+    fun recordBannerLoaded() {
+        mutableBannerLoadFailed.value = false
+        mutableBannerLoaded.value = true
+    }
+
     fun recordBannerFailure(errorCode: String) {
+        mutableBannerLoadFailed.value = true
+        mutableBannerLoaded.value = false
         diagnostics.record(
             DiagnosticSeverity.DEBUG, "ads", "banner", "load_failed",
             "Banner ad failed to load (code " + errorCode + "). Core app functionality remains available."
@@ -278,22 +295,17 @@ class AdMobManager(
 }
 
 object AdMobConfig {
+    // IDs retained for regression checks; runtime values are defined per Gradle build variant.
     const val RELEASE_APP_ID = "ca-app-pub-4783826505860771~3225002433"
     const val RELEASE_BANNER_ID = "ca-app-pub-4783826505860771/3927535003"
     const val RELEASE_INTERSTITIAL_ID = "ca-app-pub-4783826505860771/4941233773"
-
     const val TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
     const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741"
     const val TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
 
-    val appId: String
-        get() = if (com.vibesync.promptstudio.BuildConfig.DEBUG) TEST_APP_ID else RELEASE_APP_ID
-
-    val bannerUnitId: String
-        get() = if (com.vibesync.promptstudio.BuildConfig.DEBUG) TEST_BANNER_ID else RELEASE_BANNER_ID
-
-    val interstitialUnitId: String
-        get() = if (com.vibesync.promptstudio.BuildConfig.DEBUG) TEST_INTERSTITIAL_ID else RELEASE_INTERSTITIAL_ID
+    val appId: String get() = com.vibesync.promptstudio.BuildConfig.ADMOB_APP_ID
+    val bannerUnitId: String get() = com.vibesync.promptstudio.BuildConfig.ADMOB_BANNER_UNIT_ID
+    val interstitialUnitId: String get() = com.vibesync.promptstudio.BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID
 }
 
 object AdFrequencyPolicy {

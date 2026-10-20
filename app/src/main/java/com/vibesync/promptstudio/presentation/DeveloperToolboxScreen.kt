@@ -1,4 +1,6 @@
 package com.vibesync.promptstudio.presentation
+import androidx.compose.ui.res.stringResource
+import com.vibesync.promptstudio.R
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -121,7 +123,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Developer Toolbox") },
+                title = { Text(stringResource(R.string.developer_toolbox)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -136,7 +138,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { selectedId = null; output = ""; feedback = null }) { Text("← Catalogue") }
+                    TextButton(onClick = { selectedId = null; output = ""; feedback = null }) { Text(stringResource(R.string.back_to_catalogue)) }
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = {
                         val next = if (selectedTool.id in favorites) favorites - selectedTool.id else favorites + selectedTool.id
@@ -149,7 +151,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 val modeOptions = modesFor(selectedTool.id)
                 if (modeOptions.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Operation", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.toolbox_operation), style = MaterialTheme.typography.labelMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             modeOptions.forEach { option ->
                                 FilterChip(selected = mode == option, onClick = { mode = option }, label = { Text(option) })
@@ -209,14 +211,14 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                     Card {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Result", style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.toolbox_result), style = MaterialTheme.typography.titleMedium)
                                 Spacer(Modifier.weight(1f))
                                 TextButton(onClick = {
                                     clipboard.setText(AnnotatedString(output))
                                     feedback = "Result copied."
                                 }) {
                                     Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                    Text("Copy")
+                                    Text(stringResource(R.string.copy_response))
                                 }
                             }
                             Text(output, style = MaterialTheme.typography.bodyMedium)
@@ -236,9 +238,9 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
-                    Text("Offline-first developer utilities", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 10.dp))
-                    Text("Search, favorite, and reuse tools. No root or special permissions required.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text("Search tools") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
+                    Text(stringResource(R.string.offline_first_developer_utilities), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 10.dp))
+                    Text(stringResource(R.string.toolbox_intro), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text(stringResource(R.string.search_tools)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         categories.take(3).forEach { group ->
                             FilterChip(selected = category == group, onClick = { category = group }, label = { Text(group) })
@@ -250,7 +252,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                         }
                     }
                     if (recent.isNotEmpty()) {
-                        Text("Recent tools", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
+                        Text(stringResource(R.string.recent_tools), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             recent.mapNotNull { id -> toolboxEntries.firstOrNull { it.id == id } }.take(4).forEach { tool ->
                                 FilterChip(
@@ -300,12 +302,12 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                                     mode = defaultMode(tool.id)
                                     output = ""
                                     feedback = null
-                                }) { Text("Open") }
+                                }) { Text(stringResource(R.string.open)) }
                             }
                         }
                     }
                 }
-                if (filtered.isEmpty()) item { Text("No tools match this search.", modifier = Modifier.padding(16.dp)) }
+                if (filtered.isEmpty()) item { Text(stringResource(R.string.no_tools_match), modifier = Modifier.padding(16.dp)) }
                 item { Spacer(Modifier.padding(bottom = 12.dp)) }
             }
         }

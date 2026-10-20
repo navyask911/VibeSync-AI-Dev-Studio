@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.vibesync.promptstudio.data.local.AppDatabase
 import com.vibesync.promptstudio.data.diagnostics.ConnectivityMonitor
+import com.vibesync.promptstudio.data.diagnostics.NetworkMonitor
 import com.vibesync.promptstudio.data.ads.AdMobManager
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticUncaughtExceptionHandler
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticsStore
@@ -50,6 +51,7 @@ class VibeSyncApplication : Application() {
 
 class AppContainer(application: Application, val diagnostics: DiagnosticsStore) {
     val connectivityMonitor = ConnectivityMonitor(application, diagnostics)
+    val networkMonitor = NetworkMonitor(application)
     val adMobManager = AdMobManager(application, diagnostics)
     private val database: AppDatabase = Room.databaseBuilder(
         application,
@@ -93,6 +95,7 @@ class AppContainer(application: Application, val diagnostics: DiagnosticsStore) 
     }
 
     fun close() {
+        networkMonitor.close()
         streamingClient.httpClient.close()
         database.close()
     }

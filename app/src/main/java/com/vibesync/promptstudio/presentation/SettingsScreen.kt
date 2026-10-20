@@ -1,4 +1,6 @@
 package com.vibesync.promptstudio.presentation
+import androidx.compose.ui.res.stringResource
+import com.vibesync.promptstudio.R
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -41,7 +43,7 @@ fun SettingsScreen(
 
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
-            title = { Text("Secure Settings") },
+            title = { Text(stringResource(R.string.secure_settings)) },
             navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
         )
     }) { padding ->
@@ -54,7 +56,7 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(8.dp))
-                        Text("Encrypted credential vault", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.settings_encrypted_credential_vault), style = MaterialTheme.typography.titleMedium)
                     }
                     Text(state.vaultStatus.message, style = MaterialTheme.typography.bodyMedium)
                     Text(
@@ -78,14 +80,14 @@ fun SettingsScreen(
                         OutlinedButton(onClick = { showVaultResetConfirmation = true }, enabled = !state.busy) {
                             Icon(Icons.Default.Delete, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
-                            Text("Reset lost-key vault")
+                            Text(stringResource(R.string.reset_lost_key_vault))
                         }
                     }
                 }
             }
             Card {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Provider API key", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.provider_api_key), style = MaterialTheme.typography.titleMedium)
                     TextButton(onClick = { providerMenuExpanded = true }) {
                         Text(state.selectedProvider.displayName + if (state.selectedProvider in state.savedProviders) " • key saved" else " • no key saved")
                     }
@@ -100,8 +102,8 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = state.secretInput,
                         onValueChange = viewModel::updateSecret,
-                        label = { Text("API key") },
-                        placeholder = { Text("Paste key; saved value is never shown again") },
+                        label = { Text(stringResource(R.string.api_key)) },
+                        placeholder = { Text(stringResource(R.string.paste_api_key_hint)) },
                         visualTransformation = PasswordVisualTransformation(),
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -110,12 +112,12 @@ fun SettingsScreen(
                         Button(onClick = viewModel::saveKey, enabled = state.vaultStatus.initialized && !state.busy && state.secretInput.isNotBlank()) {
                             Icon(Icons.Default.Save, contentDescription = null)
                             Spacer(Modifier.width(6.dp))
-                            Text("Save key")
+                            Text(stringResource(R.string.save_key))
                         }
                         TextButton(onClick = viewModel::deleteKey, enabled = state.selectedProvider in state.savedProviders) {
                             Icon(Icons.Default.Delete, contentDescription = null)
                             Spacer(Modifier.width(4.dp))
-                            Text("Remove")
+                            Text(stringResource(R.string.remove))
                         }
                     }
                     state.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
@@ -123,13 +125,13 @@ fun SettingsScreen(
             }
             Card {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("OAuth 2.0 / PKCE", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.oauth_pkce), style = MaterialTheme.typography.titleMedium)
                     Text(
                         "This is generic OAuth Authorization Code + PKCE plumbing, not a provider sign-in integration. No OpenAI, Anthropic, or Gemini OAuth support is implied by filling in endpoints. Only use a documented provider-supported public-client flow; identity tokens are never used as model API keys.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Button(onClick = onConnectOAuth, enabled = state.oauthConfigured, modifier = Modifier.fillMaxWidth()) {
-                        Text("Connect account with browser")
+                        Text(stringResource(R.string.connect_account_browser))
                     }
                     if (!state.oauthConfigured) {
                         Text(
@@ -145,24 +147,24 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.BugReport, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(8.dp))
-                        Text("Developer tools", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.developer_tools), style = MaterialTheme.typography.titleMedium)
                     }
                     Text(
                         "Inspect app-collected logs, sanitized provider HTTP metadata, historical process-exit details, network state, and export a diagnostic report. Full system Logcat remains restricted by Android.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Button(onClick = onOpenDiagnostics, modifier = Modifier.fillMaxWidth()) { Text("Open Developer Diagnostics") }
+                    Button(onClick = onOpenDiagnostics, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.open_developer_diagnostics)) }
                     if (privacyOptionsRequired) {
                         TextButton(onClick = onManageAdsPrivacy, modifier = Modifier.fillMaxWidth()) {
-                            Text("Manage ad privacy choices")
+                            Text(stringResource(R.string.manage_ad_privacy))
                         }
                     }
                     TextButton(onClick = {
                         val listing = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + context.packageName))
                         runCatching { ContextCompat.startActivity(context, listing, null) }
                     }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Open Google Play listing / feedback")
+                        Text(stringResource(R.string.open_play_listing))
                     }
                 }
             }
@@ -177,7 +179,7 @@ fun SettingsScreen(
     if (showVaultResetConfirmation) {
         AlertDialog(
             onDismissRequest = { showVaultResetConfirmation = false },
-            title = { Text("Reset encrypted credential vault?") },
+            title = { Text(stringResource(R.string.reset_vault_title)) },
             text = {
                 Text(
                     "The original Android Keystore key is missing or invalidated. Credentials encrypted with that key cannot be recovered. Continuing deletes the remaining encrypted vault entries and key alias from this app, so you must re-enter every API key. This does not affect saved prompt templates or run history."
@@ -187,10 +189,10 @@ fun SettingsScreen(
                 TextButton(onClick = {
                     showVaultResetConfirmation = false
                     viewModel.resetVaultAfterKeyLoss()
-                }) { Text("Reset vault") }
+                }) { Text(stringResource(R.string.reset_vault)) }
             },
             dismissButton = {
-                TextButton(onClick = { showVaultResetConfirmation = false }) { Text("Cancel") }
+                TextButton(onClick = { showVaultResetConfirmation = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

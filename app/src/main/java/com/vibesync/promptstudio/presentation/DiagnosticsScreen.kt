@@ -1,4 +1,6 @@
 package com.vibesync.promptstudio.presentation
+import androidx.compose.ui.res.stringResource
+import com.vibesync.promptstudio.R
 
 import android.content.ClipData
 import android.content.Intent
@@ -105,7 +107,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Developer Diagnostics") },
+                title = { Text(stringResource(R.string.developer_diagnostics)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -127,7 +129,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
             item {
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("App and device details", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.diagnostics_app_device_details), style = MaterialTheme.typography.titleMedium)
                         store.environmentSummary().take(8).forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                         Text(
                             "This screen shows app-collected records only. Ordinary Play-installed apps cannot read unrestricted, device-wide Logcat.",
@@ -140,39 +142,39 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
             item {
                 Card {
                     Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Search and filter", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.diagnostics_search_and_filter), style = MaterialTheme.typography.titleMedium)
                         OutlinedTextField(
                             value = keyword,
                             onValueChange = { keyword = it },
-                            label = { Text("Keyword or error text") },
+                            label = { Text(stringResource(R.string.keyword_or_error_text)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = component,
                             onValueChange = { component = it },
-                            label = { Text("Component/tag (optional)") },
+                            label = { Text(stringResource(R.string.component_tag_optional)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = provider,
                             onValueChange = { provider = it },
-                            label = { Text("Provider (e.g. OpenAI, Gemini)") },
+                            label = { Text(stringResource(R.string.provider_examples)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = category,
                             onValueChange = { category = it },
-                            label = { Text("Category or operation") },
+                            label = { Text(stringResource(R.string.category_operation)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
                         OutlinedTextField(
                             value = processIdText,
                             onValueChange = { processIdText = it.filter(Char::isDigit).take(10) },
-                            label = { Text("Process ID (optional)") },
+                            label = { Text(stringResource(R.string.process_id_optional)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -194,7 +196,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                                 )
                             }
                         }
-                        Text("Time range", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.diagnostics_time_range), style = MaterialTheme.typography.labelMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             listOf("ALL", "1 hour", "24 hours", "7 days").forEach { range ->
                                 FilterChip(
@@ -211,7 +213,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                                 feedback = "Sanitized diagnostic report copied."
                             }) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                Text("Copy report")
+                                Text(stringResource(R.string.copy_report))
                             }
                             Button(onClick = {
                                 runCatching {
@@ -229,19 +231,19 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                                     .onFailure { feedback = "Could not export diagnostics: " + (it.message ?: "unknown error") }
                             }) {
                                 Icon(Icons.Default.IosShare, contentDescription = null)
-                                Text("Share/export")
+                                Text(stringResource(R.string.share_export))
                             }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextButton(onClick = { showClearConfirmation = true }) {
                                 Icon(Icons.Default.Delete, contentDescription = null)
-                                Text("Clear local logs")
+                                Text(stringResource(R.string.clear_local_logs))
                             }
                             TextButton(onClick = {
                                 val adbText = "For full device/app Logcat, connect a development computer and run:\nadb logcat -d -t 500\n\nFor bug reports, use Android Studio or Developer options > Take bug report. App-only records can be exported above."
                                 clipboard.setText(AnnotatedString(adbText))
                                 feedback = "ADB collection instructions copied."
-                            }) { Text("Copy ADB instructions") }
+                            }) { Text(stringResource(R.string.copy_adb_instructions)) }
                         }
                         feedback?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
                     }
@@ -250,10 +252,10 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
             item {
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Historical process exits", style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.historical_process_exits), style = MaterialTheme.typography.titleMedium)
                         val exits = store.processExitSummaries()
                         if (exits.isEmpty()) {
-                            Text("Android has not returned any historical process-exit records, or this API level does not expose them.", style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.no_historical_process_exits), style = MaterialTheme.typography.bodySmall)
                         } else {
                             exits.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
                         }
@@ -281,18 +283,18 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
     if (showClearConfirmation) {
         AlertDialog(
             onDismissRequest = { showClearConfirmation = false },
-            title = { Text("Clear app diagnostic records?") },
-            text = { Text("This deletes only the diagnostic records collected by VibeSync on this device. It does not clear prompt templates, saved run history, or Android system logs.") },
+            title = { Text(stringResource(R.string.clear_diagnostics_title)) },
+            text = { Text(stringResource(R.string.clear_diagnostics_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     store.clear()
                     showClearConfirmation = false
                     refreshTick++
                     feedback = "Local diagnostic records cleared."
-                }) { Text("Clear") }
+                }) { Text(stringResource(R.string.clear)) }
             },
             dismissButton = {
-                TextButton(onClick = { showClearConfirmation = false }) { Text("Cancel") }
+                TextButton(onClick = { showClearConfirmation = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

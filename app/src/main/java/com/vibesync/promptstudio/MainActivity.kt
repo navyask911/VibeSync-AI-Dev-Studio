@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
 import com.vibesync.promptstudio.data.diagnostics.PlayExperienceManager
+import com.vibesync.promptstudio.data.diagnostics.InAppUpdateManager
 import com.vibesync.promptstudio.presentation.DiagnosticsScreen
 import com.vibesync.promptstudio.presentation.DeveloperToolboxScreen
 import com.vibesync.promptstudio.presentation.PromptStudioScreen
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private var playExperience: PlayExperienceManager? = null
+    private var inAppUpdateManager: InAppUpdateManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,14 +36,17 @@ class MainActivity : ComponentActivity() {
         val app = application as VibeSyncApplication
         val container = app.container
         playExperience = PlayExperienceManager(this, container.diagnostics)
+        inAppUpdateManager = InAppUpdateManager(this, container.diagnostics)
 
         setContent {
             val connectivity by container.connectivityMonitor.observe()
                 .collectAsStateWithLifecycle(initialValue = ConnectivityStatus.CONNECTING)
+            val isOnline by container.networkMonitor.isOnline.collectAsStateWithLifecycle()
             VibeSyncTheme {
                 AppNavigation(
                     navController = rememberNavController(),
                     connectivityStatus = connectivity,
+                    isOnline = isOnline,
                     onConnectOAuth = {
                         lifecycleScope.launch {
                             runCatching { container.oauthManager.launch(this@MainActivity) }
@@ -70,19 +75,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        playExperience?.onResume()
+        inAppUpdateManager?.onResume()
         (application as VibeSyncApplication).container.adMobManager.requestConsent(this)
     }
 
     override fun onStop() {
-        playExperience?.onStop()
+        inAppUpdateManager?.onStop()
         super.onStop()
     }
 
     @Deprecated("Required for the Play In-App Updates result callback.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        playExperience?.onActivityResult(requestCode, resultCode)
+        inAppUpdateManager?.onActivityResult(requestCode, resultCode)
     }
 }
 
@@ -90,6 +95,7 @@ class MainActivity : ComponentActivity() {
 private fun AppNavigation(
     navController: NavHostController,
     connectivityStatus: ConnectivityStatus,
+    isOnline: Boolean,
     onConnectOAuth: () -> Unit,
     onManageAdsPrivacy: () -> Unit,
     onSuccessfulPromptRun: (String, Boolean) -> Unit
@@ -104,6 +110,7 @@ private fun AppNavigation(
                 onOpenDiagnostics = { navController.navigate("diagnostics") },
                 onOpenToolbox = { navController.navigate("toolbox") },
                 connectivityStatus = connectivityStatus,
+                isOnline = isOnline,
                 adMobManager = container.adMobManager,
                 onSuccessfulPromptRun = { provider ->
                     onSuccessfulPromptRun(provider, navController.currentDestination?.route == "studio")

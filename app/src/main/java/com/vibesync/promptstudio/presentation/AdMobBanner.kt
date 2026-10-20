@@ -32,10 +32,13 @@ import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
 import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import com.vibesync.promptstudio.data.ads.AdMobConfig
 import com.vibesync.promptstudio.data.ads.AdMobManager
+import androidx.compose.ui.res.stringResource
+import com.vibesync.promptstudio.R
 
 @Composable
 fun AdMobBanner(
     adMobManager: AdMobManager,
+    isOnline: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -43,7 +46,7 @@ fun AdMobBanner(
     val inPreview = LocalInspectionMode.current
     val adsReady by adMobManager.adsReady.collectAsStateWithLifecycle()
     val canRequestAds by adMobManager.canRequestAds.collectAsStateWithLifecycle()
-    if (!adsReady || !canRequestAds || inPreview) return
+    if (!isOnline || !adsReady || !canRequestAds || inPreview) return
 
     val widthDp = (configuration.screenWidthDp - 32).coerceAtLeast(1)
     var showSlot by remember(context, adsReady, canRequestAds, widthDp) { mutableStateOf(false) }
@@ -51,7 +54,8 @@ fun AdMobBanner(
 
     val adView = remember(context, adsReady, canRequestAds, widthDp) { AdView(context) }
 
-    LaunchedEffect(adView, canRequestAds) {
+    LaunchedEffect(adView, canRequestAds, isOnline) {
+        if (!isOnline) return@LaunchedEffect
         try {
             val size = AdSize.getLargeAnchoredAdaptiveBannerAdSize(context, widthDp)
             val request = BannerAdRequest.Builder(AdMobConfig.bannerUnitId, size).build()
@@ -59,6 +63,7 @@ fun AdMobBanner(
                 request,
                 object : AdLoadCallback<BannerAd> {
                     override fun onAdLoaded(ad: BannerAd) {
+                        adMobManager.recordBannerLoaded()
                         onLoadStateChanged.value(true)
                     }
 
@@ -89,7 +94,7 @@ fun AdMobBanner(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    "Advertisement",
+                    stringResource(R.string.advertisement),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

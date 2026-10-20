@@ -51,6 +51,20 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
+      - name: Audit offline tools and telemetry dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -Eiq 'firebase-analytics|firebase-crashlytics|sentry-android|mixpanel|amplitude|segment-analytics|appsflyer|adjust-android|datadog-android|newrelic' app/build.gradle.kts; then
+            echo "::error::A third-party analytics or diagnostic SDK was added to app dependencies."
+            exit 1
+          fi
+          if grep -Eiq 'HttpURLConnection|OkHttpClient|HttpClient|openConnection|java[.]net[.]URL[[:space:]]*[(]' app/src/main/java/com/vibesync/promptstudio/domain/usecase/DeveloperToolboxTools.kt; then
+            echo "::error::The offline developer toolbox must not make network requests."
+            exit 1
+          fi
+          echo "Offline developer utilities and no-app-telemetry dependency audit passed."
+
       - name: Run unit tests and lint
         run: ./gradlew --no-daemon --stacktrace testDebugUnitTest lintDebug
 

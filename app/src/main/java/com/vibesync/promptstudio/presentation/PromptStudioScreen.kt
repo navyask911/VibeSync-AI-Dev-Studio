@@ -42,6 +42,7 @@ fun PromptStudioScreen(
     onOpenDiagnostics: () -> Unit,
     onOpenToolbox: () -> Unit,
     connectivityStatus: ConnectivityStatus,
+    isOnline: Boolean,
     adMobManager: AdMobManager,
     onSuccessfulPromptRun: (String) -> Unit
 ) {
@@ -53,6 +54,11 @@ fun PromptStudioScreen(
     }
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
+    val bannerLoadFailed by adMobManager.bannerLoadFailed.collectAsStateWithLifecycle()
+    val bannerLoaded by adMobManager.bannerLoaded.collectAsStateWithLifecycle()
+    val canRequestAds by adMobManager.canRequestAds.collectAsStateWithLifecycle()
+    val adsReady by adMobManager.adsReady.collectAsStateWithLifecycle()
+    LaunchedEffect(isOnline) { if (isOnline) adMobManager.resetBannerFailure() }
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = { Text(stringResource(R.string.app_name), maxLines = 1, overflow = TextOverflow.Ellipsis) },
@@ -60,10 +66,10 @@ fun PromptStudioScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onOpenDiagnostics) {
                         Icon(Icons.Default.BugReport, contentDescription = null)
-                        Text("Diagnostics")
+                        Text(stringResource(R.string.diagnostics))
                     }
-                    TextButton(onClick = onOpenToolbox) { Text("Tools") }
-                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = "Settings") }
+                    TextButton(onClick = onOpenToolbox) { Text(stringResource(R.string.tools)) }
+                    IconButton(onClick = onOpenSettings) { Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings)) }
                 }
             }
         )
@@ -82,9 +88,9 @@ fun PromptStudioScreen(
                     ) {
                         Text(
                             if (connectivityStatus == ConnectivityStatus.OFFLINE)
-                                "You're offline. Prompt editing, saved templates, and local history still work; remote AI requests need internet access."
+                                stringResource(R.string.network_offline_message)
                             else
-                                "Internet access is not yet validated. Local prompt editing works; remote AI requests may fail until internet connectivity is available.",
+                                stringResource(R.string.network_connecting_message),
                             modifier = Modifier.padding(12.dp),
                             color = MaterialTheme.colorScheme.onTertiaryContainer,
                             style = MaterialTheme.typography.bodySmall
@@ -95,33 +101,33 @@ fun PromptStudioScreen(
             item {
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Prompt canvas", style = MaterialTheme.typography.titleMedium)
-                        OutlinedTextField(value = state.title, onValueChange = viewModel::updateTitle, label = { Text("Template name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = state.systemPrompt, onValueChange = viewModel::updateSystemPrompt, label = { Text("System instructions") }, minLines = 3, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = state.userPrompt, onValueChange = viewModel::updateUserPrompt, label = { Text("User prompt") }, minLines = 4, modifier = Modifier.fillMaxWidth())
-                        OutlinedTextField(value = state.variablesText, onValueChange = viewModel::updateVariables, label = { Text("Dynamic variables (name=value per line)") }, supportingText = { Text("Use {{variable_name}}. Values stay on-device.") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+                        Text(stringResource(R.string.prompt_canvas), style = MaterialTheme.typography.titleMedium)
+                        OutlinedTextField(value = state.title, onValueChange = viewModel::updateTitle, label = { Text(stringResource(R.string.template_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = state.systemPrompt, onValueChange = viewModel::updateSystemPrompt, label = { Text(stringResource(R.string.system_instructions)) }, minLines = 3, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = state.userPrompt, onValueChange = viewModel::updateUserPrompt, label = { Text(stringResource(R.string.user_prompt)) }, minLines = 4, modifier = Modifier.fillMaxWidth())
+                        OutlinedTextField(value = state.variablesText, onValueChange = viewModel::updateVariables, label = { Text(stringResource(R.string.dynamic_variables)) }, supportingText = { Text(stringResource(R.string.dynamic_variables_help)) }, minLines = 2, modifier = Modifier.fillMaxWidth())
                         if (state.unresolvedVariables.isNotEmpty()) {
-                            Text("Unresolved: " + state.unresolvedVariables.joinToString { "{{" + it + "}}" }, color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.unresolved_prefix) + state.unresolvedVariables.joinToString { "{{" + it + "}}" }, color = MaterialTheme.colorScheme.error)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             ProviderPicker(state.provider.displayName) { label ->
                                 viewModel.updateProvider(ProviderType.entries.firstOrNull { it.displayName == label } ?: state.provider)
                             }
-                            OutlinedTextField(value = state.modelId, onValueChange = viewModel::updateModel, label = { Text("Model ID") }, singleLine = true, modifier = Modifier.weight(1f))
+                            OutlinedTextField(value = state.modelId, onValueChange = viewModel::updateModel, label = { Text(stringResource(R.string.model_id)) }, singleLine = true, modifier = Modifier.weight(1f))
                         }
-                        Text("Saved templates", style = MaterialTheme.typography.labelLarge)
-                        if (state.savedTemplates.isEmpty()) Text("Save a prompt to keep it available offline.", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.saved_templates), style = MaterialTheme.typography.labelLarge)
+                        if (state.savedTemplates.isEmpty()) Text(stringResource(R.string.save_prompt_offline), style = MaterialTheme.typography.bodySmall)
                         else state.savedTemplates.take(12).forEach { prompt ->
                             TextButton(onClick = { viewModel.loadTemplate(prompt) }) { Text(prompt.title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = viewModel::runPrompt, enabled = state.canRun, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = null); Text("Run prompt")
+                                Icon(Icons.Default.PlayArrow, contentDescription = null); Text(stringResource(R.string.run_prompt))
                             }
                             if (state.isStreaming) Button(onClick = viewModel::cancelRun) {
-                                Icon(Icons.Default.Stop, contentDescription = null); Text("Stop")
+                                Icon(Icons.Default.Stop, contentDescription = null); Text(stringResource(R.string.stop))
                             } else TextButton(onClick = viewModel::saveTemplate) {
-                                Icon(Icons.Default.Save, contentDescription = null); Text("Save")
+                                Icon(Icons.Default.Save, contentDescription = null); Text(stringResource(R.string.save))
                             }
                         }
                     }
@@ -130,15 +136,15 @@ fun PromptStudioScreen(
             item {
                 Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Live token & cost estimate", style = MaterialTheme.typography.titleMedium)
-                        EstimateLine("Approx. input tokens", state.estimate.inputTokens.toString())
-                        EstimateLine("Approx. response tokens", state.estimate.outputTokens.toString())
-                        Text("Character-based estimate; exact counts require the provider tokenizer.", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.token_cost_estimate), style = MaterialTheme.typography.titleMedium)
+                        EstimateLine(stringResource(R.string.approx_input_tokens), state.estimate.inputTokens.toString())
+                        EstimateLine(stringResource(R.string.approx_response_tokens), state.estimate.outputTokens.toString())
+                        Text(stringResource(R.string.character_based_estimate), style = MaterialTheme.typography.bodySmall)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedTextField(value = state.inputRateText, onValueChange = viewModel::updateInputRate, label = { Text("Input $/1M") }, singleLine = true, modifier = Modifier.weight(1f))
-                            OutlinedTextField(value = state.outputRateText, onValueChange = viewModel::updateOutputRate, label = { Text("Output $/1M") }, singleLine = true, modifier = Modifier.weight(1f))
+                            OutlinedTextField(value = state.inputRateText, onValueChange = viewModel::updateInputRate, label = { Text(stringResource(R.string.input_rate)) }, singleLine = true, modifier = Modifier.weight(1f))
+                            OutlinedTextField(value = state.outputRateText, onValueChange = viewModel::updateOutputRate, label = { Text(stringResource(R.string.output_rate)) }, singleLine = true, modifier = Modifier.weight(1f))
                         }
-                        Text("Estimated input cost: " + (state.estimate.inputCostUsd?.let { usd(it) } ?: "set rate") + " • output: " + (state.estimate.outputCostUsd?.let { usd(it) } ?: "set rate"))
+                        Text(stringResource(R.string.estimated_cost, state.estimate.inputCostUsd?.let { usd(it) } ?: stringResource(R.string.set_rate), state.estimate.outputCostUsd?.let { usd(it) } ?: stringResource(R.string.set_rate)))
                     }
                 }
             }
@@ -146,23 +152,23 @@ fun PromptStudioScreen(
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("Response stream", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.response_stream), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                             if (state.isStreaming) CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
-                            IconButton(onClick = { clipboard.setText(AnnotatedString(state.response)) }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.ContentCopy, contentDescription = "Copy") }
+                            IconButton(onClick = { clipboard.setText(AnnotatedString(state.response)) }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.ContentCopy, contentDescription = stringResource(R.string.copy_response)) }
                             IconButton(onClick = {
                                 val send = Intent(Intent.ACTION_SEND).apply { type = "text/plain"; putExtra(Intent.EXTRA_TEXT, state.response) }
-                                if (state.response.isNotEmpty()) ContextCompat.startActivity(context, Intent.createChooser(send, "Export response"), null)
-                            }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.IosShare, contentDescription = "Export") }
+                                if (state.response.isNotEmpty()) ContextCompat.startActivity(context, Intent.createChooser(send, context.getString(R.string.export_response_chooser)), null)
+                            }, enabled = state.response.isNotEmpty()) { Icon(Icons.Default.IosShare, contentDescription = stringResource(R.string.export_response_content_description)) }
                         }
                         HorizontalDivider()
                         state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-                        if (state.response.isBlank() && !state.isStreaming) Text("Your answer will stream here.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (state.response.isBlank() && !state.isStreaming) Text(stringResource(R.string.response_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         else SelectionContainer { MarkdownResponse(state.response) }
                     }
                 }
             }
             if (state.recentRuns.isNotEmpty()) {
-                item { Text("Recent runs", style = MaterialTheme.typography.titleMedium) }
+                item { Text(stringResource(R.string.recent_runs), style = MaterialTheme.typography.titleMedium) }
                 items(state.recentRuns.take(5), key = { it.id }) { run ->
                     Card { Column(Modifier.fillMaxWidth().padding(12.dp)) {
                         Text(run.promptTitle, fontWeight = FontWeight.SemiBold)
@@ -172,7 +178,13 @@ fun PromptStudioScreen(
                 }
             }
             item(key = "admob-banner-slot") {
-                AdMobBanner(adMobManager = adMobManager, modifier = Modifier.fillMaxWidth())
+                val showSponsor = !isOnline || bannerLoadFailed || !bannerLoaded || !canRequestAds || !adsReady
+                Box(Modifier.fillMaxWidth().heightIn(min = 112.dp)) {
+                    androidx.compose.animation.Crossfade(targetState = showSponsor, label = "sponsor-ad-fallback") { sponsor ->
+                        if (sponsor) CoffeeSponsorCard(Modifier.fillMaxWidth())
+                        else AdMobBanner(adMobManager = adMobManager, isOnline = isOnline, modifier = Modifier.fillMaxWidth())
+                    }
+                }
             }
         }
     }
@@ -187,7 +199,7 @@ private fun EstimateLine(label: String, value: String) {
 private fun ProviderPicker(selected: String, onSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Column {
-        Text("Provider", style = MaterialTheme.typography.labelSmall)
+        Text(stringResource(R.string.provider), style = MaterialTheme.typography.labelSmall)
         TextButton(onClick = { expanded = true }) { Text(selected) }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             ProviderType.entries.forEach { provider ->
