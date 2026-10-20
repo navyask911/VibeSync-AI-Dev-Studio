@@ -1,5 +1,6 @@
 package com.vibesync.promptstudio.presentation.browser
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -18,7 +19,8 @@ data class AiTabItem(
     val title: String = "",
     val loading: Boolean = true,
     val canGoBack: Boolean = false,
-    val canGoForward: Boolean = false
+    val canGoForward: Boolean = false,
+    val favicon: Bitmap? = null
 )
 
 class TabManagerViewModel : ViewModel() {
@@ -71,6 +73,10 @@ class TabManagerViewModel : ViewModel() {
     fun navigate(tabId: String, rawUrl: String) {
         val url = normalizeHttpUrl(rawUrl) ?: return
         updateTab(tabId) { it.copy(url = url, title = "", loading = true) }
+    }
+
+    fun updateFavicon(tabId: String, favicon: Bitmap?) {
+        updateTab(tabId) { it.copy(favicon = favicon) }
     }
 
     fun updatePage(tabId: String, url: String, title: String, loading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {

@@ -1,24 +1,25 @@
 package com.vibesync.promptstudio.presentation.browser
 
 import android.content.Context
-import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Message
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
-import android.webkit.SafeBrowsingResponse
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,28 +28,35 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Tab
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Tab
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -62,15 +70,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -79,11 +84,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -91,9 +98,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vibesync.promptstudio.R
 import org.json.JSONObject
-import android.webkit.WebResourceError
-import android.webkit.WebResourceResponse
-import android.webkit.WebView.HitTestResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -102,92 +106,166 @@ fun AiWebStudioScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val density = LocalDensity.current
     val manager: TabManagerViewModel = viewModel()
     val tabs by manager.tabs.collectAsState()
     val activeId by manager.activeTabId.collectAsState()
     val activeTab = tabs.firstOrNull { it.id == activeId }
+    val keyboardVisible = androidx.compose.foundation.layout.WindowInsets.ime.getBottom(density) > 0
+
     var showProviderSheet by remember { mutableStateOf(false) }
     var showTabOverview by remember { mutableStateOf(false) }
     var browserMenuExpanded by remember { mutableStateOf(false) }
+    var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var prompt by remember { mutableStateOf("") }
+    var promptExpanded by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
     var hostContainer by remember { mutableStateOf<FrameLayout?>(null) }
     val popupPool = remember { mutableMapOf<String, MutableList<WebView>>() }
+
     val browserPageFailedText = stringResource(R.string.browser_page_failed)
     val promptSentText = stringResource(R.string.prompt_sent)
     val promptFilledText = stringResource(R.string.prompt_filled_no_send)
     val promptNoInputText = stringResource(R.string.prompt_input_not_found)
     val promptUnsupportedText = stringResource(R.string.prompt_injection_unsupported)
+    val currentHost = activeTab?.url?.let { url ->
+        runCatching { Uri.parse(url).host.orEmpty() }.getOrNull()
+    }.orEmpty()
+    val isSecureConnection = activeTab?.url?.startsWith("https://", ignoreCase = true) == true
 
     BackHandler(enabled = activeTab != null) {
         val activeView = activeTab?.let { manager.webViewFor(it.id) }
         if (activeView?.canGoBack() == true) activeView.goBack() else onBack()
     }
 
-    Scaffold(
-        topBar = {
-            Column {
-                TopAppBar(
-                    title = {
-                        Column {
-                            Text(stringResource(R.string.ai_web_studio), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.titleMedium)
-                            Text(stringResource(R.string.browser_mode_label), maxLines = 1, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = {
-                            val webView = activeTab?.let { manager.webViewFor(it.id) }
-                            if (webView?.canGoBack() == true) webView.goBack() else onBack()
-                        }) { Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back)) }
-                    },
-                    actions = {
-                        IconButton(onClick = { manager.goForward() }, enabled = activeTab?.canGoForward == true) { Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.browser_forward)) }
-                        IconButton(onClick = { manager.reload() }, enabled = activeTab != null) { Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.browser_reload)) }
-                        Box {
-                            IconButton(onClick = { browserMenuExpanded = true }) {
-                                Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.mode_api))
-                            }
-                            DropdownMenu(expanded = browserMenuExpanded, onDismissRequest = { browserMenuExpanded = false }) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.open_external_browser)) },
-                                    onClick = { browserMenuExpanded = false; openExternalBrowser(context, activeTab?.url) },
-                                    enabled = activeTab != null
+    /*
+     * The root owns IME and navigation-bar insets. This avoids applying imePadding twice:
+     * the WebView's weighted container is measured inside the remaining height, so its
+     * native viewport shrinks for both Compose prompt focus and web-form focus.
+     */
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .navigationBarsPadding()
+            .imePadding()
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            TopAppBar(
+                title = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(9.dp)
+                    ) {
+                        BrowserFavicon(tab = activeTab, modifier = Modifier.size(36.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            val title = activeTab?.title?.takeIf { it.isNotBlank() }
+                                ?: activeTab?.let { stringResource(it.provider.titleRes) }
+                                ?: stringResource(R.string.ai_web_studio)
+                            Text(
+                                text = title,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (isSecureConnection) Icons.Default.Lock else Icons.Default.LockOpen,
+                                    contentDescription = stringResource(
+                                        if (isSecureConnection) R.string.browser_secure_connection
+                                        else R.string.browser_insecure_connection
+                                    ),
+                                    tint = if (isSecureConnection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(14.dp)
                                 )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.mode_api)) },
-                                    onClick = { browserMenuExpanded = false; onOpenDeveloperApi() }
+                                Text(
+                                    text = if (activeTab == null) stringResource(R.string.browser_mode_label)
+                                        else currentHost.ifBlank { activeTab.url },
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    LazyRow(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(tabs, key = { it.id }) { tab ->
-                            BrowserTabChip(
-                                tab = tab,
-                                selected = tab.id == activeId,
-                                onSelect = { manager.switchTab(tab.id) },
-                                onClose = { manager.closeTab(tab.id) },
-                                onReorder = { from, to -> manager.reorderTabs(from, to) },
-                                index = tabs.indexOfFirst { it.id == tab.id },
-                                tabCount = tabs.size
+                },
+                actions = {
+                    IconButton(onClick = { addressBarExpanded = !addressBarExpanded }) {
+                        Icon(
+                            imageVector = if (addressBarExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = stringResource(
+                                if (addressBarExpanded) R.string.browser_address_hide else R.string.browser_address_show
+                            )
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            val tab = activeTab
+                            val webView = tab?.let { manager.webViewFor(it.id) }
+                            if (tab != null && webView != null && tab.loading) {
+                                webView.stopLoading()
+                                manager.updatePage(tab.id, webView.url ?: tab.url, webView.title.orEmpty(), false, webView.canGoBack(), webView.canGoForward())
+                            } else {
+                                manager.reload()
+                            }
+                        },
+                        enabled = activeTab != null
+                    ) {
+                        Icon(
+                            imageVector = if (activeTab?.loading == true) Icons.Default.Stop else Icons.Default.Refresh,
+                            contentDescription = stringResource(
+                                if (activeTab?.loading == true) R.string.browser_stop_loading else R.string.browser_reload
+                            )
+                        )
+                    }
+                    IconButton(onClick = { showTabOverview = true }) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(Icons.Default.Tab, contentDescription = null)
+                            Text(tabs.size.toString(), style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+                    Box {
+                        IconButton(onClick = { browserMenuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.mode_api))
+                        }
+                        DropdownMenu(
+                            expanded = browserMenuExpanded,
+                            onDismissRequest = { browserMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.open_external_browser)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    openExternalBrowser(context, activeTab?.url)
+                                },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.mode_api)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    onOpenDeveloperApi()
+                                }
                             )
                         }
                     }
-                    IconButton(onClick = { showTabOverview = true }, modifier = Modifier.size(44.dp)) {
-                        Icon(Icons.Default.Tab, contentDescription = stringResource(R.string.tab_overview))
-                    }
-                    IconButton(onClick = { showProviderSheet = true }, modifier = Modifier.size(44.dp)) {
-                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.open_provider_directory))
-                    }
                 }
+            )
+
+            AnimatedVisibility(visible = addressBarExpanded) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 3.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -199,62 +277,63 @@ fun AiWebStudioScreen(
                         label = { Text(stringResource(R.string.address_bar)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
                     )
-                    Button(onClick = {
-                        if (address.isNotBlank()) {
-                            if (activeTab == null) manager.openTab(AiProvider.CUSTOM, address)
-                            else manager.navigate(activeTab.id, address)
-                            feedback = null
-                        }
-                    }) { Text(stringResource(R.string.go)) }
-                }
-            }
-        },
-        bottomBar = {
-            Column(
-                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(horizontal = 12.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                feedback?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary) }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = prompt,
-                        onValueChange = { prompt = it; feedback = null },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text(stringResource(R.string.prompt_hint)) },
-                        minLines = 1,
-                        maxLines = 4
-                    )
                     Button(
                         onClick = {
-                            val tab = activeTab
-                            if (tab == null || !tab.provider.supportsPromptInjection(tab.url)) {
-                                feedback = promptUnsupportedText
-                            } else if (prompt.isBlank()) {
-                                feedback = promptNoInputText
-                            } else {
-                                val js = makePromptInjectionScript(prompt, tab.provider)
-                                manager.webViewFor(tab.id)?.evaluateJavascript(js) { result ->
-                                    feedback = when {
-                                        result?.contains("no-input") == true -> promptNoInputText
-                                        result?.contains("no-send") == true -> promptFilledText
-                                        else -> promptSentText
-                                    }
-                                    if (result?.contains("no-input") != true) prompt = ""
-                                }
+                            if (address.isNotBlank()) {
+                                if (activeTab == null) manager.openTab(AiProvider.CUSTOM, address)
+                                else manager.navigate(activeTab.id, address)
+                                feedback = null
+                                focusManager.clearFocus()
                             }
                         },
-                        enabled = prompt.isNotBlank() && activeTab != null
-                    ) { Text(stringResource(R.string.send)) }
+                        enabled = address.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.go))
+                    }
                 }
-                Text(
-                    stringResource(R.string.browser_privacy_note),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 1.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                IconButton(
+                    onClick = {
+                        val webView = activeTab?.let { manager.webViewFor(it.id) }
+                        if (webView?.canGoBack() == true) webView.goBack() else onBack()
+                    },
+                    enabled = activeTab != null
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back))
+                }
+                IconButton(
+                    onClick = { manager.goForward() },
+                    enabled = activeTab?.canGoForward == true
+                ) {
+                    Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.browser_forward))
+                }
+                IconButton(
+                    onClick = {
+                        if (activeTab == null) manager.openTab(AiProvider.GEMINI)
+                        else manager.navigate(activeTab.id, activeTab.provider.startUrl)
+                        focusManager.clearFocus()
+                    }
+                ) {
+                    Icon(Icons.Default.Home, contentDescription = stringResource(R.string.browser_home))
+                }
+                IconButton(onClick = { showProviderSheet = true }) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.open_provider_directory))
+                }
+                IconButton(onClick = { showTabOverview = true }) {
+                    Icon(Icons.Default.Tab, contentDescription = stringResource(R.string.tab_overview))
+                }
             }
         }
-    ) { innerPadding ->
-        Box(Modifier.fillMaxSize().padding(innerPadding)) {
+
+        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { viewContext ->
@@ -271,111 +350,297 @@ fun AiWebStudioScreen(
                 }
             )
             if (activeTab?.loading == true) {
-                CircularProgressIndicator(Modifier.align(Alignment.TopCenter).padding(10.dp).size(24.dp))
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter).padding(10.dp).size(24.dp)
+                )
             }
             if (activeTab == null) {
-                Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(stringResource(R.string.no_open_tabs), style = MaterialTheme.typography.titleMedium)
-                    Button(onClick = { showProviderSheet = true }) { Text(stringResource(R.string.open_provider_directory)) }
+                    Button(onClick = { showProviderSheet = true }) {
+                        Text(stringResource(R.string.open_provider_directory))
+                    }
                 }
             }
         }
+
+        BrowserPromptDock(
+            prompt = prompt,
+            feedback = feedback,
+            expanded = promptExpanded,
+            keyboardVisible = keyboardVisible,
+            enabled = prompt.isNotBlank() && activeTab != null,
+            onPromptChange = {
+                prompt = it
+                feedback = null
+            },
+            onClear = {
+                prompt = ""
+                feedback = null
+            },
+            onToggleExpanded = { promptExpanded = !promptExpanded },
+            onSend = {
+                val tab = activeTab
+                if (tab == null || !tab.provider.supportsPromptInjection(tab.url)) {
+                    feedback = promptUnsupportedText
+                } else if (prompt.isBlank()) {
+                    feedback = promptNoInputText
+                } else {
+                    val js = makePromptInjectionScript(prompt, tab.provider)
+                    val webView = manager.webViewFor(tab.id)
+                    if (webView == null) {
+                        feedback = promptNoInputText
+                    } else {
+                        webView.evaluateJavascript(js) { result ->
+                            feedback = when {
+                                result?.contains("no-input") == true -> promptNoInputText
+                                result?.contains("no-send") == true -> promptFilledText
+                                else -> promptSentText
+                            }
+                            if (result?.contains("no-input") != true) prompt = ""
+                        }
+                    }
+                }
+            }
+        )
     }
 
     if (showProviderSheet) {
         ModalBottomSheet(onDismissRequest = { showProviderSheet = false }) {
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.provider_directory), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                Text(stringResource(R.string.provider_directory_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.provider_directory),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    stringResource(R.string.provider_directory_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxWidth().height(420.dp),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 440.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(AiProvider.entries.filterNot { it == AiProvider.CUSTOM }) { provider ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                            ),
                             shape = RoundedCornerShape(14.dp)
                         ) {
-                            Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(38.dp)) {
-                                    Box(contentAlignment = Alignment.Center) { Text(provider.icon, fontWeight = FontWeight.Bold) }
+                            Column(
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    modifier = Modifier.size(38.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Text(provider.icon, fontWeight = FontWeight.Bold)
+                                    }
                                 }
-                                Text(stringResource(provider.titleRes), style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                FilledTonalButton(onClick = {
-                                    manager.openTab(provider)
-                                    showProviderSheet = false
-                                    feedback = null
-                                }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.open_tab)) }
+                                Text(
+                                    stringResource(provider.titleRes),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                FilledTonalButton(
+                                    onClick = {
+                                        manager.openTab(provider)
+                                        showProviderSheet = false
+                                        feedback = null
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(stringResource(R.string.open_tab))
+                                }
                             }
                         }
                     }
                 }
                 var customUrl by remember { mutableStateOf("") }
-                Row(Modifier.fillMaxWidth().padding(bottom = 20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(value = customUrl, onValueChange = { customUrl = it }, modifier = Modifier.weight(1f), singleLine = true, label = { Text(stringResource(R.string.custom_address)) })
-                    Button(onClick = {
-                        if (customUrl.isNotBlank()) {
-                            manager.openTab(AiProvider.CUSTOM, customUrl)
-                            showProviderSheet = false
-                        }
-                    }, enabled = customUrl.isNotBlank()) { Text(stringResource(R.string.open_tab)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = customUrl,
+                        onValueChange = { customUrl = it },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.custom_address)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                    )
+                    Button(
+                        onClick = {
+                            if (customUrl.isNotBlank()) {
+                                manager.openTab(AiProvider.CUSTOM, customUrl)
+                                showProviderSheet = false
+                            }
+                        },
+                        enabled = customUrl.isNotBlank()
+                    ) {
+                        Text(stringResource(R.string.open_tab))
+                    }
                 }
             }
         }
     }
 
     if (showTabOverview) {
-        AlertDialog(
-            onDismissRequest = { showTabOverview = false },
-            title = { Text(stringResource(R.string.open_tabs_title, tabs.size)) },
-            text = {
-                if (tabs.isEmpty()) Text(stringResource(R.string.no_open_tabs))
-                else LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    items(tabs, key = { it.id }) { tab ->
-                        val tabIndex = tabs.indexOfFirst { it.id == tab.id }
-                        val density = androidx.compose.ui.platform.LocalDensity.current
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                                .pointerInput(tab.id, tabs.size) {
-                                    var totalDrag = 0f
-                                    detectDragGesturesAfterLongPress(
-                                        onDragEnd = {
-                                            val delta = (totalDrag / with(density) { 120.dp.toPx() }).toInt()
-                                            if (delta != 0) manager.reorderTabs(tabIndex, (tabIndex + delta).coerceIn(0, tabs.lastIndex))
-                                        },
-                                        onDragCancel = { totalDrag = 0f },
-                                        onDrag = { change, amount -> change.consume(); totalDrag += amount.x }
-                                    )
-                                }
-                                .pointerInput(tab.id) {
-                                    var drag = 0f
-                                    detectHorizontalDragGestures(
-                                        onHorizontalDrag = { change, amount -> change.consume(); drag += amount },
-                                        onDragEnd = {
-                                            if (kotlin.math.abs(drag) > 100.dp.toPx()) manager.closeTab(tab.id)
+        ModalBottomSheet(onDismissRequest = { showTabOverview = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.open_tabs_title, tabs.size),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    TextButton(onClick = { showTabOverview = false }) {
+                        Text(stringResource(R.string.done))
+                    }
+                }
+                Text(
+                    stringResource(R.string.browser_tabs_reorder_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (tabs.isEmpty()) {
+                    Text(stringResource(R.string.no_open_tabs))
+                } else {
+                    val itemDensity = LocalDensity.current
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 156.dp),
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 560.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(tabs, key = { it.id }) { tab ->
+                            val tabIndex = tabs.indexOfFirst { it.id == tab.id }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .pointerInput(tab.id, tabs.size) {
+                                        var totalDrag = 0f
+                                        detectDragGesturesAfterLongPress(
+                                            onDragEnd = {
+                                                val slotSize = with(itemDensity) { 170.dp.toPx() }
+                                                val delta = (totalDrag / slotSize).toInt()
+                                                if (delta != 0) {
+                                                    manager.reorderTabs(
+                                                        tabIndex,
+                                                        (tabIndex + delta).coerceIn(0, tabs.lastIndex)
+                                                    )
+                                                }
+                                            },
+                                            onDragCancel = { totalDrag = 0f },
+                                            onDrag = { change, amount ->
+                                                change.consume()
+                                                totalDrag += amount.x
+                                            }
+                                        )
+                                    }
+                                    .pointerInput(tab.id) {
+                                        var drag = 0f
+                                        detectHorizontalDragGestures(
+                                            onHorizontalDrag = { change, amount ->
+                                                change.consume()
+                                                drag += amount
+                                            },
+                                            onDragEnd = {
+                                                if (kotlin.math.abs(drag) > 88.dp.toPx()) manager.closeTab(tab.id)
+                                            }
+                                        )
+                                    }
+                                    .clickable {
+                                        manager.switchTab(tab.id)
+                                        showTabOverview = false
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (tab.id == activeId)
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                                ),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(88.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally,
+                                            verticalArrangement = Arrangement.spacedBy(3.dp)
+                                        ) {
+                                            BrowserFavicon(tab = tab, modifier = Modifier.size(32.dp))
+                                            Text(
+                                                text = tab.title.ifBlank { stringResource(tab.provider.shortTitleRes) },
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                            Text(
+                                                text = Uri.parse(tab.url).host.orEmpty(),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
                                         }
-                                    )
-                                },
-                            colors = CardDefaults.cardColors(containerColor = if (tab.id == activeId) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    val providerLabel = stringResource(tab.provider.titleRes)
-                                    Text(tab.title.ifBlank { providerLabel }, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.SemiBold)
-                                    Text(tab.url, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelSmall)
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = stringResource(tab.provider.shortTitleRes),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                            Text(
+                                                text = if (tab.loading) stringResource(R.string.model_discovery_loading) else Uri.parse(tab.url).host.orEmpty(),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+                                        IconButton(onClick = { manager.closeTab(tab.id) }) {
+                                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close_tab))
+                                        }
+                                    }
                                 }
-                                TextButton(onClick = { manager.switchTab(tab.id); showTabOverview = false }) { Text(stringResource(R.string.switch_tab)) }
-                                IconButton(onClick = { manager.closeTab(tab.id) }) { Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close_tab)) }
                             }
                         }
                     }
                 }
-            },
-            confirmButton = { TextButton(onClick = { showTabOverview = false }) { Text(stringResource(R.string.done)) } }
-        )
+            }
+        }
     }
 
     DisposableEffect(Unit) {
@@ -394,6 +659,127 @@ fun AiWebStudioScreen(
 }
 
 @Composable
+private fun BrowserPromptDock(
+    prompt: String,
+    feedback: String?,
+    expanded: Boolean,
+    keyboardVisible: Boolean,
+    enabled: Boolean,
+    onPromptChange: (String) -> Unit,
+    onClear: () -> Unit,
+    onToggleExpanded: () -> Unit,
+    onSend: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp)
+            .padding(top = 5.dp, bottom = 7.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        feedback?.let {
+            Text(
+                text = it,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            tonalElevation = 3.dp,
+            shadowElevation = 5.dp
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(9.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    OutlinedTextField(
+                        value = prompt,
+                        onValueChange = onPromptChange,
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text(stringResource(R.string.prompt_hint)) },
+                        minLines = 1,
+                        maxLines = if (expanded) 8 else if (keyboardVisible) 2 else 3
+                    )
+                    Column {
+                        IconButton(onClick = onClear, enabled = prompt.isNotEmpty()) {
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.browser_prompt_clear))
+                        }
+                        IconButton(onClick = onToggleExpanded) {
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = stringResource(
+                                    if (expanded) R.string.browser_prompt_collapse else R.string.browser_prompt_expand
+                                )
+                            )
+                        }
+                    }
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (!keyboardVisible) {
+                        Text(
+                            text = stringResource(R.string.browser_privacy_note),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Button(onClick = onSend, enabled = enabled) {
+                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(17.dp))
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(stringResource(R.string.send))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BrowserFavicon(tab: AiTabItem?, modifier: Modifier = Modifier) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = modifier
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            val icon = tab?.favicon
+            if (icon != null) {
+                androidx.compose.foundation.Image(
+                    bitmap = icon.asImageBitmap(),
+                    contentDescription = stringResource(R.string.browser_tab_preview),
+                    modifier = Modifier.fillMaxSize().padding(5.dp)
+                )
+            } else {
+                Text(
+                    text = tab?.provider?.icon ?: "✦",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun BrowserTabChip(
     tab: AiTabItem,
     selected: Boolean,
@@ -403,7 +789,7 @@ private fun BrowserTabChip(
     index: Int,
     tabCount: Int
 ) {
-    val density = androidx.compose.ui.platform.LocalDensity.current
+    val density = LocalDensity.current
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
@@ -523,6 +909,10 @@ private fun configureWebView(
         // Keep the platform default user-agent; do not spoof Chrome to bypass provider sign-in restrictions.
     }
     webView.webChromeClient = object : WebChromeClient() {
+        override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+            manager.updateFavicon(tab.id, icon)
+        }
+
         override fun onProgressChanged(view: WebView?, newProgress: Int) {
             val current = view ?: return
             manager.updatePage(tab.id, current.url ?: tab.url, current.title.orEmpty(), newProgress < 100, current.canGoBack(), current.canGoForward())

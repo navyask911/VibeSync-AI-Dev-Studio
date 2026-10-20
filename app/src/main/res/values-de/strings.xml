@@ -286,4 +286,16 @@
     <string name="toolbox_mime_input_hint">.json oder application/json</string>
     <string name="toolbox_uri_input_label">URI</string>
     <string name="toolbox_uri_input_hint">https://example.com/path?key=value</string>
+
+    <string name="browser_home">Startseite</string>
+    <string name="browser_address_show">Adressleiste anzeigen</string>
+    <string name="browser_address_hide">Adressleiste ausblenden</string>
+    <string name="browser_secure_connection">Sichere HTTPS-Verbindung</string>
+    <string name="browser_insecure_connection">Verbindung nicht sicher</string>
+    <string name="browser_stop_loading">Laden stoppen</string>
+    <string name="browser_prompt_clear">Prompt löschen</string>
+    <string name="browser_prompt_expand">Prompt erweitern</string>
+    <string name="browser_prompt_collapse">Prompt einklappen</string>
+    <string name="browser_tabs_reorder_hint">Tab gedrückt halten und ziehen, um ihn neu anzuordnen, oder zum Schließen wischen.</string>
+    <string name="browser_tab_preview">Tab-Vorschau</string>
 </resources>

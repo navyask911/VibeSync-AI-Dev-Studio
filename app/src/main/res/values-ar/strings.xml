@@ -286,4 +286,16 @@
     <string name="toolbox_mime_input_hint">.json أو application/json</string>
     <string name="toolbox_uri_input_label">URI</string>
     <string name="toolbox_uri_input_hint">https://example.com/path?key=value</string>
+
+    <string name="browser_home">الرئيسية</string>
+    <string name="browser_address_show">إظهار شريط العنوان</string>
+    <string name="browser_address_hide">إخفاء شريط العنوان</string>
+    <string name="browser_secure_connection">اتصال HTTPS آمن</string>
+    <string name="browser_insecure_connection">الاتصال غير آمن</string>
+    <string name="browser_stop_loading">إيقاف التحميل</string>
+    <string name="browser_prompt_clear">مسح المطالبة</string>
+    <string name="browser_prompt_expand">توسيع المطالبة</string>
+    <string name="browser_prompt_collapse">طي المطالبة</string>
+    <string name="browser_tabs_reorder_hint">اضغط مطولًا على علامة التبويب واسحبها لإعادة ترتيبها، أو اسحبها أفقيًا لإغلاقها.</string>
+    <string name="browser_tab_preview">معاينة علامة التبويب</string>
 </resources>
