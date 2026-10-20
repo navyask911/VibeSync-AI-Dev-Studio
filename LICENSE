@@ -1,0 +1,54 @@
+Copyright © 2026 Navyask911 & Vibesyncro Technologies Pvt Ltd. All rights reserved.
+
+This software is distributed under a custom source-available license. You are granted permission to inspect, review, and compile the source code for personal and evaluation purposes. Unauthorized copying, modification, white-labeling, commercial distribution, or republishing to public app marketplaces (including Google Play Store) is strictly prohibited. See LICENSE for complete legal terms.
+---
+
+### 2. `LICENSE`
+
+```text
+VibeSync Source-Available and Proprietary License (Version 1.0)
+Copyright (c) 2026 Navyask911 & Vibesyncro Technologies Pvt Ltd.
+All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to inspect,
+study, review, and compile the Software for personal, non-commercial, and 
+educational evaluation purposes only, subject to the following terms and restrictions:
+
+1. RESTRICTIONS ON REDISTRIBUTION & COMMERCIAL USE:
+   You may NOT:
+   a. Distribute, publish, sublicense, rent, lease, convey, or sell the Software,
+      its compiled binaries, or any derivative works thereof in whole or in part.
+   b. Upload, package, or distribute the Software to any public application store,
+      distribution repository, or marketplace (including, but not limited to, the
+      Google Play Store, Apple App Store, Amazon Appstore, F-Droid, or third-party
+      app aggregators) without prior, explicit written authorization from the owners.
+   c. Use the Software, or any substantial portion of its source code, architecture,
+      or UI assets, to construct, train, or support a competing commercial product,
+      mobile application, or cloud service.
+
+2. TRADEMARKS & INTELLECTUAL PROPERTY:
+   This license does not grant permission to use the trade names, trademarks,
+   service marks, logos, or commercial assets of "VibeSync", "VibeSync AI Dev Studio",
+   "Navyask911", or "Vibesyncro Technologies Pvt Ltd". All brand identities remain
+   the exclusive property of their respective owners.
+
+3. CONTRIBUTIONS:
+   Any bug fixes, feature proposals, or code modifications submitted to this
+   repository (via pull requests, issue trackers, or other channels) immediately
+   become the property of the copyright holders, granting Navyask911 and
+   Vibesyncro Technologies Pvt Ltd an irrevocable, perpetual, royalty-free,
+   worldwide license to incorporate, adapt, and commercially distribute the
+   contributed code under these or any other terms.
+
+4. DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY:
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHORS, CONTRIBUTORS, OR COPYRIGHT HOLDERS (NAVYASK911 OR VIBESYNCRO
+   TECHNOLOGIES PVT LTD) BE LIABLE FOR ANY CLAIM, DAMAGES, LOSS OF DATA,
+   OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE,
+   ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+   OTHER DEALINGS IN THE SOFTWARE.
