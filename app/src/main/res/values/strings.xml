@@ -247,7 +247,7 @@
     <string name="toolbox_json_input_label">JSON</string>
     <string name="toolbox_json_input_hint">{"name":"Ada","active":true}</string>
     <string name="toolbox_xml_input_label">XML</string>
-    <string name="toolbox_xml_input_hint"><root><item>value</item></root></string>
+    <string name="toolbox_xml_input_hint">&lt;root&gt;&lt;item&gt;value&lt;/item&gt;&lt;/root&gt;</string>
     <string name="toolbox_diff_input_label">Original text</string>
     <string name="toolbox_diff_input_hint">First version</string>
     <string name="toolbox_diff_second_label">Updated text</string>
