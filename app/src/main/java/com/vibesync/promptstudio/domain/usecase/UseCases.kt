@@ -16,7 +16,7 @@ import javax.inject.Inject
 import kotlin.math.ceil
 
 class SubstituteVariablesUseCase @Inject constructor() {
-    private val variablePattern = Regex("""\{\{([A-Za-z_][A-Za-z0-9_]*)}}""")
+    private val variablePattern = Regex("""\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}""")
 
     operator fun invoke(template: String, variables: Map<String, String>): SubstitutionResult {
         val unresolved = linkedSetOf<String>()

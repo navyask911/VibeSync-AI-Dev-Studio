@@ -16,6 +16,21 @@ class UseCasesTest {
     }
 
     @Test
+    fun onlyCompleteVariablesWithValidNamesAreSubstituted() {
+        val template = "{{name}} {{first_name}} {{item2}} {{2invalid}} {{hyphen-name}} {{unfinished"
+        val result = substitute(
+            template,
+            mapOf("name" to "Ada", "first_name" to "Grace", "item2" to "book")
+        )
+
+        assertEquals(
+            "Ada Grace book {{2invalid}} {{hyphen-name}} {{unfinished",
+            result.text
+        )
+        assertTrue(result.unresolvedVariables.isEmpty())
+    }
+
+    @Test
     fun variableParserKeepsEqualsInValuesAndIgnoresInvalidNames() {
         assertEquals(
             mapOf("token" to "abc=123", "user_name" to "Ada"),
