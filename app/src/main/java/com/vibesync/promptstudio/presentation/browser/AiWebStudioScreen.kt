@@ -53,6 +53,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -81,7 +83,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -514,7 +516,7 @@ private fun configureWebView(
         databaseEnabled = true
         loadsImagesAutomatically = true
         javaScriptCanOpenWindowsAutomatically = true
-        supportMultipleWindows = true
+        setSupportMultipleWindows(true)
         safeBrowsingEnabled = true
         // Preserve the platform WebView identity. Spoofing Chrome does not make an embedded WebView
         // a supported OAuth user-agent and can violate provider sign-in restrictions.
@@ -537,7 +539,7 @@ private fun configureWebView(
                 domStorageEnabled = true
                 databaseEnabled = true
                 javaScriptCanOpenWindowsAutomatically = true
-                supportMultipleWindows = true
+                setSupportMultipleWindows(true)
                 safeBrowsingEnabled = true
                 userAgentString = WebSettings.getDefaultUserAgent(context) + " VibeSyncWebStudio/1.0"
             }
