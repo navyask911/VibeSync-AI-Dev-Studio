@@ -89,4 +89,15 @@
     <string name="toolbox_intro">ابحث عن الأدوات وأضفها للمفضلة وأعد استخدامها. لا حاجة إلى صلاحيات الجذر أو أذونات خاصة.</string>
     <string name="recent_tools">الأدوات الأخيرة</string>
     <string name="no_tools_match">لا توجد أدوات تطابق هذا البحث.</string>
+
+    <string name="back">رجوع</string>
+    <string name="refresh_diagnostics">تحديث التشخيص</string>
+    <string name="provider_key_saved">%1$s • تم حفظ المفتاح</string>
+    <string name="provider_no_key_saved">%1$s • لم يتم حفظ مفتاح</string>
+    <string name="diagnostic_matching_records">%1$d سجل محلي مطابق</string>
+    <string name="favorited">★ ضمن المفضلة</string>
+    <string name="favorite">☆ أضف للمفضلة</string>
+    <string name="working">جارٍ العمل…</string>
+    <string name="run_offline_tool">تشغيل أداة دون اتصال</string>
+    <string name="oauth_not_configured">لم يتم إعداد OAuth.</string>
 </resources>

@@ -89,4 +89,15 @@
     <string name="toolbox_intro">टूल खोजें, पसंदीदा बनाएँ और फिर उपयोग करें। रूट या विशेष अनुमतियों की आवश्यकता नहीं है।</string>
     <string name="recent_tools">हाल के टूल</string>
     <string name="no_tools_match">इस खोज से मेल खाते टूल नहीं मिले।</string>
+
+    <string name="back">वापस</string>
+    <string name="refresh_diagnostics">निदान रीफ़्रेश करें</string>
+    <string name="provider_key_saved">%1$s • कुंजी सहेजी गई</string>
+    <string name="provider_no_key_saved">%1$s • कुंजी सहेजी नहीं गई</string>
+    <string name="diagnostic_matching_records">%1$d मेल खाते स्थानीय रिकॉर्ड</string>
+    <string name="favorited">★ पसंदीदा</string>
+    <string name="favorite">☆ पसंदीदा बनाएँ</string>
+    <string name="working">कार्य जारी है…</string>
+    <string name="run_offline_tool">ऑफ़लाइन टूल चलाएँ</string>
+    <string name="oauth_not_configured">OAuth कॉन्फ़िगर नहीं है।</string>
 </resources>

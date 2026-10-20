@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
                                         "launch_failed",
                                         "OAuth launch failed: " + (it.message ?: it.javaClass.simpleName)
                                     )
-                                    Toast.makeText(this@MainActivity, it.message ?: "OAuth is not configured.", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(this@MainActivity, it.message ?: getString(com.vibesync.promptstudio.R.string.oauth_not_configured), Toast.LENGTH_LONG).show()
                                 }
                         }
                     },

@@ -89,4 +89,15 @@
     <string name="toolbox_intro">Search, favorite, and reuse tools. No root or special permissions required.</string>
     <string name="recent_tools">Recent tools</string>
     <string name="no_tools_match">No tools match this search.</string>
+
+    <string name="back">Back</string>
+    <string name="refresh_diagnostics">Refresh diagnostics</string>
+    <string name="provider_key_saved">%1$s • key saved</string>
+    <string name="provider_no_key_saved">%1$s • no key saved</string>
+    <string name="diagnostic_matching_records">%1$d matching local records</string>
+    <string name="favorited">★ Favorited</string>
+    <string name="favorite">☆ Favorite</string>
+    <string name="working">Working…</string>
+    <string name="run_offline_tool">Run offline tool</string>
+    <string name="oauth_not_configured">OAuth is not configured.</string>
 </resources>

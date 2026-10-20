@@ -89,4 +89,15 @@
     <string name="toolbox_intro">Busca, marca como favorito y reutiliza herramientas. No se requieren permisos especiales ni acceso root.</string>
     <string name="recent_tools">Herramientas recientes</string>
     <string name="no_tools_match">No hay herramientas que coincidan con esta búsqueda.</string>
+
+    <string name="back">Atrás</string>
+    <string name="refresh_diagnostics">Actualizar diagnósticos</string>
+    <string name="provider_key_saved">%1$s • clave guardada</string>
+    <string name="provider_no_key_saved">%1$s • sin clave guardada</string>
+    <string name="diagnostic_matching_records">%1$d registros locales coincidentes</string>
+    <string name="favorited">★ En favoritos</string>
+    <string name="favorite">☆ Favorito</string>
+    <string name="working">Procesando…</string>
+    <string name="run_offline_tool">Ejecutar herramienta sin conexión</string>
+    <string name="oauth_not_configured">OAuth no está configurado.</string>
 </resources>

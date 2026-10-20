@@ -44,7 +44,7 @@ fun SettingsScreen(
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
             title = { Text(stringResource(R.string.secure_settings)) },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } }
+            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) } }
         )
     }) { padding ->
         Column(
@@ -89,7 +89,7 @@ fun SettingsScreen(
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(stringResource(R.string.provider_api_key), style = MaterialTheme.typography.titleMedium)
                     TextButton(onClick = { providerMenuExpanded = true }) {
-                        Text(state.selectedProvider.displayName + if (state.selectedProvider in state.savedProviders) " • key saved" else " • no key saved")
+                        Text(if (state.selectedProvider in state.savedProviders) stringResource(R.string.provider_key_saved, state.selectedProvider.displayName) else stringResource(R.string.provider_no_key_saved, state.selectedProvider.displayName))
                     }
                     DropdownMenu(expanded = providerMenuExpanded, onDismissRequest = { providerMenuExpanded = false }) {
                         ProviderType.entries.forEach { provider ->

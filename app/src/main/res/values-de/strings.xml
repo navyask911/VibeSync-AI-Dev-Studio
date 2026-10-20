@@ -89,4 +89,15 @@
     <string name="toolbox_intro">Werkzeuge suchen, favorisieren und wiederverwenden. Root oder Sonderberechtigungen sind nicht erforderlich.</string>
     <string name="recent_tools">Zuletzt verwendete Werkzeuge</string>
     <string name="no_tools_match">Keine Werkzeuge entsprechen dieser Suche.</string>
+
+    <string name="back">Zurück</string>
+    <string name="refresh_diagnostics">Diagnose aktualisieren</string>
+    <string name="provider_key_saved">%1$s • Schlüssel gespeichert</string>
+    <string name="provider_no_key_saved">%1$s • kein Schlüssel gespeichert</string>
+    <string name="diagnostic_matching_records">%1$d passende lokale Einträge</string>
+    <string name="favorited">★ Favorisiert</string>
+    <string name="favorite">☆ Favorit</string>
+    <string name="working">Wird ausgeführt…</string>
+    <string name="run_offline_tool">Offline-Werkzeug ausführen</string>
+    <string name="oauth_not_configured">OAuth ist nicht konfiguriert.</string>
 </resources>

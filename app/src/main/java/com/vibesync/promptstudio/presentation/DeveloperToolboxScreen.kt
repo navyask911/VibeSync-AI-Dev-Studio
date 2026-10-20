@@ -126,7 +126,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 title = { Text(stringResource(R.string.developer_toolbox)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -144,7 +144,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                         val next = if (selectedTool.id in favorites) favorites - selectedTool.id else favorites + selectedTool.id
                         favorites = next
                         prefs.edit().putStringSet("favorites", next).apply()
-                    }) { Text(if (selectedTool.id in favorites) "★ Favorited" else "☆ Favorite") }
+                    }) { Text(if (selectedTool.id in favorites) stringResource(R.string.favorited) else stringResource(R.string.favorite)) }
                 }
                 Text(selectedTool.name, style = MaterialTheme.typography.headlineSmall)
                 Text(selectedTool.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -206,7 +206,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                     },
                     enabled = !isRunning,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text(if (isRunning) "Working…" else "Run offline tool") }
+                ) { Text(if (isRunning) stringResource(R.string.working) else stringResource(R.string.run_offline_tool)) }
                 if (output.isNotEmpty()) {
                     Card {
                         Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

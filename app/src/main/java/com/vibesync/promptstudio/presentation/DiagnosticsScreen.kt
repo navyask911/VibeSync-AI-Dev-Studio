@@ -110,12 +110,12 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                 title = { Text(stringResource(R.string.developer_diagnostics)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { refreshTick++ }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh diagnostics")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh_diagnostics))
                     }
                 }
             )
@@ -206,7 +206,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                                 )
                             }
                         }
-                        Text(records.size.toString() + " matching local records", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.diagnostic_matching_records, records.size), style = MaterialTheme.typography.bodySmall)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(onClick = {
                                 clipboard.setText(AnnotatedString(report))
