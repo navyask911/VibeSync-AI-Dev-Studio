@@ -47,33 +47,35 @@ import kotlinx.coroutines.withContext
 
 private data class ToolboxEntry(
     val id: String,
-    val name: String,
-    val category: String,
-    val description: String,
-    val inputLabel: String = "Input",
-    val inputHint: String = "Enter text",
-    val secondLabel: String? = null,
-    val secondHint: String = ""
+    val nameRes: Int,
+    val categoryId: String,
+    val descriptionRes: Int,
+    val inputLabelRes: Int,
+    val inputHintRes: Int,
+    val secondLabelRes: Int? = null,
+    val secondHintRes: Int? = null
 )
 
+private data class ToolboxCategory(val id: String, val labelRes: Int)
+
 private val toolboxEntries = listOf(
-    ToolboxEntry("json", "JSON Formatter & Validator", "Data & Encoding", "Pretty-print or minify JSON with parse validation.", inputLabel = "JSON", inputHint = "{\"name\":\"Ada\",\"active\":true}"),
-    ToolboxEntry("xml", "XML Formatter & Validator", "Data & Encoding", "Formats well-formed XML with external entities disabled.", inputLabel = "XML", inputHint = "<root><item>value</item></root>"),
-    ToolboxEntry("diff", "Text Diff", "Text & Regex", "Compare two text blocks with line-by-line changes.", inputLabel = "Original text", inputHint = "First version", secondLabel = "Updated text", secondHint = "Second version"),
-    ToolboxEntry("base64", "Base64 Encoder / Decoder", "Data & Encoding", "Encode UTF-8 text or decode standard and URL-safe Base64.", inputLabel = "Text or Base64", inputHint = "Hello VibeSync"),
-    ToolboxEntry("url", "URL Component Encoder", "Data & Encoding", "Encode or decode a URI component. Secret query keys are redacted in URI preview.", inputLabel = "URL component", inputHint = "hello world & query"),
-    ToolboxEntry("json-pointer", "JSON Pointer Explorer", "Data & Encoding", "Inspect a nested JSON value using RFC 6901-style JSON Pointer.", inputLabel = "JSON document", inputHint = "{\"user\":{\"name\":\"Ada\"}}", secondLabel = "JSON Pointer", secondHint = "/user/name"),
-    ToolboxEntry("regex", "Safe Regex Tester", "Text & Regex", "Test common patterns using RE2/J's linear-time engine (look-around/backreferences unsupported).", inputLabel = "Regular expression", inputHint = "(cat|dog)+", secondLabel = "Test text", secondHint = "cat dog cat"),
-    ToolboxEntry("jwt", "JWT Inspector", "Developer Utilities", "Decode compact JWT header and payload locally; does not validate signature or trust.", inputLabel = "JWT", inputHint = "header.payload.signature"),
-    ToolboxEntry("hash", "Hash / Checksum Calculator", "Developer Utilities", "Calculate SHA-256 or SHA-512. A hash is not encryption.", inputLabel = "Text to hash", inputHint = "A message"),
-    ToolboxEntry("uuid", "UUID Generator", "Developer Utilities", "Generate one to 100 random UUID identifiers.", inputLabel = "Number of UUIDs", inputHint = "1"),
-    ToolboxEntry("timestamp", "Timestamp Converter", "Developer Utilities", "Convert epoch seconds/milliseconds and ISO-8601 UTC timestamps.", inputLabel = "Timestamp", inputHint = "1767225600 or 2026-01-01T00:00:00Z"),
-    ToolboxEntry("color", "Color Contrast Checker", "Android Utilities", "Calculate WCAG contrast ratio for two HEX colors.", inputLabel = "Foreground HEX", inputHint = "#111111", secondLabel = "Background HEX", secondHint = "#FFFFFF"),
-    ToolboxEntry("unicode", "Unicode / Text Inspector", "Text & Regex", "Inspect code points, UTF-16 units, UTF-8 bytes, and line endings.", inputLabel = "Text", inputHint = "Paste text or emoji"),
-    ToolboxEntry("text", "Text Transformation Toolbox", "Text & Regex", "Change case, trim, sort/deduplicate lines, or escape JSON strings.", inputLabel = "Text", inputHint = "Enter text"),
-    ToolboxEntry("http-status", "HTTP Status Reference", "References", "Search common HTTP status codes and troubleshooting hints.", inputLabel = "Status code or keyword", inputHint = "429 or timeout"),
-    ToolboxEntry("mime", "MIME Type Reference", "References", "Look up a compact built-in extension/MIME type reference.", inputLabel = "Extension or MIME type", inputHint = ".json or application/json"),
-    ToolboxEntry("uri", "URI / Deep Link Inspector", "Android Utilities", "Preview URI parts and redact common secret query keys. Does not launch the URI.", inputLabel = "URI", inputHint = "https://example.com/path?token=secret")
+    ToolboxEntry("json", R.string.toolbox_json_name, "data_encoding", R.string.toolbox_json_description, R.string.toolbox_json_input_label, R.string.toolbox_json_input_hint),
+    ToolboxEntry("xml", R.string.toolbox_xml_name, "data_encoding", R.string.toolbox_xml_description, R.string.toolbox_xml_input_label, R.string.toolbox_xml_input_hint),
+    ToolboxEntry("diff", R.string.toolbox_diff_name, "text_regex", R.string.toolbox_diff_description, R.string.toolbox_diff_input_label, R.string.toolbox_diff_input_hint, R.string.toolbox_diff_second_label, R.string.toolbox_diff_second_hint),
+    ToolboxEntry("base64", R.string.toolbox_base64_name, "data_encoding", R.string.toolbox_base64_description, R.string.toolbox_base64_input_label, R.string.toolbox_base64_input_hint),
+    ToolboxEntry("url", R.string.toolbox_url_name, "data_encoding", R.string.toolbox_url_description, R.string.toolbox_url_input_label, R.string.toolbox_url_input_hint),
+    ToolboxEntry("json-pointer", R.string.toolbox_json_pointer_name, "data_encoding", R.string.toolbox_json_pointer_description, R.string.toolbox_json_pointer_input_label, R.string.toolbox_json_pointer_input_hint, R.string.toolbox_json_pointer_second_label, R.string.toolbox_json_pointer_second_hint),
+    ToolboxEntry("regex", R.string.toolbox_regex_name, "text_regex", R.string.toolbox_regex_description, R.string.toolbox_regex_input_label, R.string.toolbox_regex_input_hint, R.string.toolbox_regex_second_label, R.string.toolbox_regex_second_hint),
+    ToolboxEntry("jwt", R.string.toolbox_jwt_name, "developer_utilities", R.string.toolbox_jwt_description, R.string.toolbox_jwt_input_label, R.string.toolbox_jwt_input_hint),
+    ToolboxEntry("hash", R.string.toolbox_hash_name, "developer_utilities", R.string.toolbox_hash_description, R.string.toolbox_hash_input_label, R.string.toolbox_hash_input_hint),
+    ToolboxEntry("uuid", R.string.toolbox_uuid_name, "developer_utilities", R.string.toolbox_uuid_description, R.string.toolbox_uuid_input_label, R.string.toolbox_uuid_input_hint),
+    ToolboxEntry("timestamp", R.string.toolbox_timestamp_name, "developer_utilities", R.string.toolbox_timestamp_description, R.string.toolbox_timestamp_input_label, R.string.toolbox_timestamp_input_hint),
+    ToolboxEntry("color", R.string.toolbox_color_name, "android_utilities", R.string.toolbox_color_description, R.string.toolbox_color_input_label, R.string.toolbox_color_input_hint, R.string.toolbox_color_second_label, R.string.toolbox_color_second_hint),
+    ToolboxEntry("unicode", R.string.toolbox_unicode_name, "text_regex", R.string.toolbox_unicode_description, R.string.toolbox_unicode_input_label, R.string.toolbox_unicode_input_hint),
+    ToolboxEntry("text", R.string.toolbox_text_name, "text_regex", R.string.toolbox_text_description, R.string.toolbox_text_input_label, R.string.toolbox_text_input_hint),
+    ToolboxEntry("http-status", R.string.toolbox_http_status_name, "references", R.string.toolbox_http_status_description, R.string.toolbox_http_status_input_label, R.string.toolbox_http_status_input_hint),
+    ToolboxEntry("mime", R.string.toolbox_mime_name, "references", R.string.toolbox_mime_description, R.string.toolbox_mime_input_label, R.string.toolbox_mime_input_hint),
+    ToolboxEntry("uri", R.string.toolbox_uri_name, "android_utilities", R.string.toolbox_uri_description, R.string.toolbox_uri_input_label, R.string.toolbox_uri_input_hint)
 )
 
 private fun modesFor(toolId: String): List<String> = when (toolId) {
@@ -91,6 +93,23 @@ private fun defaultMode(toolId: String): String = when (toolId) {
     else -> "Default"
 }
 
+private fun modeResource(mode: String): Int = when (mode) {
+    "Pretty" -> R.string.toolbox_mode_pretty
+    "Minify" -> R.string.toolbox_mode_minify
+    "Encode" -> R.string.toolbox_mode_encode
+    "Decode" -> R.string.toolbox_mode_decode
+    "SHA-256" -> R.string.toolbox_mode_sha_256
+    "SHA-512" -> R.string.toolbox_mode_sha_512
+    "UPPERCASE" -> R.string.toolbox_mode_uppercase
+    "lowercase" -> R.string.toolbox_mode_lowercase
+    "Trim" -> R.string.toolbox_mode_trim
+    "Sort lines" -> R.string.toolbox_mode_sort_lines
+    "Deduplicate lines" -> R.string.toolbox_mode_deduplicate_lines
+    "Escape JSON string" -> R.string.toolbox_mode_escape_json
+    "Unescape JSON string" -> R.string.toolbox_mode_unescape_json
+    else -> R.string.toolbox_mode_default
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeveloperToolboxScreen(onBack: () -> Unit) {
@@ -100,7 +119,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     var search by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("All") }
+    var category by remember { mutableStateOf("all") }
     var favorites by remember { mutableStateOf(prefs.getStringSet("favorites", emptySet())?.toSet().orEmpty()) }
     var recent by remember { mutableStateOf(prefs.getString("recent", "").orEmpty().split('|').filter { it.isNotBlank() }.take(8)) }
     var selectedId by remember { mutableStateOf<String?>(null) }
@@ -112,13 +131,25 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
     var feedback by remember { mutableStateOf<String?>(null) }
 
     val selectedTool = toolboxEntries.firstOrNull { it.id == selectedId }
-    val categories = listOf("All", "Data & Encoding", "Text & Regex", "Developer Utilities", "Android Utilities", "References")
+    val categories = listOf(
+        ToolboxCategory("all", R.string.toolbox_category_all),
+        ToolboxCategory("data_encoding", R.string.toolbox_category_data_encoding),
+        ToolboxCategory("text_regex", R.string.toolbox_category_text_regex),
+        ToolboxCategory("developer_utilities", R.string.toolbox_category_developer_utilities),
+        ToolboxCategory("android_utilities", R.string.toolbox_category_android_utilities),
+        ToolboxCategory("references", R.string.toolbox_category_references)
+    )
+    val categoryNames = categories.associate { it.id to stringResource(it.labelRes) }
+    val toolNames = toolboxEntries.associate { it.id to stringResource(it.nameRes) }
+    val toolDescriptions = toolboxEntries.associate { it.id to stringResource(it.descriptionRes) }
+    val resultCopiedMessage = stringResource(R.string.toolbox_result_copied)
+    val errorPrefix = stringResource(R.string.toolbox_error_prefix)
     val filtered = toolboxEntries.filter { tool ->
-        (category == "All" || tool.category == category) &&
-            (tool.name.contains(search, ignoreCase = true) ||
-             tool.description.contains(search, ignoreCase = true) ||
-             tool.category.contains(search, ignoreCase = true))
-    }.sortedWith(compareByDescending<ToolboxEntry> { it.id in favorites }.thenBy { it.name })
+        (category == "all" || tool.categoryId == category) &&
+            (toolNames[tool.id].orEmpty().contains(search, ignoreCase = true) ||
+             toolDescriptions[tool.id].orEmpty().contains(search, ignoreCase = true) ||
+             categoryNames[tool.categoryId].orEmpty().contains(search, ignoreCase = true))
+    }.sortedWith(compareByDescending<ToolboxEntry> { it.id in favorites }.thenBy { toolNames[it.id].orEmpty() })
 
     Scaffold(
         topBar = {
@@ -146,15 +177,15 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                         prefs.edit().putStringSet("favorites", next).apply()
                     }) { Text(if (selectedTool.id in favorites) stringResource(R.string.favorited) else stringResource(R.string.favorite)) }
                 }
-                Text(selectedTool.name, style = MaterialTheme.typography.headlineSmall)
-                Text(selectedTool.description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(selectedTool.nameRes), style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(selectedTool.descriptionRes), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val modeOptions = modesFor(selectedTool.id)
                 if (modeOptions.isNotEmpty()) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(stringResource(R.string.toolbox_operation), style = MaterialTheme.typography.labelMedium)
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             modeOptions.forEach { option ->
-                                FilterChip(selected = mode == option, onClick = { mode = option }, label = { Text(option) })
+                                FilterChip(selected = mode == option, onClick = { mode = option }, label = { Text(stringResource(modeResource(option))) })
                             }
                         }
                     }
@@ -162,18 +193,18 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = { input = it; output = ""; feedback = null },
-                    label = { Text(selectedTool.inputLabel) },
-                    placeholder = { Text(selectedTool.inputHint) },
+                    label = { Text(stringResource(selectedTool.inputLabelRes)) },
+                    placeholder = { Text(stringResource(selectedTool.inputHintRes)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 2,
                     maxLines = 8
                 )
-                selectedTool.secondLabel?.let { label ->
+                selectedTool.secondLabelRes?.let { labelRes ->
                     OutlinedTextField(
                         value = secondInput,
                         onValueChange = { secondInput = it; output = ""; feedback = null },
-                        label = { Text(label) },
-                        placeholder = { Text(selectedTool.secondHint) },
+                        label = { Text(stringResource(labelRes)) },
+                        placeholder = { Text(stringResource(selectedTool.secondHintRes ?: selectedTool.inputHintRes)) },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 2,
                         maxLines = 8
@@ -196,7 +227,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                                     )
                                 }
                             }
-                            output = result.getOrElse { "Error: " + (it.message ?: it.javaClass.simpleName) }
+                            output = result.getOrElse { errorPrefix + (it.message ?: it.javaClass.simpleName) }
                             isRunning = false
                             if (result.isSuccess) {
                                 recent = (listOf(selectedTool.id) + recent.filterNot { it == selectedTool.id }).take(8)
@@ -215,7 +246,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                                 Spacer(Modifier.weight(1f))
                                 TextButton(onClick = {
                                     clipboard.setText(AnnotatedString(output))
-                                    feedback = "Result copied."
+                                    feedback = resultCopiedMessage
                                 }) {
                                     Icon(Icons.Default.ContentCopy, contentDescription = null)
                                     Text(stringResource(R.string.copy_response))
@@ -243,7 +274,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                     OutlinedTextField(value = search, onValueChange = { search = it }, label = { Text(stringResource(R.string.search_tools)) }, modifier = Modifier.fillMaxWidth(), singleLine = true)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         categories.take(3).forEach { group ->
-                            FilterChip(selected = category == group, onClick = { category = group }, label = { Text(group) })
+                            FilterChip(selected = category == group, onClick = { category = group }, label = { Text(stringResource(group.labelRes)) })
                         }
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -265,13 +296,13 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                                         output = ""
                                         feedback = null
                                     },
-                                    label = { Text(tool.name.take(18)) }
+                                    label = { Text(stringResource(tool.nameRes).take(18)) }
                                 )
                             }
                         }
                     }
                     Text(
-                        (filtered.size).toString() + " tools",
+                        stringResource(R.string.toolbox_tools_count, filtered.size),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 6.dp)
@@ -285,9 +316,9 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Text(tool.name, style = MaterialTheme.typography.titleMedium)
-                                Text(tool.category, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                                Text(tool.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(tool.nameRes), style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(categories.first { it.id == tool.categoryId }.labelRes), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                                Text(stringResource(tool.descriptionRes), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Column(horizontalAlignment = Alignment.End) {
                                 TextButton(onClick = {
