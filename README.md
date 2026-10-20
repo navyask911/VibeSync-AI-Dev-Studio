@@ -1,102 +1,74 @@
 # VibeSync Prompt Studio ⚡
 
-An offline-first, native Android prompt engineering environment and AI orchestration playground built with Jetpack Compose, Material 3, Clean Architecture, and Ktor.
+A local-first native Android prompt engineering workspace built with Kotlin, Jetpack Compose, Material 3, Clean Architecture, MVVM, Ktor streaming, Room, and Android Keystore.
 
-Designed for engineers, researchers, and creators to construct, benchmark, and deploy multi-turn system prompts and complex AI workflows directly on mobile with zero tracking and full cryptographic credential isolation.
+## What is implemented
 
----
+- **Prompt canvas:** multiline system and user prompts, variable substitution with {{variable_name}}, saved templates, local run history, and variable-set persistence.
+- **Live estimates:** character-based approximate input/output token counts; cost estimates use rates entered by the user because provider pricing and model availability change.
+- **Streaming responses:** direct HTTPS SSE handling for OpenAI Chat Completions, Anthropic Messages, and Gemini streamGenerateContent.
+- **Secure credential vault:** AES/GCM encryption with a non-exportable Android Keystore key, per-entry authenticated data, masked API key entry, and a Keystore status check.
+- **Lifecycle-safe state:** StateFlow UI models, ViewModel-owned CoroutineScopes, cancellation support, and streaming flow backpressure.
+- **OAuth foundation:** generic Authorization Code + PKCE utilities, a state-verifying deep-link callback, and a configurable token exchange. OAuth is disabled in the default build and its identity token is not used as a provider API key.
+- **Material 3 UI:** system dark mode, Android 12+ dynamic colors, edge-to-edge layout, Markdown-style headings/lists/code fences, copy, and share/export.
+- **Build validation:** GitHub Actions workflow compiles, lints, runs unit tests, and uploads the debug APK.
 
-## 🌟 Key Highlights
+## Architecture
 
-- **Local-First Architecture:** Prompts, session logs, variable bindings, and workspace templates reside entirely on your device.
-- **Dynamic Variable Injection:** Insert dynamic token variables (`{{variable_name}}`) into system instructions and evaluate them in real-time.
-- **Zero-Knowledge Credential Vault:** API keys and OAuth tokens are secured using the Android Keystore system with AES-256 GCM encryption.
-- **Multi-Model Provider Compatibility:** Built to communicate seamlessly with OpenAI (GPT-4o, o1, o3-mini), Anthropic (Claude 3.5 Sonnet), and Google (Gemini 2.5/Flash) endpoints.
-- **Material You Design (Material 3):** Fluid adaptive layouts supporting dynamic theming, predictive back gestures, and dual-pane foldable screens.
+- domain/model: provider, prompt, variable, model configuration, history, and error models.
+- domain/repository: storage/execution/credential contracts.
+- domain/usecase: prompt validation/execution, variable substitution, approximate token/cost estimation, and credential management.
+- data/local: Room templates, run history, variable sets, DAO, and database.
+- data/security: Android Keystore AES/GCM vault and PKCE cryptographic utilities.
+- data/remote: Ktor OkHttp client, provider request encoding, SSE parsing, and error mapping.
+- data/repository: repository implementations and Room/domain mappings.
+- presentation: Compose screens, lifecycle-aware ViewModels, OAuth callback activity, and Material 3 theme.
+- VibeSyncApplication: lightweight application-scoped dependency container.
 
----
+## Build requirements
 
-## 🏗️ Architecture & Technical Stack
+- Android Studio with JDK 17
+- Android SDK platform 36 and build tools 36.0.0
+- Gradle 8.13
 
-The project adheres to strict **Clean Architecture** patterns separated into three isolated layers:
+Open the repository in Android Studio after installing the listed SDK and Gradle version, or use Gradle from a terminal:
 
+- Compile debug: gradle :app:assembleDebug
+- Unit tests: gradle :app:testDebugUnitTest
+- Lint: gradle :app:lintDebug
 
-```
+GitHub Actions executes these checks on pushes and pull requests. The generated debug APK is available as a workflow artifact when the job passes.
 
-VibeSync-Prompt-Studio/
-├── app/
-│   └── src/main/
-│       ├── java/com/vibesync/promptstudio/
-│       │   ├── data/             # Network clients, encrypted storage, repositories
-│       │   │   ├── local/        # Encrypted DataStore, Room DB, Keystore helpers
-│       │   │   ├── remote/       # Ktor HTTP client, SSE streaming engines
-│       │   │   └── repository/   # Repository implementation layers
-│       │   ├── domain/           # Pure Kotlin business rules (No Android dependencies)
-│       │   │   ├── model/        # Domain entities (Prompt, Variable, ModelConfig)
-│       │   │   ├── repository/   # Repository contracts / interfaces
-│       │   │   └── usecase/      # ExecutePromptUseCase, TokenizerUseCase, etc.
-│       │   └── presentation/     # UI layer (Jetpack Compose, MVVM)
-│       │       ├── canvas/       # Interactive Prompt Workspace & Tokenizers
-│       │       ├── models/       # Model parameter configuration sheets
-│       │       ├── components/   # Atomic Material 3 UI widgets
-│       │       └── theme/        # Material 3 dynamic color tokens
-│       └── res/                  # Vector drawables, adaptive launcher mipmaps
+## Provider API keys
 
-```
+In Settings, select a provider and save its API key. The value is encrypted with AES/GCM before being persisted. Provider requests go directly from the device to the provider over HTTPS; there are no built-in proxies, telemetry, or embedded credentials.
 
-### Core Technologies
-- **Language:** Kotlin 2.x with Coroutines & StateFlow
-- **UI Framework:** Jetpack Compose (BOM) & Material 3
-- **Network Engine:** Ktor Client with OkHttp engine and Server-Sent Events (SSE) support for streaming responses
-- **Local Persistence:** Android Room Database & EncryptedSharedPreferences (AndroidX Security)
-- **Dependency Injection:** Jetpack Hilt / Dagger
-- **Serialization:** `kotlinx.serialization` (JSON parsing)
+A ChatGPT subscription is not an OpenAI API key. For OpenAI API requests, use an API key issued for the API platform with the required API billing configuration. A ChatGPT OAuth identity token is deliberately kept separate from API keys.
 
----
+## Optional OAuth configuration
 
-## 🚀 Getting Started
+The default build intentionally disables OAuth until you have an OAuth client registered and authorized for this Android app. Set these Gradle properties in a local Gradle properties file or the build environment:
 
-### Prerequisites
-- **Android Studio:** Ladybug (2024.2.1) or newer
-- **JDK:** OpenJDK 17 or 21
-- **Android SDK:** Min SDK 26 (Android 8.0) | Target SDK 35 (Android 15)
+- VIBESYNC_OAUTH_CLIENT_ID
+- VIBESYNC_OAUTH_AUTHORIZE_ENDPOINT
+- VIBESYNC_OAUTH_TOKEN_ENDPOINT
 
-### Build & Run
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/navyask911/VibeSync-Prompt-Studio.git](https://github.com/navyask911/VibeSync-Prompt-Studio.git)
-   cd VibeSync-Prompt-Studio
+Both endpoints must be HTTPS. The app uses the redirect URI vibesync://auth/callback; register that exact URI with the identity provider if supported. The implementation performs PKCE S256 and validates a random state value before exchanging the code. Do not add provider client secrets to the APK. Configuring these properties does not make an unsupported provider OAuth flow valid, and the resulting OAuth token is not used to authenticate provider model requests.
 
-```
+## Security notes
 
-2. Open the project in Android Studio.
-3. Allow Gradle to download dependencies and sync.
-4. Run on an emulator or a physical device:
-```bash
-./gradlew installDebug
+- Cleartext network traffic and automatic redirects are disabled.
+- No API keys, OAuth client secrets, or external proxy dependencies are embedded.
+- Android Keystore may be hardware-backed or software-backed depending on device capabilities; the app reports what the platform says.
+- If Android Keystore state is lost or invalidated, previously encrypted credentials may need to be re-entered.
+- Token counts are estimates, not exact model tokenizer counts or provider-reported usage.
 
-```
+## Verification status
 
+A CI workflow is included for Gradle compilation, Android lint, and unit tests. Physical-device testing of API provider accounts, OAuth registration, interruption/retry behavior, and hardware-backed Keystore behavior remains necessary before a production Play Store release.
 
+## License
 
----
+Copyright (c) 2026 Vibesyncrotechnologies Pvt Ltd. All rights reserved.
 
-## 🔒 Security & Privacy
-
-1. **Hardware-Backed Encryption:** All sensitive tokens (API keys, Custom Bearer tokens) are encrypted on-device using keys held inside the Android hardware-backed Keystore provider.
-2. **No Analytics / Telemetry:** No third-party behavioral analytics, crash logging telemetry, or intermediate proxy servers are embedded. Requests travel directly from device to target API endpoints.
-3. **Network Security Config:** Cleartext traffic is strictly blocked by default via manifest declarations.
-
----
-
-## 🛡️ License
-
-Copyright (c) 2026 **Vibesyncrotechnologies Pvt Ltd**. All rights reserved.
-
-**PROPRIETARY AND CONFIDENTIAL**
-
-This software, its source code, assets, UI designs, and related documentation are the sole proprietary property of Vibesyncrotechnologies Pvt Ltd. Unauthorized copying, reverse engineering, redistribution, sublicensing, or public deployment of this code via any medium without explicit written consent is strictly prohibited.
-
-```
-
-```
+PROPRIETARY AND CONFIDENTIAL. This software, its source code, assets, UI designs, and related documentation are the sole proprietary property of Vibesyncrotechnologies Pvt Ltd. Unauthorized copying, reverse engineering, redistribution, sublicensing, or public deployment without explicit written consent is prohibited.
