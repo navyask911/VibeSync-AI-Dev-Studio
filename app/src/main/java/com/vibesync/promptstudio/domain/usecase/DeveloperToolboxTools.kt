@@ -70,14 +70,14 @@ object DeveloperToolboxTools {
             setFeature("http://xml.org/sax/features/external-general-entities", false)
             setFeature("http://xml.org/sax/features/external-parameter-entities", false)
             setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
-            runCatching { setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "") }
-            runCatching { setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "") }
+            runCatching { setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD", "") }
+            runCatching { setAttribute("http://javax.xml.XMLConstants/property/accessExternalSchema", "") }
         }
         val document = factory.newDocumentBuilder().parse(InputSource(StringReader(input)))
         val transformFactory = TransformerFactory.newInstance().apply {
             setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
-            runCatching { setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "") }
-            runCatching { setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "") }
+            runCatching { setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD", "") }
+            runCatching { setAttribute("http://javax.xml.XMLConstants/property/accessExternalStylesheet", "") }
         }
         val writer = StringWriter()
         transformFactory.newTransformer().apply {
