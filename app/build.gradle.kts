@@ -63,7 +63,8 @@ kotlin {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2026.08.00")
+    // Compose 1.10 / Material 3 1.4 are stable and compatible with SDK 36 + AGP 8.13.
+    val composeBom = platform("androidx.compose:compose-bom:2025.12.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
