@@ -10,6 +10,17 @@ val oauthClientId = providers.gradleProperty("VIBESYNC_OAUTH_CLIENT_ID").orElse(
 val oauthAuthorizeEndpoint = providers.gradleProperty("VIBESYNC_OAUTH_AUTHORIZE_ENDPOINT").orElse("")
 val oauthTokenEndpoint = providers.gradleProperty("VIBESYNC_OAUTH_TOKEN_ENDPOINT").orElse("")
 
+// CI materializes this ignored file from the base64 GitHub secret.
+// Without all signing inputs, local release builds remain available as unsigned artifacts.
+val releaseKeystoreFile = rootProject.file("release-keystore.jks")
+val releaseStorePassword = System.getenv("KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("KEY_ALIAS")
+val releaseKeyPassword = System.getenv("KEY_PASSWORD")
+val releaseSigningAvailable = releaseKeystoreFile.isFile &&
+    !releaseStorePassword.isNullOrBlank() &&
+    !releaseKeyAlias.isNullOrBlank() &&
+    !releaseKeyPassword.isNullOrBlank()
+
 android {
     namespace = "com.vibesync.promptstudio"
     compileSdk = 36
@@ -18,8 +29,8 @@ android {
         applicationId = "com.vibesync.promptstudio"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = providers.gradleProperty("VERSION_CODE").orElse("20261022").get().toInt()
+        versionName = providers.gradleProperty("VERSION_NAME").orElse("1.0.3").get()
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "OAUTH_CLIENT_ID", "\"" + oauthClientId.get().replace("\\", "\\\\").replace("\"", "\\\"") + "\"")
@@ -28,9 +39,21 @@ android {
         buildConfigField("String", "OAUTH_REDIRECT_URI", "\"vibesync://auth/callback\"")
     }
 
+    signingConfigs {
+        create("release") {
+            if (releaseSigningAvailable) {
+                storeFile = releaseKeystoreFile
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfig = if (releaseSigningAvailable) signingConfigs.getByName("release") else null
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug { }
@@ -63,7 +86,7 @@ kotlin {
 }
 
 dependencies {
-    // Compose 1.10 / Material 3 1.4 are stable and compatible with SDK 36 + AGP 8.13.
+    // Compose 1.10 / Material 3 1.4 are compatible with SDK 36 and AGP 8.13.x.
     val composeBom = platform("androidx.compose:compose-bom:2025.12.01")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -83,14 +106,14 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.browser:browser:1.9.0")
-    // Values use direct AndroidKeyStore AES/GCM because EncryptedSharedPreferences is deprecated.
+    // Direct AndroidKeyStore AES/GCM is used because EncryptedSharedPreferences is deprecated.
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("javax.inject:javax.inject:1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
-    // Ktor 3.4.3 uses OkHttp 5.1-era artifacts compatible with compileSdk 36.
+    // Ktor 3.4.3 uses Android-compatible OkHttp dependencies for compileSdk 36.
     val ktorVersion = "3.4.3"
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-okhttp:$ktorVersion")

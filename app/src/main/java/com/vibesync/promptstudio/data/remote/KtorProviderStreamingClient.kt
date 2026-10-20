@@ -8,7 +8,6 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.contentType
 import io.ktor.client.request.header
 import io.ktor.client.request.preparePost
 import io.ktor.client.request.setBody
@@ -65,7 +64,7 @@ class KtorProviderStreamingClient {
         val payload = bodyFor(request)
         try {
             httpClient.preparePost(endpoint) {
-                contentType(ContentType.Application.Json)
+                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
                 header(HttpHeaders.Accept, "text/event-stream")
                 when (request.config.provider) {
                     ProviderType.OPENAI -> header(HttpHeaders.Authorization, "Bearer " + apiKey)
