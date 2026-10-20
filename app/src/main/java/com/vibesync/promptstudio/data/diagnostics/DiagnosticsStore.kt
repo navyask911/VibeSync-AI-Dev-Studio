@@ -313,6 +313,23 @@ class DiagnosticUncaughtExceptionHandler(
     private val store: DiagnosticsStore,
     private val delegate: Thread.UncaughtExceptionHandler?
 ) : Thread.UncaughtExceptionHandler {
+    private fun sanitizedStackTrace(error: Throwable): String = buildString {
+        var current: Throwable? = error
+        var depth = 0
+        while (current != null && depth < 5) {
+            append(current.javaClass.name.take(160)).append('\n')
+            current.stackTrace.take(24).forEach { frame ->
+                append(" at ").append(frame.className.take(180)).append('.')
+                    .append(frame.methodName.take(100)).append('(')
+                    .append(frame.fileName?.take(100) ?: "Unknown Source")
+                    .append(if (frame.lineNumber >= 0) ":" + frame.lineNumber else "")
+                    .appendLine(")")
+            }
+            current = current.cause
+            depth++
+        }
+    }.take(12_000)
+
     override fun uncaughtException(thread: Thread, error: Throwable) {
         runCatching {
             store.record(

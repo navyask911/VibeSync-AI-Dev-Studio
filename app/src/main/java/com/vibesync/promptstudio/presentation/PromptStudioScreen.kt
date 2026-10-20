@@ -24,6 +24,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
+import com.vibesync.promptstudio.R
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,7 +54,7 @@ fun PromptStudioScreen(
     val context = LocalContext.current
     Scaffold(topBar = {
         CenterAlignedTopAppBar(
-            title = { Text("VibeSync Prompt Studio") },
+            title = { Text(stringResource(R.string.app_name), maxLines = 1, overflow = TextOverflow.Ellipsis) },
             actions = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onOpenDiagnostics) {

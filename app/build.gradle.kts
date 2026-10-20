@@ -109,8 +109,14 @@ dependencies {
 
     implementation("androidx.browser:browser:1.9.0")
     // Google Mobile Ads and User Messaging Platform: current supported Android SDKs.
-    implementation("com.google.android.gms:play-services-ads:25.4.0")
+    implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
     implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+
+    // Official Google Play Core APIs for flexible in-app updates and in-app review.
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
+    implementation("com.google.android.play:review:2.0.2")
+    implementation("com.google.android.play:review-ktx:2.0.2")
 
     // Direct AndroidKeyStore AES/GCM is used because EncryptedSharedPreferences is deprecated.
     implementation("androidx.security:security-crypto:1.1.0")

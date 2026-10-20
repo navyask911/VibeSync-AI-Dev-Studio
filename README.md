@@ -1,4 +1,4 @@
-# VibeSync Prompt Studio ⚡
+# VibeSync AI Dev Studio ⚡
 
 A local-first native Android prompt engineering workspace built with Kotlin, Jetpack Compose, Material 3, Clean Architecture, MVVM, Ktor streaming, Room, and Android Keystore.
 
@@ -79,7 +79,7 @@ PROPRIETARY AND CONFIDENTIAL. This software, its source code, assets, UI designs
 - Diagnostic exports are written under app-private storage and shared with temporary FileProvider read permission. The viewer can filter severity, component, keyword, and time range. Android restricts full device-wide Logcat access for ordinary apps; use Android Studio/ADB or an Android bug report when system logs are required.
 - Connectivity status distinguishes offline, connecting/unvalidated, and validated internet access. Local prompt editing, saved templates, and local history remain available offline.
 - Google Play In-App Updates and In-App Review are best-effort integrations. They are not available on every sideloaded installation and do not block core app use.
-- Google Mobile Ads banner and interstitial components use the official Google Mobile Ads SDK. UMP consent is checked before ads are requested. Debug builds use Google's sample app/banner/interstitial identifiers; release builds use the configured publisher IDs. Interstitials are considered only after at least three successful prompt runs and no more than once per ten minutes, and are skipped if no ad is already loaded.
+- Google Mobile Ads banner and interstitial components use Google's preferred Mobile Ads Next-Gen SDK 1.5.0. UMP consent is checked before ads are requested. Debug builds use Google's sample app/banner/interstitial identifiers; release builds use the configured publisher IDs. Interstitials are considered only after at least three successful prompt runs and no more than once per ten minutes, and are skipped if no ad is already loaded.
 - Google Play reviews are requested only after repeated successful use. Google Play chooses whether to show its review dialog.
 - Version defaults: VERSION_CODE=20261023, VERSION_NAME=1.0.4. If the Google Play Console has a later used version code, set a greater -PVERSION_CODE=... before release.
 

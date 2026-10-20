@@ -4,24 +4,25 @@ import android.app.Activity
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.UserMessagingPlatform
+import com.google.android.libraries.ads.mobile.sdk.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticsStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.util.concurrent.atomic.AtomicBoolean
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 
 class AdMobManager(
     private val application: Application,
@@ -47,20 +48,19 @@ class AdMobManager(
     private var interstitialAd: InterstitialAd? = null
 
     /**
-     * Request consent information on each fresh app launch, then display any required form.
-     * On network failure, only previously recorded UMP consent is respected via canRequestAds().
+     * Refresh UMP consent information on app resume and show any required consent form.
+     * Ad requests remain disabled unless UMP reports that requests are permitted.
      */
     fun requestConsent(activity: Activity) {
         if (!consentRequestStarted.compareAndSet(false, true)) return
         try {
-            val parameters = ConsentRequestParameters.Builder().build()
             consentInformation.requestConsentInfoUpdate(
                 activity,
-                parameters,
+                ConsentRequestParameters.Builder().build(),
                 {
                     try {
-                        UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { formError ->
-                            formError?.let {
+                        UserMessagingPlatform.loadAndShowConsentFormIfRequired(activity) { error ->
+                            error?.let {
                                 diagnostics.record(
                                     DiagnosticSeverity.WARNING, "ads", "consent", "form_unavailable",
                                     "Ad privacy form could not be shown (code " + it.errorCode + ")."
@@ -122,8 +122,8 @@ class AdMobManager(
     }
 
     /**
-     * Called only following a successful, completed prompt run while the studio destination is visible.
-     * An absent/unloaded ad is skipped; an ad is never queued to appear later unexpectedly.
+     * Call only after a successful prompt run. If the preloaded ad is unavailable, skip it rather
+     * than queueing a surprise full-screen ad later.
      */
     fun onSuccessfulPromptRun(activity: Activity, studioVisible: Boolean): Boolean {
         val completedRuns = preferences.getInt(KEY_SUCCESSFUL_RUNS, 0) + 1
@@ -149,21 +149,23 @@ class AdMobManager(
         }
         interstitialAd = null
         preferences.edit().putLong(KEY_LAST_INTERSTITIAL_TIME, now).apply()
-        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+        ad.adEventCallback = object : InterstitialAdEventCallback {
             override fun onAdShowedFullScreenContent() {
                 diagnostics.record(DiagnosticSeverity.INFO, "ads", "interstitial", "shown", "Interstitial shown after a completed prompt run.")
             }
 
             override fun onAdDismissedFullScreenContent() {
                 diagnostics.record(DiagnosticSeverity.INFO, "ads", "interstitial", "dismissed", "Interstitial dismissed; returning control to the studio.")
+                ad.destroy()
                 loadInterstitialIfNeeded()
             }
 
-            override fun onAdFailedToShowFullScreenContent(error: AdError) {
+            override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
                 diagnostics.record(
                     DiagnosticSeverity.WARNING, "ads", "interstitial", "show_failed",
-                    "Interstitial failed to show (code " + error.code + "); returning to the studio."
+                    "Interstitial failed to show (" + fullScreenContentError.javaClass.simpleName + "); returning to the studio."
                 )
+                ad.destroy()
                 loadInterstitialIfNeeded()
             }
         }
@@ -175,6 +177,7 @@ class AdMobManager(
                 DiagnosticSeverity.WARNING, "ads", "interstitial", "show_exception",
                 "Interstitial could not be shown: " + error.javaClass.simpleName
             )
+            ad.destroy()
             loadInterstitialIfNeeded()
             false
         }
@@ -189,7 +192,7 @@ class AdMobManager(
         }.getOrDefault(false)
 
         if (!allowed) {
-            // Do not display a previously preloaded ad after the user withdraws consent.
+            interstitialAd?.destroy()
             interstitialAd = null
             diagnostics.record(
                 DiagnosticSeverity.INFO, "ads", "consent", "ads_not_allowed",
@@ -201,21 +204,31 @@ class AdMobManager(
             if (mutableAdsReady.value) loadInterstitialIfNeeded()
             return
         }
-        try {
-            MobileAds.initialize(application) {
-                mainHandler.post {
-                    mutableAdsReady.value = true
-                    diagnostics.record(DiagnosticSeverity.INFO, "ads", "sdk", "initialized", "Google Mobile Ads SDK initialized after the UMP consent check.")
-                    loadInterstitialIfNeeded()
+
+        // The Next-Gen SDK initialization may perform disk/network I/O; never run it on the UI thread.
+        Thread {
+            try {
+                MobileAds.initialize(
+                    application,
+                    InitializationConfig.Builder(AdMobConfig.appId).build()
+                ) {
+                    mainHandler.post {
+                        mutableAdsReady.value = true
+                        diagnostics.record(
+                            DiagnosticSeverity.INFO, "ads", "sdk", "initialized",
+                            "Google Mobile Ads Next-Gen SDK initialized after the UMP consent check."
+                        )
+                        loadInterstitialIfNeeded()
+                    }
                 }
+            } catch (error: Exception) {
+                sdkInitializationStarted.set(false)
+                diagnostics.record(
+                    DiagnosticSeverity.WARNING, "ads", "sdk", "initialization_failed",
+                    "Google Mobile Ads SDK initialization failed: " + error.javaClass.simpleName
+                )
             }
-        } catch (error: Exception) {
-            sdkInitializationStarted.set(false)
-            diagnostics.record(
-                DiagnosticSeverity.WARNING, "ads", "sdk", "initialization_failed",
-                "Google Mobile Ads SDK initialization failed: " + error.javaClass.simpleName
-            )
-        }
+        }.apply { name = "vibesync-ads-init" }.start()
     }
 
     private fun loadInterstitialIfNeeded() {
@@ -225,10 +238,8 @@ class AdMobManager(
 
         try {
             InterstitialAd.load(
-                application,
-                AdMobConfig.interstitialUnitId,
-                AdRequest.Builder().build(),
-                object : InterstitialAdLoadCallback() {
+                AdRequest.Builder(AdMobConfig.interstitialUnitId).build(),
+                object : AdLoadCallback<InterstitialAd>() {
                     override fun onAdLoaded(ad: InterstitialAd) {
                         interstitialLoadStarted.set(false)
                         interstitialAd = ad
@@ -272,6 +283,9 @@ object AdMobConfig {
     const val TEST_APP_ID = "ca-app-pub-3940256099942544~3347511713"
     const val TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741"
     const val TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
+
+    val appId: String
+        get() = if (com.vibesync.promptstudio.BuildConfig.DEBUG) TEST_APP_ID else RELEASE_APP_ID
 
     val bannerUnitId: String
         get() = if (com.vibesync.promptstudio.BuildConfig.DEBUG) TEST_BANNER_ID else RELEASE_BANNER_ID

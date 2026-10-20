@@ -103,7 +103,7 @@ class KtorProviderStreamingClient(private val diagnostics: DiagnosticsStore? = n
                     if (response.status.isSuccess()) DiagnosticSeverity.INFO else DiagnosticSeverity.WARNING,
                     "network", "provider_response", "http_response",
                     "HTTP " + response.status.value + " after " + (SystemClock.elapsedRealtime() - requestStartedAt) + " ms" +
-                        (requestId?.takeIf { it.matches(Regex("[A-Za-z0-9._:-]{1,120}")) }?.let { "; request_id=" + it } .orEmpty(),
+                        (requestId?.takeIf { it.matches(Regex("[A-Za-z0-9._:-]{1,120}")) }?.let { "; request_id=" + it }.orEmpty()),
                     request.config.provider.displayName
                 )
                 if (!response.status.isSuccess()) {

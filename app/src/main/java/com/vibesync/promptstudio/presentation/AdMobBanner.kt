@@ -1,6 +1,5 @@
 package com.vibesync.promptstudio.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,17 +17,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.vibesync.promptstudio.data.ads.AdMobConfig
 import com.vibesync.promptstudio.data.ads.AdMobManager
 
 @Composable
@@ -38,43 +40,42 @@ fun AdMobBanner(
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
+    val inPreview = LocalInspectionMode.current
     val adsReady by adMobManager.adsReady.collectAsStateWithLifecycle()
     val canRequestAds by adMobManager.canRequestAds.collectAsStateWithLifecycle()
-    if (!adsReady || !canRequestAds) return
+    if (!adsReady || !canRequestAds || inPreview) return
 
-    val widthDp = (configuration.screenWidthDp - 32).coerceAtLeast(320)
-    var showSlot by remember(context, adsReady, canRequestAds, widthDp) { mutableStateOf(true) }
-    val onLoadStateChanged = rememberUpdatedState<(Boolean) -> Unit> { loaded ->
-        showSlot = loaded
-    }
+    val widthDp = (configuration.screenWidthDp - 32).coerceAtLeast(1)
+    var showSlot by remember(context, adsReady, canRequestAds, widthDp) { mutableStateOf(false) }
+    val onLoadStateChanged = rememberUpdatedState<(Boolean) -> Unit> { loaded -> showSlot = loaded }
 
-    val adView = remember(context, adsReady, canRequestAds, widthDp) {
-        AdView(context).apply {
-            adUnitId = com.vibesync.promptstudio.data.ads.AdMobConfig.bannerUnitId
-            setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, widthDp))
-            adListener = object : AdListener() {
-                override fun onAdLoaded() {
-                    onLoadStateChanged.value(true)
+    val adView = remember(context, adsReady, canRequestAds, widthDp) { AdView(context) }
+
+    LaunchedEffect(adView, canRequestAds) {
+        try {
+            val size = AdSize.getLargeAnchoredAdaptiveBannerAdSize(context, widthDp)
+            val request = BannerAdRequest.Builder(AdMobConfig.bannerUnitId, size).build()
+            adView.loadAd(
+                request,
+                object : AdLoadCallback<BannerAd>() {
+                    override fun onAdLoaded(ad: BannerAd) {
+                        onLoadStateChanged.value(true)
+                    }
+
+                    override fun onAdFailedToLoad(error: LoadAdError) {
+                        adMobManager.recordBannerFailure(error.code)
+                        onLoadStateChanged.value(false)
+                    }
                 }
-
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    adMobManager.recordBannerFailure(error.code)
-                    onLoadStateChanged.value(false)
-                }
-            }
+            )
+        } catch (error: Exception) {
+            adMobManager.recordBannerFailure(-1)
+            onLoadStateChanged.value(false)
         }
-    }
-
-    LaunchedEffect(adView) {
-        runCatching { adView.loadAd(AdRequest.Builder().build()) }
-            .onFailure { adMobManager.recordBannerFailure(-1) }
     }
 
     DisposableEffect(adView) {
-        onDispose {
-            adView.adListener = null
-            adView.destroy()
-        }
+        onDispose { runCatching { adView.destroy() } }
     }
 
     if (showSlot) {
