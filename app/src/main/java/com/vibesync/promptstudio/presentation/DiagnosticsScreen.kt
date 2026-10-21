@@ -109,21 +109,21 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit, showTopBar: B
         contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0),
         topBar = {
             if (showTopBar) {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.developer_diagnostics)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                CenterAlignedTopAppBar(
+                    title = { Text(stringResource(R.string.developer_diagnostics)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { refreshTick++ }) {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh_diagnostics))
+                        }
                     }
-                },
-                actions = {
-                    IconButton(onClick = { refreshTick++ }) {
-                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh_diagnostics))
-                    }
-                }
-            )
-        }
+                )
             }
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
