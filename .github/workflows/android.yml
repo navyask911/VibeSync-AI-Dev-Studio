@@ -40,12 +40,12 @@ jobs:
       - name: Install Android SDK 35 and 36
         run: |
           yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install \
-            "platforms;android-35" \
-            "platforms;android-36" \
-            "build-tools;35.0.0" \
-            "build-tools;36.0.0" \
-            "system-images;android-36;google_apis;x86_64" \
+          sdkmanager --install \\
+            "platforms;android-35" \\
+            "platforms;android-36" \\
+            "build-tools;35.0.0" \\
+            "build-tools;36.0.0" \\
+            "system-images;android-35;google_apis;x86_64" \\
             "platform-tools"
 
       - name: Make Gradle wrapper executable
@@ -71,14 +71,14 @@ jobs:
       - name: Run Android Keystore instrumentation tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_2
-          cores: 4
-          ram-size: 4096M
-          heap-size: 1024M
-          emulator-boot-timeout: 1200
+          cores: 2
+          ram-size: 2048M
+          heap-size: 512M
+          emulator-boot-timeout: 900
           disable-animations: true
           disable-spellchecker: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
@@ -112,7 +112,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
           set -euo pipefail
-          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > release-keystore.jks
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\\r\\n ' | base64 --decode > release-keystore.jks
           test -s release-keystore.jks
           chmod 600 release-keystore.jks
 
