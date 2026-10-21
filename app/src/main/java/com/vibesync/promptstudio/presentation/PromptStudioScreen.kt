@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
@@ -51,7 +52,8 @@ fun PromptStudioScreen(
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
     adMobManager: AdMobManager,
-    onSuccessfulPromptRun: (String) -> Unit
+    onSuccessfulPromptRun: (String) -> Unit,
+    onBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var lastHandledSuccess by remember { mutableIntStateOf(state.successfulRunCount) }
@@ -75,6 +77,11 @@ fun PromptStudioScreen(
         topBar = {
         TopAppBar(
             windowInsets = WindowInsets.statusBars,
+            navigationIcon = {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                }
+            },
             title = {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Image(painter = painterResource(R.drawable.ic_launcher), contentDescription = null, modifier = Modifier.size(30.dp))
