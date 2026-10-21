@@ -364,6 +364,11 @@ private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
                 stringResource(R.string.devoptions_android_version),
                 stringResource(R.string.devoptions_android_version_value, info.androidRelease, info.apiLevel)
             )
+            HardwareRow(
+                stringResource(R.string.devoptions_device_model),
+                stringResource(R.string.devoptions_device_model_value, info.deviceModel, info.manufacturer, info.deviceCodename)
+            )
+            HardwareRow(stringResource(R.string.devoptions_security_patch), info.securityPatch)
             HardwareRow(stringResource(R.string.devoptions_kernel), info.kernelVersion)
             HardwareRow(stringResource(R.string.devoptions_cpu), "${info.socModel} · ${info.cpuAbi}")
             HardwareRow(
@@ -379,6 +384,7 @@ private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
                     DeviceHardwareInfo.formatBytes(info.totalRamBytes)
                 )
             )
+            HardwareRow(stringResource(R.string.devoptions_fingerprint), info.buildFingerprint)
         }
     }
 }
