@@ -296,10 +296,11 @@ fun AiWebStudioScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .statusBarsPadding()
+            
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1725,10 +1726,9 @@ private fun configureWebView(
 private fun routeWebNavigation(context: Context, uri: Uri): Boolean {
     if (uri.scheme == "http" || uri.scheme == "https") {
         val host = uri.host?.lowercase().orEmpty()
-        val identityHost = host == "accounts.google.com" || host == "login.microsoftonline.com" ||
-            host == "login.live.com" || host == "appleid.apple.com" || host == "auth.openai.com" || host.endsWith(".auth0.com")
-        if (!identityHost) return false
-        // Google OAuth forbids authorization inside an app-controlled embedded user-agent.
+        if (!isIdentityProviderHost(host)) return false
+        // Google blocks OAuth inside WebView; let the system browser own the identity-provider session.
+        Toast.makeText(context, context.getString(R.string.browser_auth_external_notice), Toast.LENGTH_LONG).show()
         openExternalBrowser(context, uri.toString())
         return true
     }
