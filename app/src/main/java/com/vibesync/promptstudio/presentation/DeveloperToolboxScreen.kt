@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -112,7 +113,7 @@ private fun modeResource(mode: String): Int = when (mode) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeveloperToolboxScreen(onBack: () -> Unit) {
+fun DeveloperToolboxScreen(onBack: () -> Unit, showTopBar: Boolean = true) {
     val context = LocalContext.current.applicationContext
     val prefs = remember(context) { context.getSharedPreferences("vibesync_toolbox_v1", 0) }
     val clipboard = LocalClipboardManager.current
@@ -152,7 +153,9 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
     }.sortedWith(compareByDescending<ToolboxEntry> { it.id in favorites }.thenBy { toolNames[it.id].orEmpty() })
 
     Scaffold(
+        contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0),
         topBar = {
+            if (showTopBar) {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.developer_toolbox)) },
                 navigationIcon = {
@@ -162,6 +165,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
                 }
             )
         }
+            }
     ) { padding ->
         if (selectedTool != null) {
             Column(
