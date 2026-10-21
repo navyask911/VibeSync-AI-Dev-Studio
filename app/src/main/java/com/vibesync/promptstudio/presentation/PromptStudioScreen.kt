@@ -51,7 +51,8 @@ fun PromptStudioScreen(
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
     adMobManager: AdMobManager,
-    onSuccessfulPromptRun: (String) -> Unit
+    onSuccessfulPromptRun: (String) -> Unit,
+    showTopBar: Boolean = true
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var lastHandledSuccess by remember { mutableIntStateOf(state.successfulRunCount) }
@@ -73,7 +74,7 @@ fun PromptStudioScreen(
         modifier = Modifier.fillMaxSize().imePadding(),
         contentWindowInsets = WindowInsets.systemBars,
         topBar = {
-        TopAppBar(
+        if (showTopBar) TopAppBar(
             windowInsets = WindowInsets.statusBars,
             title = {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
