@@ -420,4 +420,7 @@
     <string name="browser_settings_tls_unavailable">No se pudieron obtener los detalles TLS de este host.</string>
     <string name="browser_settings_download_started">Descarga añadida al administrador de descargas del sistema.</string>
     <string name="browser_settings_download_failed">No se pudo iniciar la descarga.</string>
+    <string name="browser_settings_clipboard_markdown_label">Markdown de la página web</string>
+    <string name="browser_settings_clipboard_text_label">Texto de la página web</string>
+    <string name="browser_settings_print_title">Página de VibeSync</string>
 </resources>
