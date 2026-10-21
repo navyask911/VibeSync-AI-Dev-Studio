@@ -403,7 +403,7 @@
     <string name="browser_settings_data_cleared">चुना गया ब्राउज़िंग डेटा मिटा दिया गया।</string>
     <string name="browser_settings_find_in_page">पेज में खोजें</string>
     <string name="browser_settings_find_hint">इस पेज पर खोजें</string>
-    <string name="browser_settings_find_count">%1$d में से %2$d</string>
+    <string name="browser_settings_find_count">%2$d में से %1$d</string>
     <string name="browser_settings_previous_match">पिछला</string>
     <string name="browser_settings_next_match">अगला</string>
     <string name="browser_settings_close_find">खोज बंद करें</string>
