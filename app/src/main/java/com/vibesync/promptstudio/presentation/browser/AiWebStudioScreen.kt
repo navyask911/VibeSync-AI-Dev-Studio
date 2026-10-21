@@ -1724,11 +1724,9 @@ private fun configureWebView(
 
 private fun routeWebNavigation(context: Context, uri: Uri): Boolean {
     if (uri.scheme == "http" || uri.scheme == "https") {
-        val host = uri.host?.lowercase().orEmpty()
-        val identityHost = host == "accounts.google.com" || host == "login.microsoftonline.com" ||
-            host == "login.live.com" || host == "appleid.apple.com" || host == "auth.openai.com" || host.endsWith(".auth0.com")
-        if (!identityHost) return false
-        // Google OAuth forbids authorization inside an app-controlled embedded user-agent.
+        if (!isProviderAuthenticationUrl(uri.toString())) return false
+        // Keep provider authentication in the user's browser. Do not spoof the WebView user agent:
+        // the browser and WebView intentionally have separate cookie stores.
         openExternalBrowser(context, uri.toString())
         return true
     }
