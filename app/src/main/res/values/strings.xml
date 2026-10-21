@@ -423,4 +423,25 @@
     <string name="browser_settings_clipboard_markdown_label">Web page Markdown</string>
     <string name="browser_settings_clipboard_text_label">Web page text</string>
     <string name="browser_settings_print_title">VibeSync page</string>
+
+    <string name="model_selector_title">Choose a model</string>
+    <string name="model_filter_all">All</string>
+    <string name="model_filter_fast">Fast</string>
+    <string name="model_filter_cheap">Cheap</string>
+    <string name="model_filter_capable">Capable</string>
+    <string name="model_capability_tools">Tools</string>
+    <string name="model_capability_vision">Vision</string>
+    <string name="model_capability_json">JSON</string>
+    <string name="model_capability_reasoning">Reasoning</string>
+    <string name="model_price_unknown">Price unknown</string>
+    <string name="model_streaming_supported">Streaming</string>
+    <string name="model_manage_providers_keys">Manage providers &amp; keys →</string>
+    <string name="model_switch_stream_title">Switch model while streaming?</string>
+    <string name="model_switch_stream_message">Changing models will cancel the current response. Cancel the stream and switch models?</string>
+    <string name="model_switch_stream_confirm">Cancel and switch</string>
+    <string name="model_key_health_ready">Credential unlocked</string>
+    <string name="model_key_health_missing">No saved API key</string>
+    <string name="model_key_health_error">Credential unavailable or last request failed</string>
+    <string name="model_key_health_unknown">Key status unknown</string>
+
 </resources>
