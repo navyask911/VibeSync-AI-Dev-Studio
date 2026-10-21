@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -61,6 +63,7 @@ fun NetworkDnsDiagnosticsScreen(onBack: () -> Unit) {
     var runningDns by remember { mutableStateOf(false) }
     var runningHead by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val enterHostMessage = stringResource(com.vibesync.promptstudio.R.string.network_enter_host)
     BackHandler(onBack = onBack)
 
     Scaffold(
@@ -91,7 +94,7 @@ fun NetworkDnsDiagnosticsScreen(onBack: () -> Unit) {
                     ) {
                         Row {
                             Icon(Icons.Default.Dns, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.height(0.dp).weight(0.1f))
+                            Spacer(Modifier.size(8.dp))
                             Text(stringResource(com.vibesync.promptstudio.R.string.network_dns_heading), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         }
                         Text(
@@ -130,7 +133,7 @@ fun NetworkDnsDiagnosticsScreen(onBack: () -> Unit) {
                                         runningDns = false
                                     }
                                 } else {
-                                    dnsResult = stringResource(com.vibesync.promptstudio.R.string.network_enter_host)
+                                    dnsResult = enterHostMessage
                                 }
                             },
                             enabled = !runningDns,
