@@ -536,4 +536,21 @@
     <string name="network_http_url_label">HTTPS-URL</string>
     <string name="network_run_head">HEAD-Anfrage senden</string>
     <string name="network_privacy_note">Netzwerkprüfungen senden den eingegebenen Hostnamen oder die URL an den ausgewählten entfernten Endpunkt. Sende keine Geheimnisse oder privaten internen Hostnamen, wenn du sie nicht teilen möchtest.</string>
+    <string name="logcat_live_title">Live-Logcat und Systemdiagnose</string>
+    <string name="logcat_scope">Logcat des aktuellen Prozesses · %1$s</string>
+    <string name="logcat_limit_note">Android beschränkt den Zugriff auf Protokolle anderer Apps. Diese Ansicht erfasst nur den Prozess dieser App und schwärzt gängige Geheimnis-/Token-Muster vor dem Kopieren oder Teilen. Die App-Diagnose unten enthält bereinigte VibeSync-Gesundheitsdaten.</string>
+    <string name="logcat_filter_label">Protokolltext filtern</string>
+    <string name="logcat_filter_hint">z. B. Browser, Authentifizierung, Netzwerk</string>
+    <string name="logcat_level">Mindestprotokollstufe</string>
+    <string name="logcat_start">Erfassung starten</string>
+    <string name="logcat_stop">Erfassung stoppen</string>
+    <string name="logcat_clear">Leeren</string>
+    <string name="logcat_copy">Protokolle kopieren</string>
+    <string name="logcat_share">Protokolle teilen</string>
+    <string name="logcat_capture_error">Logcat-Erfassung fehlgeschlagen: %1$s</string>
+    <string name="logcat_no_lines">Noch keine Protokolleinträge erfasst. Starte die Erfassung; Systembeschränkungen können sie auf manchen Geräten begrenzen.</string>
+    <string name="logcat_open_diagnostics">App-Gesundheitsdiagnose öffnen</string>
+    <string name="home_diagnostics_title">Live-Logcat und Systemdiagnose</string>
+    <string name="home_diagnostics_subtitle">Live-Protokolle dieses App-Prozesses, bereinigte Diagnoseberichte und Exportwerkzeuge.</string>
+    <string name="home_prompt_bank_subtitle">150 Prompts für Android, Frontend, Backend, DevOps und Sicherheit suchen und an das KI-Studio senden.</string>
 </resources>
