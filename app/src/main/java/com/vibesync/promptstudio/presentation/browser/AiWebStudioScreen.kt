@@ -1233,10 +1233,12 @@ private fun clearBrowserData(
     }
     if (clearStorage) {
         runCatching { WebStorage.getInstance().deleteAllData() }
-        views.filter { view -> tabs.any { it.isPrivate && manager.webViewFor(it.id) === view } }
-            .forEach { view ->
-                runCatching { WebViewCompat.getProfile(view).webStorage.deleteAllData() }
-            }
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            views.filter { view -> tabs.any { it.isPrivate && manager.webViewFor(it.id) === view } }
+                .forEach { view ->
+                    runCatching { WebViewCompat.getProfile(view).webStorage.deleteAllData() }
+                }
+        }
     }
     if (clearForms) {
         views.forEach { runCatching { it.clearFormData() } }
@@ -1404,7 +1406,11 @@ private fun configureWebView(
     browserPageFailedText: String
 ) {
     if (tab.isPrivate) {
-        WebViewCompat.setProfile(webView, requireNotNull(tab.profileName))
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            WebViewCompat.setProfile(webView, requireNotNull(tab.profileName))
+        } else {
+            throw IllegalStateException("Private tabs require WebView multi-profile support.")
+        }
     }
     val cookies = cookieManagerFor(webView)
     cookies.setAcceptCookie(true)
