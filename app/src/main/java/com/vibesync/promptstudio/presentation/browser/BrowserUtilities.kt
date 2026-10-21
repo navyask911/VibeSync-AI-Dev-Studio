@@ -91,9 +91,9 @@ internal fun BrowserSettingsSheet(
                     steps = 29
                 )
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("50%", style = MaterialTheme.typography.labelSmall)
-                    Text("100%", style = MaterialTheme.typography.labelSmall)
-                    Text("200%", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.browser_settings_zoom_min_tick), style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.browser_settings_zoom_default_tick), style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.browser_settings_zoom_max_tick), style = MaterialTheme.typography.labelSmall)
                 }
             }
             SettingsSwitchRow(
