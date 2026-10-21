@@ -42,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,6 +85,15 @@ fun HomeDashboardScreen(
     }
     var appearance by remember(appearancePrefs) {
         mutableStateOf(appearancePrefs.getString("theme_mode", "normal") ?: "normal")
+    }
+    DisposableEffect(appearancePrefs) {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
+            if (key == "theme_mode") {
+                appearance = prefs?.getString("theme_mode", "normal") ?: "normal"
+            }
+        }
+        appearancePrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { appearancePrefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
     var showThemeMenu by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
