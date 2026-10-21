@@ -85,7 +85,8 @@ fun AppNavGraph(
                 adMobManager = container.adMobManager,
                 onSuccessfulPromptRun = { provider ->
                     onSuccessfulPromptRun(provider, navController.currentDestination?.route == "studio")
-                }
+                },
+                onBack = { navController.returnHome() }
             )
         }
         composable("settings") {
