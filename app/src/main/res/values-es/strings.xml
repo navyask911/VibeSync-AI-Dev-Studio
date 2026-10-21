@@ -445,4 +445,7 @@
     <string name="model_key_health_unknown">Estado de la clave desconocido</string>
 
     <string name="model_pricing_disclaimer">Tarifas API estándar por millón de tokens. El contexto largo y las herramientas pueden costar más; los precios cambian.</string>
+    <string name="browser_prompt_bar_hint">Pregunta a esta página o escribe un prompt…</string>
+    <string name="browser_prompt_send">Enviar prompt a la página actual</string>
+
 </resources>
