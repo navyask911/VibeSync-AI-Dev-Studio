@@ -56,7 +56,11 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
+fun DiagnosticsScreen(
+    store: DiagnosticsStore,
+    onBack: () -> Unit,
+    showTopBar: Boolean = true
+) {
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     var keyword by remember { mutableStateOf("") }
@@ -106,7 +110,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            if (showTopBar) CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.developer_diagnostics)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
