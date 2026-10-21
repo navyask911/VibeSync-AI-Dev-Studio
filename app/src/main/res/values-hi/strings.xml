@@ -560,4 +560,9 @@
     <string name="developer_resources_community_category">कम्युनिटी फ़ोरम</string>
     <string name="developer_resources_internal_heading">VibeSync टूल के त्वरित लिंक</string>
     <string name="developer_resource_open_failed">लिंक नहीं खुल सका। जाँचें कि ब्राउज़र इंस्टॉल है।</string>
+    <string name="devoptions_device_model">डिवाइस / निर्माता</string>
+    <string name="devoptions_device_model_value">%1$s · %2$s · %3$s</string>
+    <string name="devoptions_security_patch">सिक्योरिटी पैच</string>
+    <string name="devoptions_fingerprint">बिल्ड फ़िंगरप्रिंट</string>
+    <string name="devoptions_share_snapshot">डिवाइस सारांश साझा करें</string>
 </resources>
