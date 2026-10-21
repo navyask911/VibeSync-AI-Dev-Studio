@@ -14,7 +14,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.vibesync.promptstudio.VibeSyncApplication
 import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
-import com.vibesync.promptstudio.data.diagnostics.DiagnosticsStore
 import com.vibesync.promptstudio.presentation.DeveloperResourcesScreen
 import com.vibesync.promptstudio.presentation.DeveloperToolboxScreen
 import com.vibesync.promptstudio.presentation.DiagnosticsScreen
@@ -26,6 +25,7 @@ import com.vibesync.promptstudio.presentation.auth.OAuthClientConfiguration
 import com.vibesync.promptstudio.presentation.browser.AiWebStudioScreen
 import com.vibesync.promptstudio.presentation.browser.BrowserPromptBridge
 import com.vibesync.promptstudio.presentation.devoptions.DevOptionsScreen
+import com.vibesync.promptstudio.presentation.diagnostics.LiveLogcatScreen
 import com.vibesync.promptstudio.presentation.home.HomeDashboardScreen
 import com.vibesync.promptstudio.presentation.network.NetworkDnsDiagnosticsScreen
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +59,7 @@ fun AppNavGraph(
                 onOpenToolbox = { navController.navigateTool("toolbox") },
                 onOpenApiStudio = { navController.navigateTool("studio") },
                 onOpenKeyVault = { navController.navigateTool("settings") },
-                onOpenDiagnostics = { navController.navigateTool("diagnostics") },
+                onOpenDiagnostics = { navController.navigateTool("logcat") },
                 onOpenCommands = { navController.navigateTool("developerhub?section=commands") },
                 onOpenNetworkDiagnostics = { navController.navigateTool("network_diagnostics") }
             )
@@ -97,6 +97,12 @@ fun AppNavGraph(
                 onOpenDiagnostics = { navController.navigateTool("diagnostics") },
                 adMobManager = container.adMobManager,
                 onManageAdsPrivacy = onManageAdsPrivacy
+            )
+        }
+        composable("logcat") {
+            LiveLogcatScreen(
+                onBack = { navController.returnHome() },
+                onOpenDiagnostics = { navController.navigateTool("diagnostics") }
             )
         }
         composable("diagnostics") {
