@@ -59,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
@@ -269,6 +270,7 @@ fun DeveloperResourcesScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth()
                                     .animateContentSize()
+                                    .testTag("resource_prompt_${prompt.id}")
                                     .clickable(
                                         role = Role.Button,
                                         onClickLabel = stringResource(
@@ -402,6 +404,7 @@ fun DeveloperResourcesScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth()
                                     .animateContentSize()
+                                    .testTag("resource_command_${command.id}")
                                     .clickable(
                                         role = Role.Button,
                                         onClickLabel = stringResource(
@@ -502,6 +505,7 @@ fun DeveloperResourcesScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth()
                                     .animateContentSize()
+                                    .testTag("resource_playbook_${playbook.id}")
                                     .clickable(
                                         role = Role.Button,
                                         onClickLabel = stringResource(
@@ -638,6 +642,7 @@ private fun ServiceAccordionCard(
     Card(
         modifier = Modifier.fillMaxWidth()
             .animateContentSize()
+            .testTag("resource_service_${title.hashCode()}")
             .clickable(
                 role = Role.Button,
                 onClickLabel = stringResource(
