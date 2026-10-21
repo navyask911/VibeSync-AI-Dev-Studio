@@ -282,8 +282,16 @@ private fun parseLevel(line: String): LogLevel? {
 }
 
 private fun sanitizeLogLine(line: String): String {
+    val authorization = Regex("(?i)(authorization\\s*[:=]\\s*)(?:bearer\\s+|basic\\s+)?[^\\s,;]+")
+    val authorizationRedacted = authorization.replace(line) { match ->
+        "${match.groupValues[1]}[REDACTED]"
+    }
+    val bearerTokens = Regex("(?i)(\\bbearer\\s+)[^\\s,;]+")
+    val bearerRedacted = bearerTokens.replace(authorizationRedacted) { match ->
+        "${match.groupValues[1]}[REDACTED]"
+    }
     val secrets = Regex(
-        "(?i)(api[_-]?key|authorization|bearer|access[_-]?token|refresh[_-]?token|password|secret)(\\s*[=:]\\s*|\\s+)[^\\s,;]+"
+        "(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token|password|secret)(\\s*[=:]\\s*|\\s+)[^\\s,;]+"
     )
-    return secrets.replace(line) { match -> "${match.groupValues[1]}=[REDACTED]" }
+    return secrets.replace(bearerRedacted) { match -> "${match.groupValues[1]}=[REDACTED]" }
 }
