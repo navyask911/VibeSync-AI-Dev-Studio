@@ -68,6 +68,10 @@ fun LiveLogcatScreen(
     onOpenDiagnostics: () -> Unit
 ) {
     val context = LocalContext.current
+    val copiedMessage = stringResource(R.string.copy_response)
+    val liveTitle = stringResource(R.string.logcat_live_title)
+    val shareLabel = stringResource(R.string.logcat_share)
+    val openFailedMessage = stringResource(R.string.devoptions_open_failed)
     val clipboard = LocalClipboardManager.current
     var capturing by remember { mutableStateOf(false) }
     var filterText by remember { mutableStateOf("") }
@@ -208,7 +212,7 @@ fun LiveLogcatScreen(
                             OutlinedButton(
                                 onClick = {
                                     clipboard.setText(AnnotatedString(lines.joinToString("\n")))
-                                    Toast.makeText(context, context.getString(R.string.copy_response), Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, copiedMessage, Toast.LENGTH_SHORT).show()
                                 },
                                 modifier = Modifier.weight(1f),
                                 enabled = lines.isNotEmpty()
@@ -221,10 +225,10 @@ fun LiveLogcatScreen(
                                 onClick = {
                                     val intent = Intent(Intent.ACTION_SEND)
                                         .setType("text/plain")
-                                        .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.logcat_live_title))
+                                        .putExtra(Intent.EXTRA_SUBJECT, liveTitle)
                                         .putExtra(Intent.EXTRA_TEXT, lines.joinToString("\n"))
-                                    runCatching { context.startActivity(Intent.createChooser(intent, context.getString(R.string.logcat_share))) }
-                                        .onFailure { Toast.makeText(context, it.message ?: context.getString(R.string.devoptions_open_failed), Toast.LENGTH_LONG).show() }
+                                    runCatching { context.startActivity(Intent.createChooser(intent, shareLabel)) }
+                                        .onFailure { Toast.makeText(context, it.message ?: openFailedMessage, Toast.LENGTH_LONG).show() }
                                 },
                                 modifier = Modifier.weight(1f),
                                 enabled = lines.isNotEmpty()

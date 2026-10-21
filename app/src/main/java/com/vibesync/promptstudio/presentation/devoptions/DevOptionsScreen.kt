@@ -67,6 +67,7 @@ import com.vibesync.promptstudio.R
 @Composable
 fun DevOptionsScreen(onBack: () -> Unit) {
     val context = LocalContext.current
+    val shareSnapshotLabel = stringResource(R.string.devoptions_share_snapshot)
     val lifecycleOwner = LocalLifecycleOwner.current
     var developerEnabled by remember(context) {
         mutableStateOf(DevSettingsHelper.isDeveloperModeEnabled(context))
@@ -204,10 +205,10 @@ fun DevOptionsScreen(onBack: () -> Unit) {
                     val text = hardwareSnapshotText(context, snapshot)
                     val intent = Intent(Intent.ACTION_SEND)
                         .setType("text/plain")
-                        .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.devoptions_share_snapshot))
+                        .putExtra(Intent.EXTRA_SUBJECT, shareSnapshotLabel)
                         .putExtra(Intent.EXTRA_TEXT, text)
                     runCatching {
-                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.devoptions_share_snapshot)))
+                        context.startActivity(Intent.createChooser(intent, shareSnapshotLabel))
                     }.onFailure { showLaunchFailure(context) }
                 }
             }

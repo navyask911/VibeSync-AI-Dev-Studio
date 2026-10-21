@@ -88,6 +88,7 @@ fun DeveloperResourcesScreen(
 ) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
+    val openFailedMessage = stringResource(R.string.developer_resource_open_failed)
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
     val commandCopied = stringResource(R.string.developer_command_copied_feedback)
     val playbookCopied = stringResource(R.string.developer_playbook_copied_feedback)
@@ -364,7 +365,7 @@ fun DeveloperResourcesScreen(
                                                         }.onFailure {
                                                             Toast.makeText(
                                                                 context,
-                                                                context.getString(R.string.developer_resource_open_failed),
+                                                                openFailedMessage,
                                                                 Toast.LENGTH_LONG
                                                             ).show()
                                                         }
