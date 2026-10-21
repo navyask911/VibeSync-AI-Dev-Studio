@@ -1171,17 +1171,15 @@ private fun setWebContentDarkening(webView: WebView, enabled: Boolean) {
             )
         }
     }
-    // Android 13+ targets no longer honor force-dark. Keep native algorithmic darkening disabled
-    // when using the explicit CSS inversion below, so the page is never accidentally darkened twice.
+    // Force-dark is a no-op when the app targets Android 13+, even on older devices.
+    // Use CSS inversion in that case and avoid applying native darkening twice.
+    val forceDarkIsNoOp = webView.context.applicationInfo.targetSdkVersion >= Build.VERSION_CODES.TIRAMISU
     if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
         runCatching {
-            WebSettingsCompat.setAlgorithmicDarkeningAllowed(
-                settings,
-                enabled && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
-            )
+            WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, enabled && !forceDarkIsNoOp)
         }
     }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    if (forceDarkIsNoOp) {
         val script = if (enabled) {
             """
             (() => {
