@@ -1,6 +1,5 @@
 package com.vibesync.promptstudio.presentation.resources
 
-import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
