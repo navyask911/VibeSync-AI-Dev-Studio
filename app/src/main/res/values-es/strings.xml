@@ -423,4 +423,25 @@
     <string name="browser_settings_clipboard_markdown_label">Markdown de la página web</string>
     <string name="browser_settings_clipboard_text_label">Texto de la página web</string>
     <string name="browser_settings_print_title">Página de VibeSync</string>
+
+    <string name="model_selector_title">Elegir un modelo</string>
+    <string name="model_filter_all">Todos</string>
+    <string name="model_filter_fast">Rápido</string>
+    <string name="model_filter_cheap">Económico</string>
+    <string name="model_filter_capable">Avanzado</string>
+    <string name="model_capability_tools">Herramientas</string>
+    <string name="model_capability_vision">Visión</string>
+    <string name="model_capability_json">JSON</string>
+    <string name="model_capability_reasoning">Razonamiento</string>
+    <string name="model_price_unknown">Precio desconocido</string>
+    <string name="model_streaming_supported">Streaming</string>
+    <string name="model_manage_providers_keys">Gestionar proveedores y claves →</string>
+    <string name="model_switch_stream_title">¿Cambiar de modelo durante la respuesta?</string>
+    <string name="model_switch_stream_message">Cambiar de modelo cancelará la respuesta actual. ¿Cancelar el flujo y cambiar?</string>
+    <string name="model_switch_stream_confirm">Cancelar y cambiar</string>
+    <string name="model_key_health_ready">Credencial desbloqueada</string>
+    <string name="model_key_health_missing">No hay clave API guardada</string>
+    <string name="model_key_health_error">Credencial no disponible o última solicitud fallida</string>
+    <string name="model_key_health_unknown">Estado de la clave desconocido</string>
+
 </resources>
