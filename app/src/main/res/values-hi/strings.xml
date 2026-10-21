@@ -448,4 +448,23 @@
     <string name="browser_prompt_bar_hint">इस पेज से पूछें या प्रॉम्प्ट भेजें…</string>
     <string name="browser_prompt_send">वर्तमान पेज पर प्रॉम्प्ट भेजें</string>
 
+
+<string name="language_selector_title">ऐप की भाषा</string>
+    <string name="language_selector_open">ऐप की भाषा चुनें</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">वेब स्टूडियो</string>
+    <string name="nav_prompt_bank">प्रॉम्प्ट लाइब्रेरी</string>
+    <string name="nav_api_studio">API स्टूडियो</string>
+    <string name="nav_developer_tools">डेवलपर टूल</string>
+    <string name="nav_settings">सेटिंग</string>
+    <string name="nav_back">वापस</string>
+    <string name="developer_search_toggle">संसाधन खोजें</string>
+    <string name="developer_search_close">खोज बंद करें</string>
+    <string name="developer_accordion_expand">आइटम खोलें</string>
+    <string name="developer_accordion_collapse">आइटम बंद करें</string>
+
 </resources>
