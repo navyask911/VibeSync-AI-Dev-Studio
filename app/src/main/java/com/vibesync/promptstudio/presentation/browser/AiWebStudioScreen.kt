@@ -132,6 +132,7 @@ fun AiWebStudioScreen(
     val pendingBrowserPrompt by BrowserPromptBridge.pending.collectAsState()
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
+    var addressSuggestionsVisible by remember { mutableStateOf(false) }
     var prompt by remember { mutableStateOf("") }
     var promptExpanded by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
@@ -342,19 +343,47 @@ fun AiWebStudioScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedTextField(
-                        value = address,
-                        onValueChange = { address = it },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true,
-                        label = { Text(stringResource(R.string.address_bar)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
-                    )
+                    val suggestions = remember(address, savedBookmarks) {
+                        val providerSites = AiProvider.entries.filterNot { it == AiProvider.CUSTOM }.map {
+                            BrowserBookmark(context.getString(it.shortTitleRes), it.startUrl)
+                        }
+                        (savedBookmarks + providerSites)
+                            .distinctBy { it.url }
+                            .filter { address.isNotBlank() && (it.url.contains(address, ignoreCase = true) || it.title.contains(address, ignoreCase = true)) }
+                            .take(6)
+                    }
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = address,
+                            onValueChange = { address = it; addressSuggestionsVisible = it.isNotBlank() },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            label = { Text(stringResource(R.string.address_bar)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                        )
+                        DropdownMenu(
+                            expanded = addressSuggestionsVisible && suggestions.isNotEmpty(),
+                            onDismissRequest = { addressSuggestionsVisible = false }
+                        ) {
+                            suggestions.forEach { suggestion ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                            Text(suggestion.title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(suggestion.url, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        }
+                                    },
+                                    onClick = { address = suggestion.url; addressSuggestionsVisible = false }
+                                )
+                            }
+                        }
+                    }
                     Button(
                         onClick = {
                             if (address.isNotBlank()) {
                                 if (activeTab == null) manager.openTab(AiProvider.CUSTOM, address)
                                 else manager.navigate(activeTab.id, address)
+                                addressSuggestionsVisible = false
                                 feedback = null
                                 focusManager.clearFocus()
                             }
@@ -984,10 +1013,16 @@ private fun removeBrowserBookmark(context: Context, url: String): List<BrowserBo
 }
 
 private fun applyDesktopLayout(webView: WebView, context: Context, enabled: Boolean) {
+    val mobileUserAgent = WebSettings.getDefaultUserAgent(context)
+    val desktopUserAgent = mobileUserAgent
+        .replace(Regex("\\(Linux; Android [^)]+\\)"), "(X11; Linux x86_64)")
+        .replace(" Version/4.0", "")
+        .replace(" Mobile", "")
+        .replace("; wv", "")
     webView.settings.apply {
         useWideViewPort = true
         loadWithOverviewMode = enabled
-        userAgentString = if (enabled) DESKTOP_USER_AGENT else WebSettings.getDefaultUserAgent(context)
+        userAgentString = if (enabled) desktopUserAgent else mobileUserAgent
     }
 }
 
@@ -1010,13 +1045,13 @@ private fun extractPageToClipboard(
           const pieces = nodes.map(el => {
             const value = (el.innerText || el.textContent || '').trim();
             if (!value) return '';
-            if (el.tagName === 'PRE') return '```\\n' + value + '\\n```';
+            if (el.tagName === 'PRE') return '```\n' + value + '\n```';
             if (/^H[1-4]$/.test(el.tagName)) return '#'.repeat(Number(el.tagName.slice(1))) + ' ' + value;
             if (el.tagName === 'LI') return '- ' + value;
             if (el.tagName === 'BLOCKQUOTE') return '> ' + value;
             return value;
           });
-          return pieces.filter(Boolean).join('\\n\\n');
+          return pieces.filter(Boolean).join('\n\n');
         })()
         """.trimIndent()
     } else {
@@ -1034,8 +1069,6 @@ private fun extractPageToClipboard(
     }
 }
 
-private const val DESKTOP_USER_AGENT =
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
 
 private fun syncWebViewPool(
     host: FrameLayout,
