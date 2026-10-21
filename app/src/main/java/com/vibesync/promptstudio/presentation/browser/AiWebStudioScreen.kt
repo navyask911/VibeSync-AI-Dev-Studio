@@ -1440,13 +1440,15 @@ private class BrowserWebViewHost(
                 val dx = event.x - downX
                 val dy = event.y - downY
                 if (kotlin.math.abs(dx) > touchSlop && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
-                    val startedAtScreenEdge = downX <= edgeWidth || downX >= width - edgeWidth
+                    val startedAtLeftEdge = downX <= edgeWidth
+                    val startedAtRightEdge = downX >= width - edgeWidth
+                    val swipeInwards = (startedAtLeftEdge && dx > 0f) || (startedAtRightEdge && dx < 0f)
                     val activeWebView = (0 until childCount)
                         .map { getChildAt(it) }
                         .lastOrNull { it.visibility == View.VISIBLE && it is WebView } as? EdgeAwareWebView
                     val canPageScroll = activeWebView?.canScrollHorizontally(if (dx > 0f) -1 else 1) == true
                     val editableHasFocus = activeWebView?.hasEditableFocus == true
-                    if (startedAtScreenEdge && !canPageScroll && !editableHasFocus) {
+                    if (swipeInwards && !canPageScroll && !editableHasFocus) {
                         edgeGesture = true
                         parent?.requestDisallowInterceptTouchEvent(true)
                         return true
