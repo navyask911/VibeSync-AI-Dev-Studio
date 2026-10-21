@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Environment
 import android.os.Message
 import android.print.PrintAttributes
@@ -1170,8 +1171,34 @@ private fun setWebContentDarkening(webView: WebView, enabled: Boolean) {
             )
         }
     }
+    // Android 13+ targets no longer honor force-dark. Keep native algorithmic darkening disabled
+    // when using the explicit CSS inversion below, so the page is never accidentally darkened twice.
     if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-        runCatching { WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, enabled) }
+        runCatching {
+            WebSettingsCompat.setAlgorithmicDarkeningAllowed(
+                settings,
+                enabled && Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+            )
+        }
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val script = if (enabled) {
+            """
+            (() => {
+              const id = 'vibesync-browser-dark-content';
+              let style = document.getElementById(id);
+              if (!style) {
+                style = document.createElement('style');
+                style.id = id;
+                (document.head || document.documentElement).appendChild(style);
+              }
+              style.textContent = 'html { filter: invert(1) hue-rotate(180deg) !important; background: #fff !important; } img, video, canvas, iframe, picture, svg, [data-vibesync-no-invert] { filter: invert(1) hue-rotate(180deg) !important; }';
+            })();
+            """.trimIndent()
+        } else {
+            "document.getElementById('vibesync-browser-dark-content')?.remove();"
+        }
+        runCatching { webView.evaluateJavascript(script, null) }
     }
 }
 
@@ -1222,7 +1249,11 @@ private fun clearBrowserData(
 private fun printBrowserPage(context: Context, webView: WebView?, title: String) {
     if (webView == null) return
     val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return
-    val printTitle = title.ifBlank { Uri.parse(webView.url.orEmpty()).host.orEmpty().ifBlank { "VibeSync page" } }
+    val printTitle = title.ifBlank {
+        Uri.parse(webView.url.orEmpty()).host.orEmpty().ifBlank {
+            context.getString(R.string.browser_settings_print_title)
+        }
+    }
     runCatching {
         printManager.print(
             printTitle,
@@ -1297,7 +1328,15 @@ private fun extractPageToClipboard(
             onResult(false)
         } else {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-            clipboard?.setPrimaryClip(ClipData.newPlainText(if (markdown) "Web page Markdown" else "Web page text", extracted))
+            clipboard?.setPrimaryClip(
+                ClipData.newPlainText(
+                    context.getString(
+                        if (markdown) R.string.browser_settings_clipboard_markdown_label
+                        else R.string.browser_settings_clipboard_text_label
+                    ),
+                    extracted
+                )
+            )
             onResult(clipboard != null)
         }
     }
@@ -1452,7 +1491,12 @@ private fun configureWebView(
         }
 
         override fun onPageFinished(view: WebView, url: String?) {
-            CookieManager.getInstance().flush()
+            runCatching { cookieManagerFor(view).flush() }
+            setWebContentDarkening(
+                view,
+                context.getSharedPreferences("vibesync_browser_preferences", Context.MODE_PRIVATE)
+                    .getBoolean("dark_web_content", false)
+            )
             manager.updatePage(tab.id, url ?: tab.url, view.title.orEmpty(), false, view.canGoBack(), view.canGoForward())
         }
 
