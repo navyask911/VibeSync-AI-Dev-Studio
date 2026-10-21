@@ -7,6 +7,7 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,7 +57,7 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
+fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit, showTopBar: Boolean = true) {
     val context = LocalContext.current
     val clipboard = LocalClipboardManager.current
     var keyword by remember { mutableStateOf("") }
@@ -105,7 +106,9 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
     }
 
     Scaffold(
+        contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0),
         topBar = {
+            if (showTopBar) {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.developer_diagnostics)) },
                 navigationIcon = {
@@ -120,6 +123,7 @@ fun DiagnosticsScreen(store: DiagnosticsStore, onBack: () -> Unit) {
                 }
             )
         }
+            }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
