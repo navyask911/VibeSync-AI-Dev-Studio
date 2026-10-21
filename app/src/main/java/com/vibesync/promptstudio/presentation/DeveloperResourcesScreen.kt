@@ -66,13 +66,23 @@ fun DeveloperResourcesScreen(
     onOpenToolbox: () -> Unit,
     onOpenApiStudio: () -> Unit,
     onOpenDiagnostics: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    initialSection: String = "prompts"
 ) {
     val clipboard = LocalClipboardManager.current
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
     val commandCopied = stringResource(R.string.developer_command_copied_feedback)
     val playbookCopied = stringResource(R.string.developer_playbook_copied_feedback)
-    var section by remember { mutableStateOf(ResourceSection.PROMPTS) }
+    var section by remember(initialSection) {
+        mutableStateOf(
+            when (initialSection.lowercase()) {
+                "commands" -> ResourceSection.COMMANDS
+                "playbooks" -> ResourceSection.PLAYBOOKS
+                "services", "resources" -> ResourceSection.SERVICES
+                else -> ResourceSection.PROMPTS
+            }
+        )
+    }
     var search by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<DeveloperPromptCategory?>(null) }
     var selectedPlatform by remember { mutableStateOf<Int?>(null) }
