@@ -51,7 +51,8 @@ fun PromptStudioScreen(
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
     adMobManager: AdMobManager,
-    onSuccessfulPromptRun: (String) -> Unit
+    onSuccessfulPromptRun: (String) -> Unit,
+    showTopBar: Boolean = true
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var lastHandledSuccess by remember { mutableIntStateOf(state.successfulRunCount) }
@@ -71,8 +72,9 @@ fun PromptStudioScreen(
     LaunchedEffect(isOnline) { if (isOnline) adMobManager.resetBannerFailure() }
     Scaffold(
         modifier = Modifier.fillMaxSize().imePadding(),
-        contentWindowInsets = WindowInsets.systemBars,
+        contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0),
         topBar = {
+        if (showTopBar) {
         TopAppBar(
             windowInsets = WindowInsets.statusBars,
             title = {
@@ -112,6 +114,7 @@ fun PromptStudioScreen(
                 }
             }
         )
+        }
     }) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
