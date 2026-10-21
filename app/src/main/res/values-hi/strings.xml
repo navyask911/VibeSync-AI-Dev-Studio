@@ -444,4 +444,5 @@
     <string name="model_key_health_error">क्रेडेंशियल उपलब्ध नहीं या पिछला अनुरोध विफल</string>
     <string name="model_key_health_unknown">कुंजी की स्थिति अज्ञात</string>
 
+    <string name="model_pricing_disclaimer">प्रति 10 लाख टोकन अनुमानित API दरें; प्रदाता कीमतें बदल सकता है।</string>
 </resources>
