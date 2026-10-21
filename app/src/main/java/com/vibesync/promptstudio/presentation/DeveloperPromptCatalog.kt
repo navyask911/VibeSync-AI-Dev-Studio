@@ -173,7 +173,7 @@ internal object DeveloperCommandCatalog {
         DeveloperCommand("adb-package", R.string.developer_command_platform_adb, "Inspect installed app package path", "adb shell pm path com.vibesync.promptstudio"),
         DeveloperCommand("adb-meminfo", R.string.developer_command_platform_adb, "Inspect app memory usage", "adb shell dumpsys meminfo com.vibesync.promptstudio"),
         DeveloperCommand("adb-force-stop", R.string.developer_command_platform_adb, "Force-stop the app for a clean launch", "adb shell am force-stop com.vibesync.promptstudio"),
-        DeveloperCommand("ps-process", R.string.developer_command_platform_powershell, "Inspect matching Windows processes", "Get-Process | Where-Object { $_.ProcessName -like '*VibeSync*' } | Select-Object Id, CPU, WorkingSet"),
+        DeveloperCommand("ps-process", R.string.developer_command_platform_powershell, "Inspect matching Windows processes", "Get-Process | Where-Object { \$_.ProcessName -like '*VibeSync*' } | Select-Object Id, CPU, WorkingSet"),
         DeveloperCommand("ps-port", R.string.developer_command_platform_powershell, "Test HTTPS connectivity", "Test-NetConnection -ComputerName generativelanguage.googleapis.com -Port 443"),
         DeveloperCommand("ps-env", R.string.developer_command_platform_powershell, "List environment variables; review secrets before sharing", "Get-ChildItem Env:"),
         DeveloperCommand("bash-top", R.string.developer_command_platform_linux, "Show active processes", "top -b -n 1 | head -n 20"),
