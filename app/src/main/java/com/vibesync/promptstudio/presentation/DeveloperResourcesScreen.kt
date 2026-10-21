@@ -66,7 +66,8 @@ fun DeveloperResourcesScreen(
     onOpenToolbox: () -> Unit,
     onOpenApiStudio: () -> Unit,
     onOpenDiagnostics: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    showTopBar: Boolean = true
 ) {
     val clipboard = LocalClipboardManager.current
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
@@ -91,7 +92,7 @@ fun DeveloperResourcesScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            if (showTopBar) CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.developer_resources), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
