@@ -448,4 +448,23 @@
     <string name="browser_prompt_bar_hint">Pregunta a esta página o escribe un prompt…</string>
     <string name="browser_prompt_send">Enviar prompt a la página actual</string>
 
+
+<string name="language_selector_title">Idioma de la aplicación</string>
+    <string name="language_selector_open">Elegir idioma de la aplicación</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">Estudio web</string>
+    <string name="nav_prompt_bank">Biblioteca de prompts</string>
+    <string name="nav_api_studio">Estudio de API</string>
+    <string name="nav_developer_tools">Herramientas</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_back">Atrás</string>
+    <string name="developer_search_toggle">Buscar recursos</string>
+    <string name="developer_search_close">Cerrar búsqueda</string>
+    <string name="developer_accordion_expand">Expandir elemento</string>
+    <string name="developer_accordion_collapse">Contraer elemento</string>
+
 </resources>
