@@ -73,8 +73,6 @@ import com.vibesync.promptstudio.presentation.PromptStudioViewModel
 import com.vibesync.promptstudio.presentation.SettingsScreen
 import com.vibesync.promptstudio.presentation.SettingsViewModel
 import com.vibesync.promptstudio.presentation.theme.VibeSyncTheme
-import com.vibesync.promptstudio.R
-import com.vibesync.promptstudio.VibeSyncApplication
 import kotlinx.coroutines.launch
 
 
