@@ -310,6 +310,90 @@ fun DeveloperResourcesScreen(
                 }
                 ResourceSection.SERVICES -> {
                     LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        item {
+                            Text(
+                                stringResource(R.string.developer_resources_online_heading),
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        items(externalResourceGroups, key = { it.id }) { group ->
+                            val expanded = group.id in expandedResourceGroups
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                expandedResourceGroups = if (expanded) {
+                                                    expandedResourceGroups - group.id
+                                                } else {
+                                                    expandedResourceGroups + group.id
+                                                }
+                                            }
+                                            .padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(group.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                        Spacer(Modifier.width(10.dp))
+                                        Text(
+                                            stringResource(group.titleRes),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(Modifier.weight(1f))
+                                        Icon(
+                                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                            contentDescription = null
+                                        )
+                                    }
+                                    AnimatedVisibility(visible = expanded) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 10.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            group.links.forEach { link ->
+                                                TextButton(
+                                                    onClick = {
+                                                        runCatching {
+                                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link.url)))
+                                                        }.onFailure {
+                                                            Toast.makeText(
+                                                                context,
+                                                                context.getString(R.string.developer_resource_open_failed),
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                                        Text(link.title, fontWeight = FontWeight.SemiBold)
+                                                        Text(
+                                                            link.url,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        item {
+                            Text(
+                                stringResource(R.string.developer_resources_internal_heading),
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         item { ServiceCard(stringResource(R.string.developer_service_offline_tools), stringResource(R.string.developer_service_offline_tools_description), { Icon(Icons.Default.Code, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenToolbox) }
                         item { ServiceCard(stringResource(R.string.developer_service_diagnostics), stringResource(R.string.developer_service_diagnostics_description), { Icon(Icons.Default.BugReport, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenDiagnostics) }
                         item { ServiceCard(stringResource(R.string.developer_service_api_studio), stringResource(R.string.developer_service_api_studio_description), { Icon(Icons.Default.Terminal, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenApiStudio) }
