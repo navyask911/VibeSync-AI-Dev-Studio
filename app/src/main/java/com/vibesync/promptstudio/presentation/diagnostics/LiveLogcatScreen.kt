@@ -277,7 +277,9 @@ fun LiveLogcatScreen(
 }
 
 private fun parseLevel(line: String): LogLevel? {
-    val code = Regex("(?:^|\\s)([VDIWEF])\\/").find(line)?.groupValues?.getOrNull(1) ?: return null
+    // Handles both compact "D/Tag:" and "-v time" output "... 1234 1234 D Tag:".
+    val code = Regex("(?:^|\\s)([VDIWEF])(?:\\s+[^\\s:]+:|/)")
+        .find(line)?.groupValues?.getOrNull(1) ?: return null
     return LogLevel.entries.firstOrNull { it.code == code } ?: if (code == "F") LogLevel.ERROR else null
 }
 
