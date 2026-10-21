@@ -304,7 +304,7 @@
     <string name="developer_prompt_count">%1$d ausgewählte Prompts</string>
     <string name="developer_section_prompts">Prompt-Bibliothek</string>
     <string name="developer_section_commands">Befehle</string>
-    <string name="developer_section_services">Dienste</string>
+    <string name="developer_section_services">Ressourcen &amp; Tools</string>
     <string name="developer_prompt_search">Alle 150 Prompts durchsuchen</string>
     <string name="developer_command_search">Befehle suchen</string>
     <string name="developer_prompt_category_all">Alle Kategorien</string>
@@ -553,4 +553,11 @@
     
     
     
+    <string name="developer_resources_online_heading">Ausgewählte Dokumentation und Communitys</string>
+    <string name="developer_resources_android_category">Android-Plattform</string>
+    <string name="developer_resources_design_category">Design und Grafiken</string>
+    <string name="developer_resources_architecture_category">Engineering und Kotlin</string>
+    <string name="developer_resources_community_category">Community-Foren</string>
+    <string name="developer_resources_internal_heading">Direktzugriffe auf VibeSync-Werkzeuge</string>
+    <string name="developer_resource_open_failed">Der Link konnte nicht geöffnet werden. Prüfe, ob ein Browser installiert ist.</string>
 </resources>
