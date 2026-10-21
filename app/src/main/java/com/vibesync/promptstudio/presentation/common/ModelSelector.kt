@@ -59,6 +59,7 @@ fun ModelSelector(
     provider: ProviderType,
     modelId: String,
     availableModels: List<String>,
+    availableModelsByProvider: Map<ProviderType, List<String>>,
     providerKeyHealth: Map<ProviderType, ProviderKeyHealth>,
     lastFailedProvider: ProviderType?,
     isLoadingModels: Boolean,
@@ -110,9 +111,11 @@ fun ModelSelector(
     }
 
     if (sheetVisible) {
-        val options = remember(availableModels, provider, modelId) {
+        val options = remember(availableModels, availableModelsByProvider, provider, modelId) {
             ProviderType.entries.flatMap { optionProvider ->
-                val discovered = if (optionProvider == provider) availableModels + modelId else emptyList()
+                val discovered = (availableModelsByProvider[optionProvider]
+                    ?: if (optionProvider == provider) availableModels else emptyList()) +
+                    if (optionProvider == provider) listOf(modelId) else emptyList()
                 (optionProvider.modelOptions + discovered)
                     .filter { it.isNotBlank() }
                     .distinct()
@@ -295,12 +298,14 @@ private fun providerSymbol(provider: ProviderType): String = when (provider) {
 private fun modelOption(provider: ProviderType, modelId: String): ModelOption =
     when ("${provider.name}:$modelId") {
         // Input/output prices are USD per million tokens; unknown provider/model rates stay unknown.
-        "OPENAI:gpt-4o" -> ModelOption(provider, modelId, "128k", null, null, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
-        "OPENAI:gpt-4o-mini" -> ModelOption(provider, modelId, "128k", null, null, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true)
-        "OPENAI:gpt-4.1" -> ModelOption(provider, modelId, "1M", null, null, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
+        "OPENAI:gpt-4o" -> ModelOption(provider, modelId, "128k", 2.50, 10.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
+        "OPENAI:gpt-4o-mini" -> ModelOption(provider, modelId, "128k", 0.15, 0.60, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true)
+        "OPENAI:gpt-4.1" -> ModelOption(provider, modelId, "1M", 2.00, 8.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
         "ANTHROPIC:claude-sonnet-4-5" -> ModelOption(provider, modelId, "200k", 3.00, 15.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true, capable = true)
-        "ANTHROPIC:claude-opus-4-1" -> ModelOption(provider, modelId, "200k", 15.00, 75.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), capable = true)
+        "ANTHROPIC:claude-sonnet-4-6" -> ModelOption(provider, modelId, "1M beta", 3.00, 15.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), fast = true, capable = true)
+        "ANTHROPIC:claude-opus-4-8" -> ModelOption(provider, modelId, "1M beta", 5.00, 25.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), capable = true)
         "ANTHROPIC:claude-haiku-4-5" -> ModelOption(provider, modelId, "200k", 1.00, 5.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true, cheap = true)
+        "GEMINI:gemini-3.8-flash" -> ModelOption(provider, modelId, "1M", 0.75, 3.75, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), fast = true, cheap = true)
         "GEMINI:gemini-2.5-flash" -> ModelOption(provider, modelId, "1M", 0.30, 2.50, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true, cheap = true)
         "GEMINI:gemini-2.5-pro" -> ModelOption(provider, modelId, "1M", 1.25, 10.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), capable = true)
         else -> ModelOption(provider, modelId, "—", null, null, listOf(R.string.model_streaming_supported))
