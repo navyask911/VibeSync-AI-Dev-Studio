@@ -14,12 +14,18 @@ import com.vibesync.promptstudio.domain.usecase.ExecutePromptUseCase
 import com.vibesync.promptstudio.domain.usecase.SubstituteVariablesUseCase
 import com.vibesync.promptstudio.domain.usecase.TokenCounterUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+enum class ProviderKeyHealth { UNKNOWN, PRESENT, MISSING, ERROR }
 
 data class PromptStudioUiState(
     val title: String = "New prompt",
@@ -29,7 +35,10 @@ data class PromptStudioUiState(
     val provider: ProviderType = ProviderType.OPENAI,
     val modelId: String = ProviderType.OPENAI.defaultModel,
     val availableModels: List<String> = emptyList(),
+    val availableModelsByProvider: Map<ProviderType, List<String>> = emptyMap(),
     val isLoadingModels: Boolean = false,
+    val providerKeyHealth: Map<ProviderType, ProviderKeyHealth> = emptyMap(),
+    val lastFailedProvider: ProviderType? = null,
     val inputRateText: String = "",
     val outputRateText: String = "",
     val response: String = "",
@@ -66,6 +75,7 @@ class PromptStudioViewModel(
             }
         }
         recalculate()
+        refreshProviderKeyHealth()
     }
 
     fun updateTitle(value: String) { mutableState.update { it.copy(title = value.take(120)) } }
@@ -77,20 +87,45 @@ class PromptStudioViewModel(
 
     fun updateProvider(provider: ProviderType) {
         mutableState.update {
-            it.copy(provider = provider, modelId = provider.defaultModel, availableModels = emptyList(), isLoadingModels = false)
+            it.copy(provider = provider, modelId = provider.defaultModel, availableModels = it.availableModelsByProvider[provider].orEmpty(), isLoadingModels = false)
         }
         recalculate()
     }
 
+    fun refreshProviderKeyHealth() {
+        viewModelScope.launch {
+            val health = ProviderType.entries.associateWith { provider ->
+                runCatching { repository.hasApiKey(provider) }.fold(
+                    onSuccess = { present -> if (present) ProviderKeyHealth.PRESENT else ProviderKeyHealth.MISSING },
+                    onFailure = { ProviderKeyHealth.ERROR }
+                )
+            }
+            mutableState.update { it.copy(providerKeyHealth = health) }
+        }
+    }
+
     fun refreshModels() {
-        val provider = mutableState.value.provider
         viewModelScope.launch {
             mutableState.update { it.copy(isLoadingModels = true) }
-            val discovered = runCatching { repository.listModels(provider) }.getOrDefault(emptyList())
+            val discoveredByProvider = coroutineScope {
+                ProviderType.entries.map { provider ->
+                    async(Dispatchers.IO) {
+                        val models = try {
+                            repository.listModels(provider)
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (_: Throwable) {
+                            emptyList()
+                        }
+                        provider to models.distinct()
+                    }
+                }.awaitAll().toMap()
+            }
             mutableState.update { current ->
-                if (current.provider != provider) current
-                else current.copy(
-                    availableModels = discovered.ifEmpty { provider.modelOptions },
+                current.copy(
+                    availableModelsByProvider = discoveredByProvider,
+                    availableModels = discoveredByProvider[current.provider].orEmpty()
+                        .ifEmpty { current.provider.modelOptions },
                     isLoadingModels = false
                 )
             }
@@ -152,7 +187,7 @@ class PromptStudioViewModel(
         val request = PromptRequest(config, system.text, user.text)
         streamJob?.cancel()
         streamJob = viewModelScope.launch {
-            mutableState.update { it.copy(isStreaming = true, response = "", error = null) }
+            mutableState.update { it.copy(isStreaming = true, response = "", error = null, lastFailedProvider = null) }
             val responseBuffer = StringBuilder()
             var completedSuccessfully = false
             try {
@@ -181,7 +216,7 @@ class PromptStudioViewModel(
                     it.copy(error = when (error) {
                         is PromptFailure -> error.message
                         else -> error.message ?: "The request failed unexpectedly."
-                    })
+                    }, lastFailedProvider = snapshot.provider)
                 }
             } finally {
                 mutableState.update {

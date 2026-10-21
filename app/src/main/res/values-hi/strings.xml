@@ -423,4 +423,29 @@
     <string name="browser_settings_clipboard_markdown_label">वेब पेज Markdown</string>
     <string name="browser_settings_clipboard_text_label">वेब पेज का पाठ</string>
     <string name="browser_settings_print_title">VibeSync पेज</string>
+
+    <string name="model_selector_title">मॉडल चुनें</string>
+    <string name="model_filter_all">सभी</string>
+    <string name="model_filter_fast">तेज़</string>
+    <string name="model_filter_cheap">कम लागत</string>
+    <string name="model_filter_capable">अधिक सक्षम</string>
+    <string name="model_capability_tools">टूल</string>
+    <string name="model_capability_vision">विज़न</string>
+    <string name="model_capability_json">JSON</string>
+    <string name="model_capability_reasoning">तर्क</string>
+    <string name="model_price_unknown">कीमत अज्ञात</string>
+    <string name="model_streaming_supported">स्ट्रीमिंग</string>
+    <string name="model_manage_providers_keys">प्रदाता और कुंजियाँ प्रबंधित करें →</string>
+    <string name="model_switch_stream_title">स्ट्रीमिंग के दौरान मॉडल बदलें?</string>
+    <string name="model_switch_stream_message">मॉडल बदलने से मौजूदा उत्तर रद्द हो जाएगा। क्या स्ट्रीम रद्द करके मॉडल बदलें?</string>
+    <string name="model_switch_stream_confirm">रद्द करें और बदलें</string>
+    <string name="model_key_health_ready">क्रेडेंशियल अनलॉक है</string>
+    <string name="model_key_health_missing">कोई API कुंजी सहेजी नहीं गई</string>
+    <string name="model_key_health_error">क्रेडेंशियल उपलब्ध नहीं या पिछला अनुरोध विफल</string>
+    <string name="model_key_health_unknown">कुंजी की स्थिति अज्ञात</string>
+
+    <string name="model_pricing_disclaimer">प्रति 10 लाख टोकन अनुमानित API दरें। लंबे कॉन्टेक्स्ट और टूल की लागत अधिक हो सकती है; दरें और मूल्य-स्तर बदल सकते हैं।</string>
+    <string name="browser_prompt_bar_hint">इस पेज से पूछें या प्रॉम्प्ट भेजें…</string>
+    <string name="browser_prompt_send">वर्तमान पेज पर प्रॉम्प्ट भेजें</string>
+
 </resources>

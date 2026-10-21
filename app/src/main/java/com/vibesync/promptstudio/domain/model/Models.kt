@@ -8,7 +8,7 @@ enum class ProviderType(
     val modelOptions: List<String>
 ) {
     OPENAI("OpenAI", "gpt-4o", listOf("gpt-4o", "gpt-4o-mini", "gpt-4.1")),
-    ANTHROPIC("Anthropic", "claude-sonnet-4-5", listOf("claude-sonnet-4-5", "claude-opus-4-1", "claude-haiku-4-5")),
+    ANTHROPIC("Anthropic", "claude-sonnet-4-6", listOf("claude-sonnet-4-6", "claude-opus-4-8", "claude-haiku-4-5")),
     GEMINI("Google Gemini", "gemini-3.8-flash", listOf("gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.5-pro"))
 }
 

@@ -13,6 +13,8 @@ import android.os.Message
 import android.print.PrintAttributes
 import android.print.PrintManager
 import android.view.View
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.DownloadListener
@@ -30,6 +32,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -43,8 +46,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -107,6 +113,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -166,6 +174,7 @@ fun AiWebStudioScreen(
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var addressSuggestionsVisible by remember { mutableStateOf(false) }
+    var browserPromptText by remember { mutableStateOf("") }
     var feedback by remember { mutableStateOf<String?>(null) }
     var hostContainer by remember { mutableStateOf<FrameLayout?>(null) }
     val popupPool = remember { mutableMapOf<String, MutableList<WebView>>() }
@@ -280,15 +289,14 @@ fun AiWebStudioScreen(
     }
 
     /*
-     * The root owns IME and navigation-bar insets. This avoids applying imePadding twice:
-     * the WebView's weighted container is measured inside the remaining height, so its
-     * native viewport shrinks for both Compose prompt focus and web-form focus.
+     * The root handles the status bar. The floating prompt surface owns the union of navigation
+     * and IME insets, so its input stays tappable above the keyboard without applying IME padding
+     * to the WebView itself. The weighted WebView viewport shrinks as the prompt bar moves up.
      */
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .navigationBarsPadding()
-            .imePadding()
+            .statusBarsPadding()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TopAppBar(
@@ -625,7 +633,7 @@ fun AiWebStudioScreen(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { viewContext ->
-                    FrameLayout(viewContext).apply {
+                    BrowserWebViewHost(viewContext) { showTabOverview = true }.apply {
                         clipChildren = true
                         clipToPadding = true
                         hostContainer = this
@@ -652,6 +660,68 @@ fun AiWebStudioScreen(
                     Button(onClick = { showProviderSheet = true }) {
                         Text(stringResource(R.string.open_provider_directory))
                     }
+                }
+            }
+        }
+
+        val sendBrowserPrompt: () -> Unit = {
+            val prompt = browserPromptText.trim()
+            val tab = activeTab
+            val webView = tab?.let { manager.webViewFor(it.id) }
+            when {
+                prompt.isBlank() -> Unit
+                tab == null || webView == null -> feedback = promptNoInputText
+                !tab.provider.supportsPromptInjection(tab.url) -> feedback = promptUnsupportedText
+                else -> webView.evaluateJavascript(makePromptInjectionScript(prompt, tab.provider)) { result ->
+                    feedback = when {
+                        result?.contains("no-input") == true -> promptNoInputText
+                        result?.contains("no-send") == true -> promptFilledText
+                        else -> {
+                            browserPromptText = ""
+                            promptSentText
+                        }
+                    }
+                }
+            }
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            tonalElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = browserPromptText,
+                    onValueChange = { browserPromptText = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text(stringResource(R.string.browser_prompt_bar_hint)) },
+                    maxLines = 3,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { sendBrowserPrompt() }),
+                    enabled = activeTab != null,
+                    shape = RoundedCornerShape(20.dp)
+                )
+                IconButton(
+                    onClick = { sendBrowserPrompt() },
+                    enabled = activeTab != null && browserPromptText.isNotBlank(),
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowForward,
+                        contentDescription = stringResource(R.string.browser_prompt_send),
+                        tint = if (activeTab != null && browserPromptText.isNotBlank())
+                            MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -1065,6 +1135,7 @@ private fun BrowserTabChip(
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .pointerInput(index, tabCount) {
                 var total = 0f
@@ -1343,6 +1414,137 @@ private fun extractPageToClipboard(
 }
 
 
+/**
+ * Bridges the native WebView's horizontal edge state with the existing tab-overview sheet.
+ * Only gestures that start at the physical screen edge can open the sheet; in-page horizontal
+ * drags remain with WebView unless the view cannot scroll farther in that direction.
+ */
+private class BrowserWebViewHost(
+    context: Context,
+    private val onOpenTabOverview: () -> Unit
+) : FrameLayout(context) {
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private val edgeWidth = 28f * resources.displayMetrics.density
+    private var downX = 0f
+    private var downY = 0f
+    private var edgeGesture = false
+
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = event.x
+                downY = event.y
+                edgeGesture = false
+                return false
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - downX
+                val dy = event.y - downY
+                if (kotlin.math.abs(dx) > touchSlop && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                    val startedAtLeftEdge = downX <= edgeWidth
+                    val startedAtRightEdge = downX >= width - edgeWidth
+                    val swipeInwards = (startedAtLeftEdge && dx > 0f) || (startedAtRightEdge && dx < 0f)
+                    val activeWebView = (0 until childCount)
+                        .map { getChildAt(it) }
+                        .lastOrNull { it.visibility == View.VISIBLE && it is WebView } as? EdgeAwareWebView
+                    val canPageScroll = activeWebView?.canScrollHorizontally(if (dx > 0f) -1 else 1) == true
+                    val editableHasFocus = activeWebView?.hasEditableFocus == true
+                    if (swipeInwards && !canPageScroll && !editableHasFocus) {
+                        edgeGesture = true
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                        return true
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                edgeGesture = false
+            }
+        }
+        return false
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!edgeGesture) return super.onTouchEvent(event)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_UP -> {
+                val dx = event.x - downX
+                val dy = event.y - downY
+                if (kotlin.math.abs(dx) > touchSlop && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                    onOpenTabOverview()
+                }
+                edgeGesture = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                edgeGesture = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+            }
+        }
+        return true
+    }
+}
+
+/**
+ * Lets horizontal page content scroll while passing edge swipes to an ancestor drawer/pager.
+ *
+ * A gesture starts here only when its initial hit target is inside this WebView. The parent is
+ * disallowed from intercepting only while the WebView can consume the drag; at an edge, normal
+ * parent gesture arbitration resumes. Editable DOM focus wins over drawer gestures.
+ */
+private class EdgeAwareWebView(context: Context) : WebView(context) {
+    private val horizontalTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private var downX = 0f
+    private var downY = 0f
+    var hasEditableFocus: Boolean = false
+        private set
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = event.x
+                downY = event.y
+                parent?.requestDisallowInterceptTouchEvent(hasEditableFocus)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val deltaX = event.x - downX
+                val deltaY = event.y - downY
+                when {
+                    hasEditableFocus -> parent?.requestDisallowInterceptTouchEvent(true)
+                    kotlin.math.abs(deltaX) > horizontalTouchSlop &&
+                        kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY) -> {
+                        val pageCanConsume = if (deltaX > 0) canScrollHorizontally(-1) else canScrollHorizontally(1)
+                        parent?.requestDisallowInterceptTouchEvent(pageCanConsume)
+                    }
+                    kotlin.math.abs(deltaY) > horizontalTouchSlop ->
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                parent?.requestDisallowInterceptTouchEvent(false)
+                refreshEditableFocus()
+            }
+            MotionEvent.ACTION_CANCEL -> parent?.requestDisallowInterceptTouchEvent(false)
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    fun clearEditableFocus() {
+        hasEditableFocus = false
+    }
+
+    fun refreshEditableFocus() {
+        runCatching {
+            evaluateJavascript(
+                """(function() {
+                    const active = document.activeElement;
+                    return !!active && !!active.matches &&
+                      active.matches('input:not([type=button]):not([type=submit]):not([type=reset]), textarea, select, [contenteditable="true"], [role="textbox"]');
+                })()""".trimIndent()
+            ) { result -> hasEditableFocus = result == "true" }
+        }
+    }
+}
+
 private fun syncWebViewPool(
     host: FrameLayout,
     tabs: List<AiTabItem>,
@@ -1371,7 +1573,7 @@ private fun syncWebViewPool(
         var created = false
         if (view == null) {
             created = true
-            view = WebView(context)
+            view = EdgeAwareWebView(context)
             configureWebView(view, tab, manager, context, host, popupPool, browserPageFailedText)
             manager.registerWebView(tab.id, view)
             host.addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
@@ -1452,7 +1654,7 @@ private fun configureWebView(
         override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
             if (tab.isPrivate || !isUserGesture || resultMsg == null) return false
             val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
-            val popup = WebView(context)
+            val popup = EdgeAwareWebView(context)
             cookies.setAcceptCookie(true)
             popup.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                 enqueueBrowserDownload(context, popup, url, userAgent, contentDisposition, mimeType)
@@ -1499,10 +1701,12 @@ private fun configureWebView(
         }
 
         override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
+            (view as? EdgeAwareWebView)?.clearEditableFocus()
             manager.updatePage(tab.id, url ?: tab.url, view.title.orEmpty(), true, view.canGoBack(), view.canGoForward())
         }
 
         override fun onPageFinished(view: WebView, url: String?) {
+            (view as? EdgeAwareWebView)?.refreshEditableFocus()
             runCatching { cookieManagerFor(view).flush() }
             setWebContentDarkening(
                 view,

@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 interface PromptRepository {
     /** Returns provider-verified model IDs when a stored API credential is available. */
     suspend fun listModels(provider: ProviderType): List<String> = emptyList()
+
+    /** Reads/decrypts the provider credential locally; implementations should not call the network. */
+    suspend fun hasApiKey(provider: ProviderType): Boolean = false
     fun execute(request: PromptRequest): Flow<String>
     suspend fun saveTemplate(prompt: PromptEntity)
     fun observeTemplates(): Flow<List<PromptEntity>>

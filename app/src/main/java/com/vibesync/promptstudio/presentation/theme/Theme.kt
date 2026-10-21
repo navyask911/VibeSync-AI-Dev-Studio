@@ -17,11 +17,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 
-private val DarkColors = darkColorScheme(
+internal val BaselineDarkColors = darkColorScheme(
     primary = Emerald, secondary = ElectricBlue, tertiary = Coral,
     background = Ink, surface = Color(0xFF171D22)
 )
-private val LightColors = lightColorScheme(
+internal val BaselineLightColors = lightColorScheme(
     primary = EmeraldDark, secondary = ElectricBlue, tertiary = Coral,
     background = Mist, surface = Color(0xFFFAFCFB)
 )
@@ -45,13 +45,13 @@ fun VibeSyncTheme(content: @Composable () -> Unit) {
     val systemDark = isSystemInDarkTheme()
     val dark = when (appearance) { "developer_dark" -> true; "normal" -> false; else -> systemDark }
     val colors = when (appearance) {
-        "developer_dark" -> DarkColors
-        "normal" -> LightColors
+        "developer_dark" -> BaselineDarkColors
+        "normal" -> BaselineLightColors
         else -> when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dark -> dynamicDarkColorScheme(context)
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> dynamicLightColorScheme(context)
-            dark -> DarkColors
-            else -> LightColors
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && dark -> ensureAccessibleColorScheme(dynamicDarkColorScheme(context), BaselineDarkColors)
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> ensureAccessibleColorScheme(dynamicLightColorScheme(context), BaselineLightColors)
+            dark -> BaselineDarkColors
+            else -> BaselineLightColors
         }
     }
     MaterialTheme(colorScheme = colors, typography = VibeTypography(fontChoice), content = content)
