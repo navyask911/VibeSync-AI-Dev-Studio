@@ -444,7 +444,7 @@
     <string name="model_key_health_error">Zugangsdaten nicht verfügbar oder letzte Anfrage fehlgeschlagen</string>
     <string name="model_key_health_unknown">Schlüsselstatus unbekannt</string>
 
-    <string name="model_pricing_disclaimer">Standard-API-Preise pro 1 Mio. Tokens. Lange Kontexte und Tools können mehr kosten; Preise können sich ändern.</string>
+    <string name="model_pricing_disclaimer">Richtwerte für API-Preise pro 1 Mio. Tokens. Lange Kontexte und Tools können mehr kosten; Tarifstufen und Preise können sich ändern.</string>
     <string name="browser_prompt_bar_hint">Diese Seite fragen oder einen Prompt senden…</string>
     <string name="browser_prompt_send">Prompt an aktuelle Seite senden</string>
 
