@@ -110,6 +110,7 @@ private fun AppNavigation(
         composable("webstudio") {
             AiWebStudioScreen(
                 onOpenDeveloperApi = { navController.navigate("studio") },
+                onOpenDeveloperResources = { navController.navigate("developerhub") { launchSingleTop = true } },
                 onBack = {
                     if (!navController.popBackStack()) (context as? android.app.Activity)?.finish()
                 }

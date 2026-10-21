@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
 import android.net.Uri
@@ -102,6 +103,14 @@ fun SettingsScreen(
                         FilterChip(selected = fontChoice == "mono", onClick = { fontChoice = "mono"; appearancePrefs.edit().putString("font_family", fontChoice).apply() }, label = { Text(stringResource(R.string.font_mono)) })
                     }
                     Text(stringResource(R.string.font_license_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)) {
+                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                            Text(stringResource(R.string.appearance_preview_title), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            Text(stringResource(R.string.appearance_preview_heading), style = MaterialTheme.typography.titleLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                            Text(stringResource(R.string.appearance_preview_body), style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(R.string.appearance_preview_code), style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
+                        }
+                    }
                 }
             }
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {

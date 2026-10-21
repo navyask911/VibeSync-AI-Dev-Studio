@@ -187,3 +187,13 @@ internal object DeveloperCommandCatalog {
         DeveloperCommand("gradle-apk", R.string.developer_command_platform_git, "Build a local debug APK", "./gradlew assembleDebug")
     )
 }
+
+internal data class DeveloperPlaybook(val id: String, val titleRes: Int, val summaryRes: Int, val contentRes: Int)
+
+internal object DeveloperPlaybookCatalog {
+    val playbooks: List<DeveloperPlaybook> = listOf(
+        DeveloperPlaybook("release-readiness", R.string.developer_playbook_release_title, R.string.developer_playbook_release_summary, R.string.developer_playbook_release_content),
+        DeveloperPlaybook("security-review", R.string.developer_playbook_security_title, R.string.developer_playbook_security_summary, R.string.developer_playbook_security_content),
+        DeveloperPlaybook("quality-review", R.string.developer_playbook_quality_title, R.string.developer_playbook_quality_summary, R.string.developer_playbook_quality_content)
+    )
+}

@@ -342,10 +342,10 @@
     <string name="theme_developer_dark">Developer Dark</string>
     <string name="theme_system">النظام</string>
     <string name="appearance_font_label">نوع الخط</string>
-    <string name="font_serif_tnr">Serif (نمط Times)</string>
+    <string name="font_serif_tnr">خط Serif بنمط Times New Roman</string>
     <string name="font_sans">Sans serif</string>
     <string name="font_mono">Monospace</string>
-    <string name="font_license_note">يستخدم خيار Serif خط Android المدمج المشابه لنمط Times. لا تتضمن الحزمة ملف Times New Roman الاحتكاري.</string>
+    <string name="font_license_note">يستخدم خيار Serif عائلة الخطوط المدمجة في Android لمحاكاة نمط Times New Roman. لا يتم تضمين ملف الخط الاحتكاري.</string>
     <string name="browser_bookmark_current_page">إضافة الصفحة الحالية إلى العلامات</string>
     <string name="browser_open_bookmarks">فتح العلامات المرجعية</string>
     <string name="browser_bookmarks_title">العلامات المحفوظة</string>
@@ -360,4 +360,23 @@
     <string name="browser_super_copy_empty">لا يوجد نص في الصفحة لنسخه.</string>
     <string name="app_brand_title">VibeSync AI</string>
     <string name="app_brand_subtitle">مجموعة المطورين</string>
+    <string name="developer_section_playbooks">أدلة الهندسة</string>
+    <string name="developer_playbook_intro">قوائم تحقق قابلة لإعادة الاستخدام للإصدار والأمان والجودة. انسخها لفريقك أو أرسلها إلى موقع ذكاء اصطناعي لمراجعتها حسب مشروعك.</string>
+    <string name="developer_playbook_release_title">الاستعداد للإصدار</string>
+    <string name="developer_playbook_release_summary">التحقق من الإصدارات وCI وPlay Console وخطة التراجع.</string>
+    <string name="developer_playbook_release_content">1. تأكد من أن versionCode أكبر من جميع الرموز التي رُفعت سابقًا إلى Play Console.\n2. شغّل testDebugUnitTest وlintDebug وأصلح الإخفاقات وراجع التحذيرات.\n3. أنشئ AAB/APK موقعًا وتحقق من معرّف الحزمة وversionName وversionCode والتوقيعات.\n4. راجع SDK المستهدف والأذونات وسلامة البيانات وسياسة الخصوصية والفوترة وإفصاحات موافقة الإعلانات.\n5. اختبر التشغيل الأول وحالات عدم الاتصال والأخطاء واستعادة بيانات الاعتماد وتسجيل الدخول وتغيير مساحة الشاشة عند فتح لوحة المفاتيح.\n6. اختبر الترقية من الإصدار المنشور وافحص تحذيرات Play Console.\n7. احتفظ بمعرّف commit وملف mapping وملاحظات الإصدار وخطة التراجع.</string>
+    <string name="developer_playbook_security_title">مراجعة الأمان والخصوصية</string>
+    <string name="developer_playbook_security_summary">تعزيز حماية بيانات الاعتماد وWebView وOAuth والتشخيص والتبعيات.</string>
+    <string name="developer_playbook_security_content">1. لا تضع مفاتيح API أو أسرار العميل أو ملفات keystore أو كلمات المرور أو رموز الوصول في Git.\n2. شفّر بيانات الاعتماد باستخدام مفاتيح يدعمها Android Keystore؛ لا تسجل المطالبات أو الأسرار أو ترويسات التفويض.\n3. اشترط HTTPS وراجع سياسة النص غير المشفر والمكونات المصدّرة ومرشحات روابط التطبيق.\n4. تعامل مع محتوى WebView بوصفه غير موثوق؛ تجنب جسور JavaScript إلا عند الضرورة وبعد التحقق من المصدر.\n5. تحقق من OAuth state وPKCE وURI إعادة التوجيه وإعداد نقطة نهاية الرموز.\n6. اخفِ البيانات الشخصية ورموز الاستعلام ومحتوى الطلبات وترويسات المصادقة في تقارير التشخيص.\n7. راجع تراخيص التبعيات والثغرات المعروفة واحتفظ بالإشعارات المطلوبة.</string>
+    <string name="developer_playbook_quality_title">الجودة والأداء وإمكانية الوصول</string>
+    <string name="developer_playbook_quality_summary">اختبارات وسلوك لوحة المفاتيح وإمكانية الوصول وأداء التشغيل.</string>
+    <string name="developer_playbook_quality_content">1. غطِّ حالات النجاح والتحميل والنتائج الفارغة وانتهاء المهلة وعدم الاتصال وإعادة المحاولة وأخطاء الخادم.\n2. اختبر تغيير مساحة IME/لوحة المفاتيح والتنقل بالإيماءات وRTL وتكبير الخط والشاشات الصغيرة.\n3. تحقق من تسميات إمكانية الوصول وترتيب قارئ الشاشة والتباين ومساحات اللمس وتسلسل العناوين.\n4. تجنب عمليات الشبكة والملفات على الخيط الرئيسي وحدد أحجام التحليل والإدخال وعمر WebView.\n5. أضف اختبارات وحدات لانتقالات الحالة والحالات الحدية والتسلسل والتحقق من URL.\n6. حلل بدء التشغيل والذاكرة وتجميع WebView والتمرير وإعادة التركيب قبل الإصدار.\n7. وثّق مصفوفة الأجهزة وواجهات API والمشكلات المعروفة ومعايير القبول مع الإصدار.</string>
+    <string name="developer_playbook_copy">نسخ قائمة التحقق</string>
+    <string name="developer_playbook_review">مراجعة بالذكاء الاصطناعي</string>
+    <string name="developer_playbook_copied_feedback">تم نسخ قائمة التحقق إلى الحافظة.</string>
+    <string name="developer_playbook_review_prompt">تصرّف كمهندس رئيسي لنظام Android والويب. راجع قائمة التحقق التالية الخاصة بـ %1$s لاكتشاف النواقص والمخاطر العملية والفجوات الخاصة بالمشروع. قدّم تحسينات مرتبة حسب الأولوية ومعايير القبول:\n\n%2$s</string>
+    <string name="appearance_preview_title">معاينة الخط مباشرة</string>
+    <string name="appearance_preview_heading">VibeSync AI Developer Suite</string>
+    <string name="appearance_preview_body">تتغير العناوين العريضة والنصوص المقروءة والمسافات بحسب الخط المختار.</string>
+    <string name="appearance_preview_code">val buildReady = true</string>
 </resources>

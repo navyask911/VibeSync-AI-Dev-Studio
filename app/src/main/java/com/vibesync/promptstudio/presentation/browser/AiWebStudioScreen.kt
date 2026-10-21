@@ -17,6 +17,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -50,16 +51,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Tab
 import androidx.compose.material3.Button
@@ -111,6 +108,7 @@ import org.json.JSONObject
 @Composable
 fun AiWebStudioScreen(
     onOpenDeveloperApi: () -> Unit,
+    onOpenDeveloperResources: () -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -133,8 +131,6 @@ fun AiWebStudioScreen(
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var addressSuggestionsVisible by remember { mutableStateOf(false) }
-    var prompt by remember { mutableStateOf("") }
-    var promptExpanded by remember { mutableStateOf(false) }
     var feedback by remember { mutableStateOf<String?>(null) }
     var hostContainer by remember { mutableStateOf<FrameLayout?>(null) }
     val popupPool = remember { mutableMapOf<String, MutableList<WebView>>() }
@@ -154,7 +150,6 @@ fun AiWebStudioScreen(
 
     LaunchedEffect(pendingBrowserPrompt?.id, activeId, activeTab?.url) {
         val request = pendingBrowserPrompt ?: return@LaunchedEffect
-        prompt = request.text
         val tab = activeTab
         val webView = tab?.let { manager.webViewFor(it.id) }
         if (tab == null || webView == null) {
@@ -168,10 +163,13 @@ fun AiWebStudioScreen(
                     result?.contains("no-send") == true -> promptFilledText
                     else -> promptSentText
                 }
-                if (result?.contains("no-input") != true) prompt = ""
             }
         }
         BrowserPromptBridge.consume(request.id)
+    }
+
+    LaunchedEffect(feedback) {
+        feedback?.let { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
     }
 
     BackHandler(enabled = activeTab != null) {
@@ -296,6 +294,13 @@ fun AiWebStudioScreen(
                                 onClick = { browserMenuExpanded = false; showBookmarksSheet = true }
                             )
                             DropdownMenuItem(
+                                text = { Text(stringResource(R.string.developer_resources)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    onOpenDeveloperResources()
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text(stringResource(R.string.browser_super_copy_text)) },
                                 onClick = { browserMenuExpanded = false; extractPageToClipboard(context, manager.webViewFor(activeId), markdown = false, onResult = { text -> feedback = if (text) pageCopiedText else pageEmptyText }) },
                                 enabled = activeTab != null
@@ -335,7 +340,7 @@ fun AiWebStudioScreen(
                 }
             )
 
-            AnimatedVisibility(visible = addressBarExpanded) {
+            AnimatedVisibility(visible = addressBarExpanded && !keyboardVisible) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -343,10 +348,22 @@ fun AiWebStudioScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    val suggestions = remember(address, savedBookmarks) {
-                        val providerSites = AiProvider.entries.filterNot { it == AiProvider.CUSTOM }.map {
-                            BrowserBookmark(context.getString(it.shortTitleRes), it.startUrl)
-                        }
+                    val providerSites = listOf(
+                        BrowserBookmark(stringResource(R.string.provider_gemini_short), AiProvider.GEMINI.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_chatgpt_short), AiProvider.CHATGPT.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_claude_short), AiProvider.CLAUDE.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_copilot_short), AiProvider.COPILOT.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_deepseek_short), AiProvider.DEEPSEEK.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_mistral_short), AiProvider.MISTRAL.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_meta_ai_short), AiProvider.META_AI.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_perplexity_short), AiProvider.PERPLEXITY.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_huggingchat_short), AiProvider.HUGGINGCHAT.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_duckduckgo_short), AiProvider.DUCKDUCKGO.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_poe_short), AiProvider.POE.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_qwen_short), AiProvider.QWEN.startUrl),
+                        BrowserBookmark(stringResource(R.string.provider_phind_short), AiProvider.PHIND.startUrl)
+                    )
+                    val suggestions = remember(address, savedBookmarks, providerSites) {
                         (savedBookmarks + providerSites)
                             .distinctBy { it.url }
                             .filter { address.isNotBlank() && (it.url.contains(address, ignoreCase = true) || it.title.contains(address, ignoreCase = true)) }
@@ -470,45 +487,6 @@ fun AiWebStudioScreen(
             }
         }
 
-        BrowserPromptDock(
-            prompt = prompt,
-            feedback = feedback,
-            expanded = promptExpanded,
-            keyboardVisible = keyboardVisible,
-            enabled = prompt.isNotBlank() && activeTab != null,
-            onPromptChange = {
-                prompt = it
-                feedback = null
-            },
-            onClear = {
-                prompt = ""
-                feedback = null
-            },
-            onToggleExpanded = { promptExpanded = !promptExpanded },
-            onSend = {
-                val tab = activeTab
-                if (tab == null || !tab.provider.supportsPromptInjection(tab.url)) {
-                    feedback = promptUnsupportedText
-                } else if (prompt.isBlank()) {
-                    feedback = promptNoInputText
-                } else {
-                    val js = makePromptInjectionScript(prompt, tab.provider)
-                    val webView = manager.webViewFor(tab.id)
-                    if (webView == null) {
-                        feedback = promptNoInputText
-                    } else {
-                        webView.evaluateJavascript(js) { result ->
-                            feedback = when {
-                                result?.contains("no-input") == true -> promptNoInputText
-                                result?.contains("no-send") == true -> promptFilledText
-                                else -> promptSentText
-                            }
-                            if (result?.contains("no-input") != true) prompt = ""
-                        }
-                    }
-                }
-            }
-        )
     }
 
     if (showProviderSheet) {
@@ -798,100 +776,6 @@ fun AiWebStudioScreen(
                 runCatching { popup.stopLoading(); popup.removeAllViews(); popup.destroy() }
             }
             popupPool.clear()
-        }
-    }
-}
-
-@Composable
-private fun BrowserPromptDock(
-    prompt: String,
-    feedback: String?,
-    expanded: Boolean,
-    keyboardVisible: Boolean,
-    enabled: Boolean,
-    onPromptChange: (String) -> Unit,
-    onClear: () -> Unit,
-    onToggleExpanded: () -> Unit,
-    onSend: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .padding(top = 5.dp, bottom = 7.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
-    ) {
-        feedback?.let {
-            Text(
-                text = it,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            tonalElevation = 3.dp,
-            shadowElevation = 5.dp
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(9.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    OutlinedTextField(
-                        value = prompt,
-                        onValueChange = onPromptChange,
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text(stringResource(R.string.prompt_hint)) },
-                        minLines = 1,
-                        maxLines = if (expanded) 8 else if (keyboardVisible) 2 else 3
-                    )
-                    Column {
-                        IconButton(onClick = onClear, enabled = prompt.isNotEmpty()) {
-                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.browser_prompt_clear))
-                        }
-                        IconButton(onClick = onToggleExpanded) {
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = stringResource(
-                                    if (expanded) R.string.browser_prompt_collapse else R.string.browser_prompt_expand
-                                )
-                            )
-                        }
-                    }
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    if (!keyboardVisible) {
-                        Text(
-                            text = stringResource(R.string.browser_privacy_note),
-                            modifier = Modifier.weight(1f),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
-                    }
-                    Button(onClick = onSend, enabled = enabled) {
-                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(17.dp))
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(stringResource(R.string.send))
-                    }
-                }
-            }
         }
     }
 }

@@ -342,10 +342,10 @@
     <string name="theme_developer_dark">Developer Dark</string>
     <string name="theme_system">System</string>
     <string name="appearance_font_label">Schriftart</string>
-    <string name="font_serif_tnr">Serif (Times-Stil)</string>
+    <string name="font_serif_tnr">Serif im Stil von Times New Roman</string>
     <string name="font_sans">Seriflos</string>
     <string name="font_mono">Monospace</string>
-    <string name="font_license_note">Serif verwendet die integrierte Android-Serifschrift für einen Times-ähnlichen Stil. Die proprietäre Times-New-Roman-Datei wird nicht mitgeliefert.</string>
+    <string name="font_license_note">Die Serif-Option nutzt die integrierte Android-Serifschrift für einen Times-New-Roman-ähnlichen Stil. Die proprietäre Schriftdatei wird nicht mitgeliefert.</string>
     <string name="browser_bookmark_current_page">Aktuelle Seite als Lesezeichen</string>
     <string name="browser_open_bookmarks">Lesezeichen öffnen</string>
     <string name="browser_bookmarks_title">Gespeicherte Lesezeichen</string>
@@ -360,4 +360,23 @@
     <string name="browser_super_copy_empty">Kein Seitentext zum Kopieren verfügbar.</string>
     <string name="app_brand_title">VibeSync AI</string>
     <string name="app_brand_subtitle">Developer Suite</string>
+    <string name="developer_section_playbooks">Engineering-Leitfäden</string>
+    <string name="developer_playbook_intro">Wiederverwendbare Checklisten für Release, Sicherheit und Qualität. Kopiere sie für dein Team oder sende sie zur projektspezifischen Prüfung an eine KI-Webseite.</string>
+    <string name="developer_playbook_release_title">Release-Bereitschaft</string>
+    <string name="developer_playbook_release_summary">Versionierung, CI, Play Console und Rollback.</string>
+    <string name="developer_playbook_release_content">1. Stelle sicher, dass versionCode größer als alle bereits in der Play Console hochgeladenen Werte ist.\n2. Führe testDebugUnitTest und lintDebug aus; behebe Fehler und prüfe Warnungen.\n3. Erstelle das signierte Release-AAB/APK und verifiziere Paket-ID, versionName, versionCode und Signaturen.\n4. Prüfe Ziel-SDK, Berechtigungen, Datensicherheit, Datenschutzerklärung, Abrechnung und Werbeeinwilligung.\n5. Teste Erststart, Offline-/Fehlerzustände, Anmeldungen, Wiederherstellung von Zugangsdaten und Tastatur-Resize auf kleinen Displays.\n6. Teste das Upgrade vom veröffentlichten Build und prüfe Play-Console-Warnungen.\n7. Archiviere Commit-SHA, Mapping-Datei, Release-Hinweise und Rollback-Plan.</string>
+    <string name="developer_playbook_security_title">Sicherheits- und Datenschutzprüfung</string>
+    <string name="developer_playbook_security_summary">Schutz für Zugangsdaten, WebView, OAuth, Diagnose und Abhängigkeiten.</string>
+    <string name="developer_playbook_security_content">1. Committe niemals API-Schlüssel, Client-Secrets, Keystores, Passwörter oder Zugriffstokens.\n2. Verschlüssele Zugangsdaten mit Android-Keystore-Schlüsseln; protokolliere niemals Prompts, Geheimnisse oder Authorization-Header.\n3. Erzwinge HTTPS und prüfe Klartext-Regeln, exportierte Komponenten und Deep-Link-Intent-Filter.\n4. Behandle WebView-Inhalte als nicht vertrauenswürdig; vermeide JavaScript-Brücken ohne Bedarf und geprüften Ursprung.\n5. Prüfe OAuth-State, PKCE, Redirect-URI und Token-Endpunktkonfiguration.\n6. Schwärze personenbezogene Daten, Query-Tokens, Anfrageinhalte und Auth-Header in Diagnoseexporten.\n7. Prüfe Abhängigkeitslizenzen und bekannte Schwachstellen und bewahre erforderliche Hinweise auf.</string>
+    <string name="developer_playbook_quality_title">Qualität, Leistung und Barrierefreiheit</string>
+    <string name="developer_playbook_quality_summary">Tests, Tastaturverhalten, Zugänglichkeit und Laufzeit.</string>
+    <string name="developer_playbook_quality_content">1. Decke Erfolgs-, Lade-, Leer-, Timeout-, Offline-, Wiederholungs- und Serverfehlerzustände ab.\n2. Teste IME/Tastatur-Resize, Gestennavigation, RTL, große Schrift und kleine Bildschirme.\n3. Prüfe Accessibility-Labels, Screenreader-Reihenfolge, Kontrast, Berührungsflächen und Überschriftenhierarchie.\n4. Vermeide Netzwerk-/Dateiarbeit im Hauptthread und begrenze Parsing, Eingaben und WebView-Lebensdauer.\n5. Ergänze Unit-Tests für Zustandswechsel, Grenzfälle, Serialisierung und URL-Validierung.\n6. Profiliere Start, Speicher, WebView-Pooling, Scrollen und Recompositions vor dem Release.\n7. Dokumentiere Geräte-/API-Abdeckung, bekannte Probleme und Abnahmekriterien mit dem Release.</string>
+    <string name="developer_playbook_copy">Checkliste kopieren</string>
+    <string name="developer_playbook_review">Mit KI prüfen</string>
+    <string name="developer_playbook_copied_feedback">Checkliste in die Zwischenablage kopiert.</string>
+    <string name="developer_playbook_review_prompt">Handle als leitender Android- und Web-Engineer. Prüfe die folgende Checkliste „%1$s“ auf Vollständigkeit, praktische Risiken und projektspezifische Lücken. Nenne priorisierte Verbesserungen und Akzeptanzkriterien:\n\n%2$s</string>
+    <string name="appearance_preview_title">Live-Schriftvorschau</string>
+    <string name="appearance_preview_heading">VibeSync AI Developer Suite</string>
+    <string name="appearance_preview_body">Fette Überschriften, gut lesbarer Fließtext und Abstände passen sich der ausgewählten Schrift an.</string>
+    <string name="appearance_preview_code">val buildReady = true</string>
 </resources>

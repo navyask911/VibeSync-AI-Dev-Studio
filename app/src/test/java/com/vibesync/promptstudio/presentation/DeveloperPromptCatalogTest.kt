@@ -16,6 +16,13 @@ class DeveloperPromptCatalogTest {
     }
 
     @Test
+    fun playbookHubContainsThreeNamedLocalizedChecklists() {
+        assertEquals(3, DeveloperPlaybookCatalog.playbooks.size)
+        assertEquals(DeveloperPlaybookCatalog.playbooks.size, DeveloperPlaybookCatalog.playbooks.map { it.id }.distinct().size)
+        assertTrue(DeveloperPlaybookCatalog.playbooks.all { it.titleRes > 0 && it.summaryRes > 0 && it.contentRes > 0 })
+    }
+
+    @Test
     fun commandHubContainsUniqueCopyableReferences() {
         assertTrue(DeveloperCommandCatalog.commands.size >= 15)
         assertEquals(
