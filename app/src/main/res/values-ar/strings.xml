@@ -461,7 +461,7 @@
     <string name="home_developer_options_subtitle">وضع المطور وحالة ADB واختصارات النظام وملخص العتاد.</string>
     <string name="home_section_developer_productivity">أدوات المطور والإنتاجية</string>
     <string name="home_prompt_bank_title">مكتبة مطالبات المطور</string>
-    <string name="home_prompt_bank_subtitle">ابحث عن مطالبات قابلة لإعادة الاستخدام وأرسلها إلى استوديو الذكاء الاصطناعي.</string>
+    <string name="home_prompt_bank_subtitle">ابحث عن 150 مطالبة لـ Android والواجهة الأمامية والخلفية وDevOps والأمان وأرسلها إلى استوديو الذكاء الاصطناعي.</string>
     <string name="home_resources_title">مركز موارد المطور</string>
     <string name="home_resources_subtitle">الوثائق الرسمية والأدلة والخدمات ومجتمعات المطورين.</string>
     <string name="home_toolbox_title">صندوق أدوات المطور دون اتصال</string>
@@ -473,8 +473,8 @@
     <string name="home_commands_title">مصفوفة أوامر الطرفية</string>
     <string name="home_commands_subtitle">أوامر مرجعية لـ ADB وPowerShell وLinux/Bash.</string>
     <string name="home_section_diagnostics">التشخيص والشبكات</string>
-    <string name="home_diagnostics_title">تشخيص النظام</string>
-    <string name="home_diagnostics_subtitle">سجلات حالة التطبيق وتقارير تشخيص منقحة وأدوات تصدير.</string>
+    <string name="home_diagnostics_title">سجل Logcat مباشر وتشخيص النظام</string>
+    <string name="home_diagnostics_subtitle">سجلات مباشرة لعملية التطبيق وتقارير تشخيص منقحة وأدوات تصدير.</string>
     <string name="home_network_title">فاحص الشبكة وDNS</string>
     <string name="home_network_subtitle">استعلامات DNS من نوع A وAAAA وMX وTXT ورؤوس HTTPS HEAD.</string>
     <string name="home_footer">تعمل الأدوات المحلية على الجهاز. لا تتصل فحوصات الشبكة بخادم DNS أو HTTPS المحدد إلا عند بدء الفحص.</string>
@@ -550,7 +550,7 @@
     <string name="logcat_capture_error">فشل التقاط Logcat: %1$s</string>
     <string name="logcat_no_lines">لم يتم التقاط أي أسطر بعد. ابدأ الالتقاط؛ قد تحد قيود النظام من التوفر على بعض الأجهزة.</string>
     <string name="logcat_open_diagnostics">فتح تشخيص صحة التطبيق</string>
-    <string name="home_diagnostics_title">سجل Logcat مباشر وتشخيص النظام</string>
-    <string name="home_diagnostics_subtitle">سجلات مباشرة لعملية التطبيق وتقارير تشخيص منقحة وأدوات تصدير.</string>
-    <string name="home_prompt_bank_subtitle">ابحث عن 150 مطالبة لـ Android والواجهة الأمامية والخلفية وDevOps والأمان وأرسلها إلى استوديو الذكاء الاصطناعي.</string>
+    
+    
+    
 </resources>
