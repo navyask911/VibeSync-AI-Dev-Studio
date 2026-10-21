@@ -448,4 +448,23 @@
     <string name="browser_prompt_bar_hint">Diese Seite fragen oder einen Prompt senden…</string>
     <string name="browser_prompt_send">Prompt an aktuelle Seite senden</string>
 
+
+<string name="language_selector_title">App-Sprache</string>
+    <string name="language_selector_open">App-Sprache auswählen</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">Webstudio</string>
+    <string name="nav_prompt_bank">Prompt-Bibliothek</string>
+    <string name="nav_api_studio">API-Studio</string>
+    <string name="nav_developer_tools">Entwicklerwerkzeuge</string>
+    <string name="nav_settings">Einstellungen</string>
+    <string name="nav_back">Zurück</string>
+    <string name="developer_search_toggle">Ressourcen suchen</string>
+    <string name="developer_search_close">Suche schließen</string>
+    <string name="developer_accordion_expand">Eintrag erweitern</string>
+    <string name="developer_accordion_collapse">Eintrag einklappen</string>
+
 </resources>
