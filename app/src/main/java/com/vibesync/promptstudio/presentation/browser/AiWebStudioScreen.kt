@@ -423,7 +423,7 @@ fun AiWebStudioScreen(
                                         feedback = bookmarkSavedText
                                     }
                                 },
-                                enabled = activeTab != null
+                                enabled = activeTab != null && activeTab.isPrivate.not()
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.browser_open_bookmarks)) },
@@ -1420,11 +1420,19 @@ private fun configureWebView(
         javaScriptCanOpenWindowsAutomatically = true
         setSupportMultipleWindows(true)
         safeBrowsingEnabled = true
+        // Private tab form values must not be written to Android's shared WebView form database.
+        saveFormData = !tab.isPrivate
         // Preserve the platform WebView identity. Spoofing Chrome does not make an embedded WebView
         // a supported OAuth user-agent and can violate provider sign-in restrictions.
         // Login identity is not spoofed; known identity-provider flows are routed to Custom Tabs.
     }
     applyBrowserPreferences(webView, context)
+    webView.isSaveEnabled = !tab.isPrivate
+    webView.importantForAutofill = if (tab.isPrivate) {
+        View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS
+    } else {
+        View.IMPORTANT_FOR_AUTOFILL_AUTO
+    }
     webView.webChromeClient = object : WebChromeClient() {
         override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
             manager.updateFavicon(tab.id, icon)
