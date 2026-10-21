@@ -64,8 +64,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -300,6 +300,11 @@ fun AiWebStudioScreen(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -570,13 +575,13 @@ fun AiWebStudioScreen(
                     },
                     enabled = activeTab != null
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back))
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.browser_back))
                 }
                 IconButton(
                     onClick = { manager.goForward() },
                     enabled = activeTab?.canGoForward == true
                 ) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.browser_forward))
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.browser_forward))
                 }
                 IconButton(
                     onClick = {
@@ -717,7 +722,7 @@ fun AiWebStudioScreen(
                     modifier = Modifier.size(44.dp)
                 ) {
                     Icon(
-                        Icons.Default.ArrowForward,
+                        Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = stringResource(R.string.browser_prompt_send),
                         tint = if (activeTab != null && browserPromptText.isNotBlank())
                             MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant

@@ -1,6 +1,11 @@
 package com.vibesync.promptstudio.presentation
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +25,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
@@ -47,6 +54,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -57,6 +66,14 @@ import com.vibesync.promptstudio.R
 
 private enum class ResourceSection { PROMPTS, COMMANDS, PLAYBOOKS, SERVICES }
 
+private data class ExternalResourceLink(val title: String, val url: String)
+private data class ExternalResourceGroup(
+    val id: String,
+    val titleRes: Int,
+    val icon: ImageVector,
+    val links: List<ExternalResourceLink>
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeveloperResourcesScreen(
@@ -66,17 +83,74 @@ fun DeveloperResourcesScreen(
     onOpenToolbox: () -> Unit,
     onOpenApiStudio: () -> Unit,
     onOpenDiagnostics: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    initialSection: String = "prompts"
 ) {
     val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
+    val openFailedMessage = stringResource(R.string.developer_resource_open_failed)
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
     val commandCopied = stringResource(R.string.developer_command_copied_feedback)
     val playbookCopied = stringResource(R.string.developer_playbook_copied_feedback)
-    var section by remember { mutableStateOf(ResourceSection.PROMPTS) }
+    var section by remember(initialSection) {
+        mutableStateOf(
+            when (initialSection.lowercase()) {
+                "commands" -> ResourceSection.COMMANDS
+                "playbooks" -> ResourceSection.PLAYBOOKS
+                "services", "resources" -> ResourceSection.SERVICES
+                else -> ResourceSection.PROMPTS
+            }
+        )
+    }
     var search by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<DeveloperPromptCategory?>(null) }
     var selectedPlatform by remember { mutableStateOf<Int?>(null) }
     var feedback by remember { mutableStateOf<String?>(null) }
+    var expandedResourceGroups by remember { mutableStateOf(setOf("android")) }
+    val externalResourceGroups = remember {
+        listOf(
+            ExternalResourceGroup(
+                "android",
+                R.string.developer_resources_android_category,
+                Icons.Default.Code,
+                listOf(
+                    ExternalResourceLink("Android Developers", "https://developer.android.com/"),
+                    ExternalResourceLink("Android Developers Guides", "https://developer.android.com/guide"),
+                    ExternalResourceLink("Android Studio", "https://developer.android.com/studio")
+                )
+            ),
+            ExternalResourceGroup(
+                "design",
+                R.string.developer_resources_design_category,
+                Icons.Default.Web,
+                listOf(
+                    ExternalResourceLink("Material Design 3", "https://m3.material.io/"),
+                    ExternalResourceLink("IconKitchen", "https://icon.kitchen/"),
+                    ExternalResourceLink("Material Symbols", "https://fonts.google.com/icons")
+                )
+            ),
+            ExternalResourceGroup(
+                "engineering",
+                R.string.developer_resources_architecture_category,
+                Icons.Default.Terminal,
+                listOf(
+                    ExternalResourceLink("ProAndroidDev", "https://proandroiddev.com/"),
+                    ExternalResourceLink("Kotlin Documentation", "https://kotlinlang.org/docs/home.html"),
+                    ExternalResourceLink("Jetpack Compose Guides", "https://developer.android.com/develop/ui/compose")
+                )
+            ),
+            ExternalResourceGroup(
+                "community",
+                R.string.developer_resources_community_category,
+                Icons.Default.CheckCircle,
+                listOf(
+                    ExternalResourceLink("Stack Overflow · Android", "https://stackoverflow.com/questions/tagged/android"),
+                    ExternalResourceLink("Reddit · r/androiddev", "https://www.reddit.com/r/androiddev/"),
+                    ExternalResourceLink("Kotlin Discussions", "https://discuss.kotlinlang.org/")
+                )
+            )
+        )
+    }
     val promptResults = remember(search, selectedCategory) {
         DeveloperPromptCatalog.prompts.filter { p ->
             (selectedCategory == null || p.category == selectedCategory) && p.text.contains(search, ignoreCase = true)
@@ -237,6 +311,90 @@ fun DeveloperResourcesScreen(
                 }
                 ResourceSection.SERVICES -> {
                     LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        item {
+                            Text(
+                                stringResource(R.string.developer_resources_online_heading),
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        items(externalResourceGroups, key = { it.id }) { group ->
+                            val expanded = group.id in expandedResourceGroups
+                            Card(
+                                shape = RoundedCornerShape(16.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                expandedResourceGroups = if (expanded) {
+                                                    expandedResourceGroups - group.id
+                                                } else {
+                                                    expandedResourceGroups + group.id
+                                                }
+                                            }
+                                            .padding(14.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(group.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                        Spacer(Modifier.width(10.dp))
+                                        Text(
+                                            stringResource(group.titleRes),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Spacer(Modifier.weight(1f))
+                                        Icon(
+                                            imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                            contentDescription = null
+                                        )
+                                    }
+                                    AnimatedVisibility(visible = expanded) {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth().padding(start = 14.dp, end = 14.dp, bottom = 10.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            group.links.forEach { link ->
+                                                TextButton(
+                                                    onClick = {
+                                                        runCatching {
+                                                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link.url)))
+                                                        }.onFailure {
+                                                            Toast.makeText(
+                                                                context,
+                                                                openFailedMessage,
+                                                                Toast.LENGTH_LONG
+                                                            ).show()
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                                        Text(link.title, fontWeight = FontWeight.SemiBold)
+                                                        Text(
+                                                            link.url,
+                                                            style = MaterialTheme.typography.bodySmall,
+                                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        item {
+                            Text(
+                                stringResource(R.string.developer_resources_internal_heading),
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                         item { ServiceCard(stringResource(R.string.developer_service_offline_tools), stringResource(R.string.developer_service_offline_tools_description), { Icon(Icons.Default.Code, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenToolbox) }
                         item { ServiceCard(stringResource(R.string.developer_service_diagnostics), stringResource(R.string.developer_service_diagnostics_description), { Icon(Icons.Default.BugReport, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenDiagnostics) }
                         item { ServiceCard(stringResource(R.string.developer_service_api_studio), stringResource(R.string.developer_service_api_studio_description), { Icon(Icons.Default.Terminal, contentDescription = null) }, stringResource(R.string.developer_service_open), onOpenApiStudio) }

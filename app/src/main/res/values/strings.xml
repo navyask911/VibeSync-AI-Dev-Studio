@@ -304,7 +304,7 @@
     <string name="developer_prompt_count">%1$d curated prompts</string>
     <string name="developer_section_prompts">Prompt bank</string>
     <string name="developer_section_commands">Command hub</string>
-    <string name="developer_section_services">Services</string>
+    <string name="developer_section_services">Resources &amp; Tools</string>
     <string name="developer_prompt_search">Search all 150 prompts</string>
     <string name="developer_command_search">Search commands</string>
     <string name="developer_prompt_category_all">All categories</string>
@@ -340,7 +340,7 @@
     <string name="appearance_theme_label">Color theme</string>
     <string name="theme_normal">Normal</string>
     <string name="theme_developer_dark">Developer Dark</string>
-    <string name="theme_system">System</string>
+    <string name="theme_system">Follow system light/dark</string>
     <string name="appearance_font_label">Typeface</string>
     <string name="font_serif_tnr">Times New Roman-style serif</string>
     <string name="font_sans">Sans serif</string>
@@ -448,4 +448,129 @@
     <string name="browser_prompt_bar_hint">Ask this page or send a prompt…</string>
     <string name="browser_prompt_send">Send prompt to current page</string>
 
+
+    <!-- Dashboard launchpad -->
+    <string name="home_greeting">Your workspace, at a glance</string>
+    <string name="home_dashboard_subtitle">AI browsing, developer utilities, device controls, and diagnostics in one place.</string>
+    <string name="home_hero_title">AI Multi-Browser Studio</string>
+    <string name="home_hero_subtitle">13+ web AI models—including ChatGPT, Claude, Gemini, DeepSeek, and Poe—in a persistent multi-tab shell.</string>
+    <string name="home_badge_multi_tab">Multi-Tab</string>
+    <string name="home_badge_persistent">Persistent Sessions</string>
+    <string name="home_badge_super_copy">Super Copy</string>
+    <string name="home_badge_no_api_key">Zero API Key Required</string>
+    <string name="home_section_device_system">Device &amp; system tools</string>
+    <string name="home_developer_options">Android Developer Options</string>
+    <string name="home_developer_options_subtitle">Developer mode, ADB status, system shortcuts, and hardware snapshot.</string>
+    <string name="home_section_developer_productivity">Developer tooling &amp; productivity</string>
+    <string name="home_prompt_bank_title">Developer Prompt Bank</string>
+    <string name="home_prompt_bank_subtitle">150 prompts across Android, frontend, backend, DevOps, and security—search and send them to AI Studio.</string>
+    <string name="home_resources_title">Developer Resources Hub</string>
+    <string name="home_resources_subtitle">Official documentation, guides, services, and community resources.</string>
+    <string name="home_toolbox_title">Offline Developer Toolbox</string>
+    <string name="home_toolbox_subtitle">JSON, regex, JWT, hashes, text diff, Base64, URI, and more—on-device.</string>
+    <string name="home_api_title">API Streaming Studio</string>
+    <string name="home_api_subtitle">Run provider prompts with streaming responses and saved sessions.</string>
+    <string name="home_vault_title">Keystore Vault &amp; API Keys</string>
+    <string name="home_vault_subtitle">Manage encrypted provider credentials and connection settings.</string>
+    <string name="home_commands_title">Terminal Command Matrix</string>
+    <string name="home_commands_subtitle">ADB, PowerShell, and Linux/Bash command cheat sheets.</string>
+    <string name="home_section_diagnostics">Diagnostics &amp; networking</string>
+    <string name="home_diagnostics_title">Live Logcat &amp; System Diagnostics</string>
+    <string name="home_diagnostics_subtitle">Live logs from this app process, sanitized diagnostic reports, and export tools.</string>
+    <string name="home_network_title">Network &amp; DNS Inspector</string>
+    <string name="home_network_subtitle">DNS-over-HTTPS lookups for A, AAAA, MX, TXT and HTTPS HEAD headers.</string>
+    <string name="home_footer">Local toolbox operations run on-device. Network diagnostics contact the chosen DNS or HTTPS endpoint only when you start a check.</string>
+    <string name="home_theme">Theme options</string>
+    <string name="theme_light">Normal · Light</string>
+    
+    <string name="theme_matrix">Developer · Matrix Dark</string>
+    <string name="home_language">Language</string>
+    <string name="home_choose_language">Choose app language</string>
+    <string name="home_language_description">The dashboard and system-tool labels follow your selection. Arabic uses a right-to-left layout.</string>
+
+    <!-- Android developer options -->
+    <string name="devoptions_title">Developer Options</string>
+    <string name="devoptions_enabled">Developer Mode: ENABLED</string>
+    <string name="devoptions_disabled">Developer Mode: DISABLED</string>
+    <string name="devoptions_developer_mode">Developer mode status</string>
+    <string name="devoptions_developer_mode_explanation">Open the native Android developer settings page. This app does not enable hidden system settings on your behalf.</string>
+    <string name="devoptions_open_settings">Open Android settings</string>
+    <string name="devoptions_unlock_guide">Unlock guide</string>
+    <string name="devoptions_adb_status">USB debugging / ADB: %1$s</string>
+    <string name="devoptions_on">ON</string>
+    <string name="devoptions_off">OFF</string>
+    <string name="devoptions_debugging_shortcuts">Debugging shortcuts</string>
+    <string name="devoptions_usb_debugging">USB debugging</string>
+    <string name="devoptions_usb_subtitle">Open Developer options to review USB debugging.</string>
+    <string name="devoptions_wireless_debugging">Wireless debugging</string>
+    <string name="devoptions_wireless_subtitle">Open Developer options; wireless debugging requires a supported Android version.</string>
+    <string name="devoptions_app_standby">App standby / app details</string>
+    <string name="devoptions_app_standby_subtitle">Open this app’s Android details and available background controls.</string>
+    <string name="devoptions_system_settings">System settings shortcuts</string>
+    <string name="devoptions_default_apps">Default apps</string>
+    <string name="devoptions_default_apps_subtitle">Choose the system defaults for supported app categories.</string>
+    <string name="devoptions_overlay">Display over other apps</string>
+    <string name="devoptions_overlay_subtitle">Review this app’s overlay permission.</string>
+    <string name="devoptions_battery_optimization">Battery optimization</string>
+    <string name="devoptions_battery_optimization_subtitle">Open Android’s battery-optimization allow-list.</string>
+    <string name="devoptions_notifications">App notifications</string>
+    <string name="devoptions_notifications_subtitle">Review app notification controls in system settings.</string>
+    <string name="devoptions_accessibility">Accessibility services</string>
+    <string name="devoptions_accessibility_subtitle">Manage installed accessibility services.</string>
+    <string name="devoptions_hardware_snapshot">Device hardware snapshot</string>
+    <string name="devoptions_android_version">Android version</string>
+    <string name="devoptions_android_version_value">Android %1$s · API %2$d</string>
+    <string name="devoptions_kernel">Kernel version</string>
+    <string name="devoptions_cpu">SoC / CPU architecture</string>
+    <string name="devoptions_refresh_rate">Display refresh rate</string>
+    <string name="devoptions_ram">RAM usage</string>
+    <string name="devoptions_ram_summary">%1$s available / %2$s total</string>
+    <string name="devoptions_unavailable">Unavailable</string>
+    <string name="devoptions_limitations_note">Android controls which settings can be opened directly. USB and wireless debugging use the native Developer options page; app standby details vary by device manufacturer and Android version.</string>
+    <string name="devoptions_unlock_title">Unlock Developer Options</string>
+    <string name="devoptions_unlock_body">Open Settings → About phone (or About tablet) → find Build number and tap it seven times. Confirm your device PIN if prompted, then return here. Menu labels can vary by manufacturer; on some devices Build number is under Software information.</string>
+    <string name="devoptions_open_failed">Android did not provide a compatible settings screen on this device.</string>
+
+    <!-- Network diagnostics -->
+    <string name="network_diagnostics_title">Network &amp; DNS Inspector</string>
+    <string name="network_dns_heading">DNS lookup</string>
+    <string name="network_dns_description">Query A, AAAA, MX, and TXT records using DNS-over-HTTPS through Google Public DNS.</string>
+    <string name="network_host_label">Hostname</string>
+    <string name="network_run_dns">Run DNS lookup</string>
+    <string name="network_enter_host">Enter a hostname first.</string>
+    <string name="network_http_heading">HTTPS response headers</string>
+    <string name="network_http_description">Send an HTTPS HEAD request to inspect the status code and response headers without downloading the page body.</string>
+    <string name="network_http_url_label">HTTPS URL</string>
+    <string name="network_run_head">Send HEAD request</string>
+    <string name="network_privacy_note">Network checks send the hostname or URL you enter to the selected remote endpoint. Do not enter secrets or private internal hostnames unless you are comfortable sending them to that endpoint.</string>
+
+    
+    
+    
+    <string name="logcat_live_title">Live Logcat &amp; System Diagnostics</string>
+    <string name="logcat_scope">Current-process Logcat · %1$s</string>
+    <string name="logcat_limit_note">Android restricts access to other apps’ logs. This view captures this app’s process only and redacts common secret/token patterns before copying or sharing. Use app diagnostics below for sanitized VibeSync health records.</string>
+    <string name="logcat_filter_label">Filter log text</string>
+    <string name="logcat_filter_hint">e.g. browser, auth, network</string>
+    <string name="logcat_level">Minimum log level</string>
+    <string name="logcat_start">Start capture</string>
+    <string name="logcat_stop">Stop capture</string>
+    <string name="logcat_clear">Clear</string>
+    <string name="logcat_copy">Copy logs</string>
+    <string name="logcat_share">Share logs</string>
+    <string name="logcat_capture_error">Logcat capture failed: %1$s</string>
+    <string name="logcat_no_lines">No log entries captured yet. Start capture; system restrictions may limit availability on some devices.</string>
+    <string name="logcat_open_diagnostics">Open app health diagnostics</string>
+    <string name="developer_resources_online_heading">Curated documentation &amp; communities</string>
+    <string name="developer_resources_android_category">Android platform</string>
+    <string name="developer_resources_design_category">Design &amp; assets</string>
+    <string name="developer_resources_architecture_category">Engineering &amp; Kotlin</string>
+    <string name="developer_resources_community_category">Community forums</string>
+    <string name="developer_resources_internal_heading">Quick links to VibeSync tools</string>
+    <string name="developer_resource_open_failed">Could not open that link. Check that a browser is installed.</string>
+    <string name="devoptions_device_model">Device / manufacturer</string>
+    <string name="devoptions_device_model_value">%1$s · %2$s · %3$s</string>
+    <string name="devoptions_security_patch">Security patch</string>
+    <string name="devoptions_fingerprint">Build fingerprint</string>
+    <string name="devoptions_share_snapshot">Share device snapshot</string>
 </resources>
