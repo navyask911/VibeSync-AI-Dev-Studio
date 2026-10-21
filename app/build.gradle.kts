@@ -129,6 +129,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("androidx.browser:browser:1.9.0")
+    implementation("androidx.webkit:webkit:1.17.1")
     implementation("com.google.android.material:material:1.13.0")
     // Google Mobile Ads and User Messaging Platform: current supported Android SDKs.
     implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
