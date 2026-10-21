@@ -50,7 +50,8 @@ fun SettingsScreen(
     onConnectOAuth: (OAuthClientConfiguration) -> Unit,
     onOpenDiagnostics: () -> Unit,
     adMobManager: AdMobManager,
-    onManageAdsPrivacy: () -> Unit
+    onManageAdsPrivacy: () -> Unit,
+    showTopBar: Boolean = true
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -76,11 +77,13 @@ fun SettingsScreen(
         isHttpsEndpoint(oauthAuthorizeEndpoint) && isHttpsEndpoint(oauthTokenEndpoint) &&
         oauthScopes.isNotBlank() && oauthRedirectUri == OAuthClientConfiguration.DEFAULT_REDIRECT_URI
 
-    Scaffold(topBar = {
+    Scaffold(contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0), topBar = {
+        if (showTopBar) {
         CenterAlignedTopAppBar(
             title = { Text(stringResource(R.string.secure_settings)) },
             navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)) } }
         )
+        }
     }) { padding ->
         Column(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
