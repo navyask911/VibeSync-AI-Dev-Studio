@@ -575,7 +575,7 @@ fun AiWebStudioScreen(
                     },
                     enabled = activeTab != null
                 ) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.browser_back))
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.browser_back))
                 }
                 IconButton(
                     onClick = { manager.goForward() },
@@ -722,7 +722,7 @@ fun AiWebStudioScreen(
                     modifier = Modifier.size(44.dp)
                 ) {
                     Icon(
-                        Icons.Default.ArrowForward,
+                        Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = stringResource(R.string.browser_prompt_send),
                         tint = if (activeTab != null && browserPromptText.isNotBlank())
                             MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
