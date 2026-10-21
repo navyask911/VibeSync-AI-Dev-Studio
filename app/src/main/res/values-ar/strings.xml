@@ -448,4 +448,23 @@
     <string name="browser_prompt_bar_hint">اسأل هذه الصفحة أو أرسل مطالبة…</string>
     <string name="browser_prompt_send">إرسال المطالبة إلى الصفحة الحالية</string>
 
+
+<string name="language_selector_title">لغة التطبيق</string>
+    <string name="language_selector_open">اختيار لغة التطبيق</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">استوديو الويب</string>
+    <string name="nav_prompt_bank">مكتبة المطالبات</string>
+    <string name="nav_api_studio">استوديو API</string>
+    <string name="nav_developer_tools">أدوات المطوّر</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="nav_back">رجوع</string>
+    <string name="developer_search_toggle">البحث في الموارد</string>
+    <string name="developer_search_close">إغلاق البحث</string>
+    <string name="developer_accordion_expand">توسيع العنصر</string>
+    <string name="developer_accordion_collapse">طي العنصر</string>
+
 </resources>
