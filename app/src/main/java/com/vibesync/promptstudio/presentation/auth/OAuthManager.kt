@@ -1,9 +1,11 @@
 package com.vibesync.promptstudio.presentation.auth
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabsIntent
 import com.vibesync.promptstudio.BuildConfig
+import com.vibesync.promptstudio.R
 import com.vibesync.promptstudio.data.security.EncryptedVault
 import com.vibesync.promptstudio.data.security.PkceUtil
 import io.ktor.client.HttpClient
@@ -67,13 +69,13 @@ class OAuthManager(
     }
 
     suspend fun launch(context: Context, configuration: OAuthClientConfiguration) {
-        require(configuration.clientId.isNotBlank()) { "Enter a developer app Client ID." }
-        require(isHttpsEndpoint(configuration.authorizeEndpoint)) { "Authorization endpoint must use HTTPS." }
-        require(isHttpsEndpoint(configuration.tokenEndpoint)) { "Token endpoint must use HTTPS." }
+        require(configuration.clientId.isNotBlank()) { appContext.getString(R.string.oauth_error_client_id_required) }
+        require(isHttpsEndpoint(configuration.authorizeEndpoint)) { appContext.getString(R.string.oauth_error_authorize_https) }
+        require(isHttpsEndpoint(configuration.tokenEndpoint)) { appContext.getString(R.string.oauth_error_token_https) }
         require(configuration.redirectUri == OAuthClientConfiguration.DEFAULT_REDIRECT_URI) {
-            "This app currently receives OAuth callbacks only at " + OAuthClientConfiguration.DEFAULT_REDIRECT_URI
+            appContext.getString(R.string.oauth_error_redirect_uri)
         }
-        require(configuration.scopes.isNotBlank()) { "Enter at least one OAuth scope." }
+        require(configuration.scopes.isNotBlank()) { appContext.getString(R.string.oauth_error_scope_required) }
 
         val verifier = PkceUtil.generateCodeVerifier()
         val state = PkceUtil.generateState()
@@ -94,7 +96,10 @@ class OAuthManager(
             .appendQueryParameter("state", state)
             .build()
         withContext(Dispatchers.Main.immediate) {
-            CustomTabsIntent.Builder().build().launchUrl(context, authorizeUri)
+            runCatching { CustomTabsIntent.Builder().setShowTitle(true).build().launchUrl(context, authorizeUri) }
+                .getOrElse {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, authorizeUri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                }
         }
     }
 

@@ -565,4 +565,29 @@
     <string name="devoptions_security_patch">सिक्योरिटी पैच</string>
     <string name="devoptions_fingerprint">बिल्ड फ़िंगरप्रिंट</string>
     <string name="devoptions_share_snapshot">डिवाइस सारांश साझा करें</string>
+
+    <!-- Merged localized strings from app-shell/OAuth cleanup. -->
+    <string name="language_picker_title">ऐप की भाषा</string>
+    <string name="language_picker_content_description">ऐप की भाषा चुनें</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">वेब स्टूडियो</string>
+    <string name="nav_api_diagnostics">API और निदान</string>
+    <string name="nav_prompt_bank">प्रॉम्प्ट बैंक</string>
+    <string name="nav_resources">संसाधन</string>
+    <string name="developer_resources_search">संसाधन खोजें</string>
+    <string name="developer_search_show">खोज दिखाएँ</string>
+    <string name="developer_search_hide">खोज छिपाएँ</string>
+    <string name="browser_auth_external_notice">साइन-इन सिस्टम ब्राउज़र में खुला है। साइट सत्र ब्राउज़र में ही रहता है और एम्बेडेड WebView में कॉपी नहीं होता।</string>
+    <string name="oauth_callback_success_message">OAuth पूरा हुआ। यह पहचान टोकन अलग से संग्रहीत है; मॉडल चलाने के लिए प्रदाता की API कुंजी जोड़ें।</string>
+    <string name="oauth_callback_failure_message">साइन-इन पूरा नहीं हो सका। पंजीकृत रीडायरेक्ट URI और PKCE कॉन्फ़िगरेशन जाँचें और फिर प्रयास करें।</string>
+    <string name="oauth_error_client_id_required">डेवलपर ऐप की Client ID दर्ज करें।</string>
+    <string name="oauth_error_authorize_https">Authorization endpoint में HTTPS होना चाहिए।</string>
+    <string name="oauth_error_token_https">Token endpoint में HTTPS होना चाहिए।</string>
+    <string name="oauth_error_redirect_uri">OAuth callback केवल vibesync://auth/callback पर स्वीकार किए जाते हैं।</string>
+    <string name="oauth_error_scope_required">कम-से-कम एक OAuth scope दर्ज करें।</string>
+    <string name="language_rtl_note">अरबी में दाएँ से बाएँ लेआउट होता है।</string>
 </resources>
