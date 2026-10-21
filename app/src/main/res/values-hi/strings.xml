@@ -445,4 +445,7 @@
     <string name="model_key_health_unknown">कुंजी की स्थिति अज्ञात</string>
 
     <string name="model_pricing_disclaimer">प्रति 10 लाख टोकन मानक API दरें। लंबे कॉन्टेक्स्ट और टूल की लागत अधिक हो सकती है; कीमतें बदल सकती हैं।</string>
+    <string name="browser_prompt_bar_hint">इस पेज से पूछें या प्रॉम्प्ट भेजें…</string>
+    <string name="browser_prompt_send">वर्तमान पेज पर प्रॉम्प्ट भेजें</string>
+
 </resources>
