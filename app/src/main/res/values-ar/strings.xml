@@ -536,4 +536,21 @@
     <string name="network_http_url_label">عنوان HTTPS</string>
     <string name="network_run_head">إرسال طلب HEAD</string>
     <string name="network_privacy_note">ترسل فحوصات الشبكة اسم المضيف أو عنوان URL الذي أدخلته إلى الخادم البعيد المختار. لا تدخل أسرارًا أو أسماء مضيفين داخلية خاصة إن لم ترغب في مشاركتها.</string>
+    <string name="logcat_live_title">سجل Logcat مباشر وتشخيص النظام</string>
+    <string name="logcat_scope">سجل العملية الحالية · %1$s</string>
+    <string name="logcat_limit_note">يقيّد Android الوصول إلى سجلات التطبيقات الأخرى. يعرض هذا القسم سجلات عملية هذا التطبيق فقط ويحجب الأنماط الشائعة للأسرار والرموز قبل النسخ أو المشاركة. افتح تشخيص التطبيق أدناه لعرض سجلات صحة VibeSync المنقحة.</string>
+    <string name="logcat_filter_label">تصفية نص السجل</string>
+    <string name="logcat_filter_hint">مثال: المتصفح، المصادقة، الشبكة</string>
+    <string name="logcat_level">أدنى مستوى للسجل</string>
+    <string name="logcat_start">بدء الالتقاط</string>
+    <string name="logcat_stop">إيقاف الالتقاط</string>
+    <string name="logcat_clear">مسح</string>
+    <string name="logcat_copy">نسخ السجلات</string>
+    <string name="logcat_share">مشاركة السجلات</string>
+    <string name="logcat_capture_error">فشل التقاط Logcat: %1$s</string>
+    <string name="logcat_no_lines">لم يتم التقاط أي أسطر بعد. ابدأ الالتقاط؛ قد تحد قيود النظام من التوفر على بعض الأجهزة.</string>
+    <string name="logcat_open_diagnostics">فتح تشخيص صحة التطبيق</string>
+    <string name="home_diagnostics_title">سجل Logcat مباشر وتشخيص النظام</string>
+    <string name="home_diagnostics_subtitle">سجلات مباشرة لعملية التطبيق وتقارير تشخيص منقحة وأدوات تصدير.</string>
+    <string name="home_prompt_bank_subtitle">ابحث عن 150 مطالبة لـ Android والواجهة الأمامية والخلفية وDevOps والأمان وأرسلها إلى استوديو الذكاء الاصطناعي.</string>
 </resources>
