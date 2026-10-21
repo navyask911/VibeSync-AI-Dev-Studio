@@ -39,7 +39,10 @@ fun hasAccessibleBodyContrast(colors: ColorScheme): Boolean {
         contrastRatio(colors.onSurfaceVariant, colors.surfaceVariant) >= threshold &&
         contrastRatio(colors.onSurface, colors.surfaceContainerLow) >= threshold &&
         contrastRatio(colors.onSurface, colors.surfaceContainer) >= threshold &&
-        contrastRatio(colors.onSurface, colors.surfaceContainerHigh) >= threshold
+        contrastRatio(colors.onSurface, colors.surfaceContainerHigh) >= threshold &&
+        contrastRatio(colors.onSurfaceVariant, colors.surfaceContainerLow) >= threshold &&
+        contrastRatio(colors.onSurfaceVariant, colors.surfaceContainer) >= threshold &&
+        contrastRatio(colors.onSurfaceVariant, colors.surfaceContainerHigh) >= threshold
 }
 
 /** Preserve dynamic color when readable; otherwise use the app's known-readable base scheme. */
