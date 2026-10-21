@@ -304,7 +304,7 @@
     <string name="developer_prompt_count">%1$d चुने हुए प्रॉम्प्ट</string>
     <string name="developer_section_prompts">प्रॉम्प्ट बैंक</string>
     <string name="developer_section_commands">कमांड हब</string>
-    <string name="developer_section_services">सेवाएँ</string>
+    <string name="developer_section_services">संसाधन और टूल</string>
     <string name="developer_prompt_search">सभी 150 प्रॉम्प्ट खोजें</string>
     <string name="developer_command_search">कमांड खोजें</string>
     <string name="developer_prompt_category_all">सभी श्रेणियाँ</string>
@@ -553,4 +553,11 @@
     
     
     
+    <string name="developer_resources_online_heading">चुने हुए दस्तावेज़ और डेवलपर समुदाय</string>
+    <string name="developer_resources_android_category">Android प्लेटफ़ॉर्म</string>
+    <string name="developer_resources_design_category">डिज़ाइन और एसेट</string>
+    <string name="developer_resources_architecture_category">इंजीनियरिंग और Kotlin</string>
+    <string name="developer_resources_community_category">कम्युनिटी फ़ोरम</string>
+    <string name="developer_resources_internal_heading">VibeSync टूल के त्वरित लिंक</string>
+    <string name="developer_resource_open_failed">लिंक नहीं खुल सका। जाँचें कि ब्राउज़र इंस्टॉल है।</string>
 </resources>
