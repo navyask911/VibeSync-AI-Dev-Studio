@@ -536,4 +536,21 @@
     <string name="network_http_url_label">HTTPS URL</string>
     <string name="network_run_head">HEAD अनुरोध भेजें</string>
     <string name="network_privacy_note">नेटवर्क जाँच में दर्ज होस्टनाम या URL चुने गए रिमोट एंडपॉइंट को भेजा जाता है। साझा नहीं करना चाहते तो गोपनीय जानकारी या निजी आंतरिक होस्टनाम दर्ज न करें।</string>
+    <string name="logcat_live_title">लाइव Logcat और सिस्टम डायग्नोस्टिक्स</string>
+    <string name="logcat_scope">वर्तमान प्रक्रिया का Logcat · %1$s</string>
+    <string name="logcat_limit_note">Android अन्य ऐप के लॉग तक पहुँच सीमित करता है। यह दृश्य केवल इसी ऐप की प्रक्रिया को कैप्चर करता है और कॉपी या साझा करने से पहले सामान्य सीक्रेट/टोकन पैटर्न को छिपाता है। VibeSync के साफ़ किए गए स्वास्थ्य रिकॉर्ड के लिए नीचे ऐप डायग्नोस्टिक्स खोलें।</string>
+    <string name="logcat_filter_label">लॉग टेक्स्ट फ़िल्टर करें</string>
+    <string name="logcat_filter_hint">जैसे browser, auth, network</string>
+    <string name="logcat_level">न्यूनतम लॉग स्तर</string>
+    <string name="logcat_start">कैप्चर शुरू करें</string>
+    <string name="logcat_stop">कैप्चर रोकें</string>
+    <string name="logcat_clear">साफ़ करें</string>
+    <string name="logcat_copy">लॉग कॉपी करें</string>
+    <string name="logcat_share">लॉग साझा करें</string>
+    <string name="logcat_capture_error">Logcat कैप्चर विफल: %1$s</string>
+    <string name="logcat_no_lines">अभी कोई लॉग एंट्री कैप्चर नहीं हुई। कैप्चर शुरू करें; कुछ डिवाइस पर सिस्टम सीमाएँ उपलब्धता सीमित कर सकती हैं।</string>
+    <string name="logcat_open_diagnostics">ऐप स्वास्थ्य डायग्नोस्टिक्स खोलें</string>
+    <string name="home_diagnostics_title">लाइव Logcat और सिस्टम डायग्नोस्टिक्स</string>
+    <string name="home_diagnostics_subtitle">ऐप प्रक्रिया के लाइव लॉग, साफ़ किए गए डायग्नोस्टिक रिपोर्ट और एक्सपोर्ट टूल।</string>
+    <string name="home_prompt_bank_subtitle">Android, फ्रंटएंड, बैकएंड, DevOps और सुरक्षा के 150 प्रॉम्प्ट खोजें और AI Studio में भेजें।</string>
 </resources>
