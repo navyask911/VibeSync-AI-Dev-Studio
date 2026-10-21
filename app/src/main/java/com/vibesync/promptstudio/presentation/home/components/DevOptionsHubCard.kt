@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -86,16 +87,14 @@ fun DevOptionsHubCard(onClick: () -> Unit) {
                 )
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = if (enabled) MaterialTheme.colorScheme.primaryContainer
-                    else MaterialTheme.colorScheme.tertiaryContainer
+                    color = if (enabled) Color(0xFF166534) else Color(0xFFFFD166)
                 ) {
                     Text(
                         text = stringResource(if (enabled) R.string.devoptions_enabled else R.string.devoptions_disabled),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (enabled) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onTertiaryContainer
+                        color = if (enabled) Color.White else Color(0xFF5D4000)
                     )
                 }
             }
