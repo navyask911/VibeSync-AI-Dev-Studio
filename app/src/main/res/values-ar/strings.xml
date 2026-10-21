@@ -304,7 +304,7 @@
     <string name="developer_prompt_count">%1$d مطالبة مختارة</string>
     <string name="developer_section_prompts">مكتبة المطالبات</string>
     <string name="developer_section_commands">مركز الأوامر</string>
-    <string name="developer_section_services">الخدمات</string>
+    <string name="developer_section_services">الموارد والأدوات</string>
     <string name="developer_prompt_search">البحث في 150 مطالبة</string>
     <string name="developer_command_search">البحث عن الأوامر</string>
     <string name="developer_prompt_category_all">كل الفئات</string>
@@ -553,4 +553,11 @@
     
     
     
+    <string name="developer_resources_online_heading">وثائق ومجتمعات مطورين مختارة</string>
+    <string name="developer_resources_android_category">منصة Android</string>
+    <string name="developer_resources_design_category">التصميم والأصول</string>
+    <string name="developer_resources_architecture_category">الهندسة وKotlin</string>
+    <string name="developer_resources_community_category">منتديات المجتمع</string>
+    <string name="developer_resources_internal_heading">روابط سريعة إلى أدوات VibeSync</string>
+    <string name="developer_resource_open_failed">تعذر فتح الرابط. تحقق من تثبيت متصفح.</string>
 </resources>
