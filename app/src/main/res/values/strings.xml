@@ -444,4 +444,5 @@
     <string name="model_key_health_error">Credential unavailable or last request failed</string>
     <string name="model_key_health_unknown">Key status unknown</string>
 
+    <string name="model_pricing_disclaimer">Indicative API rates per 1M tokens; provider pricing can change.</string>
 </resources>
