@@ -630,7 +630,7 @@ fun AiWebStudioScreen(
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { viewContext ->
-                    FrameLayout(viewContext).apply {
+                    BrowserWebViewHost(viewContext) { showTabOverview = true }.apply {
                         clipChildren = true
                         clipToPadding = true
                         hostContainer = this
@@ -1350,6 +1350,74 @@ private fun extractPageToClipboard(
 
 
 /**
+ * Bridges the native WebView's horizontal edge state with the existing tab-overview sheet.
+ * Only gestures that start at the physical screen edge can open the sheet; in-page horizontal
+ * drags remain with WebView unless the view cannot scroll farther in that direction.
+ */
+private class BrowserWebViewHost(
+    context: Context,
+    private val onOpenTabOverview: () -> Unit
+) : FrameLayout(context) {
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private val edgeWidth = 28f * resources.displayMetrics.density
+    private var downX = 0f
+    private var downY = 0f
+    private var edgeGesture = false
+
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = event.x
+                downY = event.y
+                edgeGesture = false
+                return false
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dx = event.x - downX
+                val dy = event.y - downY
+                if (kotlin.math.abs(dx) > touchSlop && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                    val startedAtScreenEdge = downX <= edgeWidth || downX >= width - edgeWidth
+                    val activeWebView = (0 until childCount)
+                        .map { getChildAt(it) }
+                        .lastOrNull { it.visibility == View.VISIBLE && it is WebView } as? EdgeAwareWebView
+                    val canPageScroll = activeWebView?.canScrollHorizontally(if (dx > 0f) -1 else 1) == true
+                    val editableHasFocus = activeWebView?.hasEditableFocus == true
+                    if (startedAtScreenEdge && !canPageScroll && !editableHasFocus) {
+                        edgeGesture = true
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                        return true
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                edgeGesture = false
+            }
+        }
+        return false
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!edgeGesture) return super.onTouchEvent(event)
+        when (event.actionMasked) {
+            MotionEvent.ACTION_UP -> {
+                val dx = event.x - downX
+                val dy = event.y - downY
+                if (kotlin.math.abs(dx) > touchSlop && kotlin.math.abs(dx) > kotlin.math.abs(dy)) {
+                    onOpenTabOverview()
+                }
+                edgeGesture = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                edgeGesture = false
+                parent?.requestDisallowInterceptTouchEvent(false)
+            }
+        }
+        return true
+    }
+}
+
+/**
  * Lets horizontal page content scroll while passing edge swipes to an ancestor drawer/pager.
  *
  * A gesture starts here only when its initial hit target is inside this WebView. The parent is
@@ -1360,20 +1428,21 @@ private class EdgeAwareWebView(context: Context) : WebView(context) {
     private val horizontalTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
     private var downX = 0f
     private var downY = 0f
-    private var editableFocused = false
+    var hasEditableFocus: Boolean = false
+        private set
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 downX = event.x
                 downY = event.y
-                parent?.requestDisallowInterceptTouchEvent(editableFocused)
+                parent?.requestDisallowInterceptTouchEvent(hasEditableFocus)
             }
             MotionEvent.ACTION_MOVE -> {
                 val deltaX = event.x - downX
                 val deltaY = event.y - downY
                 when {
-                    editableFocused -> parent?.requestDisallowInterceptTouchEvent(true)
+                    hasEditableFocus -> parent?.requestDisallowInterceptTouchEvent(true)
                     kotlin.math.abs(deltaX) > horizontalTouchSlop &&
                         kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY) -> {
                         val pageCanConsume = if (deltaX > 0) canScrollHorizontally(-1) else canScrollHorizontally(1)
@@ -1404,7 +1473,7 @@ private class EdgeAwareWebView(context: Context) : WebView(context) {
                     return !!active && !!active.matches &&
                       active.matches('input:not([type=button]):not([type=submit]):not([type=reset]), textarea, select, [contenteditable="true"], [role="textbox"]');
                 })()""".trimIndent()
-            ) { result -> editableFocused = result == "true" }
+            ) { result -> hasEditableFocus = result == "true" }
         }
     }
 }
