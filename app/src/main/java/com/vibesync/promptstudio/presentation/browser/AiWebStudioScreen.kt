@@ -13,6 +13,8 @@ import android.os.Message
 import android.print.PrintAttributes
 import android.print.PrintManager
 import android.view.View
+import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.DownloadListener
@@ -30,6 +32,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
@@ -45,6 +48,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -287,6 +291,7 @@ fun AiWebStudioScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .navigationBarsPadding()
             .imePadding()
     ) {
@@ -1065,6 +1070,7 @@ private fun BrowserTabChip(
         shape = RoundedCornerShape(18.dp),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier
             .pointerInput(index, tabCount) {
                 var total = 0f
@@ -1343,6 +1349,66 @@ private fun extractPageToClipboard(
 }
 
 
+/**
+ * Lets horizontal page content scroll while passing edge swipes to an ancestor drawer/pager.
+ *
+ * A gesture starts here only when its initial hit target is inside this WebView. The parent is
+ * disallowed from intercepting only while the WebView can consume the drag; at an edge, normal
+ * parent gesture arbitration resumes. Editable DOM focus wins over drawer gestures.
+ */
+private class EdgeAwareWebView(context: Context) : WebView(context) {
+    private val horizontalTouchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private var downX = 0f
+    private var downY = 0f
+    private var editableFocused = false
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = event.x
+                downY = event.y
+                parent?.requestDisallowInterceptTouchEvent(editableFocused)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val deltaX = event.x - downX
+                val deltaY = event.y - downY
+                when {
+                    editableFocused -> parent?.requestDisallowInterceptTouchEvent(true)
+                    kotlin.math.abs(deltaX) > horizontalTouchSlop &&
+                        kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY) -> {
+                        val pageCanConsume = if (deltaX > 0) canScrollHorizontally(-1) else canScrollHorizontally(1)
+                        parent?.requestDisallowInterceptTouchEvent(pageCanConsume)
+                    }
+                    kotlin.math.abs(deltaY) > horizontalTouchSlop ->
+                        parent?.requestDisallowInterceptTouchEvent(true)
+                }
+            }
+            MotionEvent.ACTION_UP -> {
+                parent?.requestDisallowInterceptTouchEvent(false)
+                refreshEditableFocus()
+            }
+            MotionEvent.ACTION_CANCEL -> parent?.requestDisallowInterceptTouchEvent(false)
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    fun clearEditableFocus() {
+        editableFocused = false
+    }
+
+    fun refreshEditableFocus() {
+        runCatching {
+            evaluateJavascript(
+                """(function() {
+                    const active = document.activeElement;
+                    return !!active && !!active.matches &&
+                      active.matches('input:not([type=button]):not([type=submit]):not([type=reset]), textarea, select, [contenteditable="true"], [role="textbox"]');
+                })()""".trimIndent()
+            ) { result -> editableFocused = result == "true" }
+        }
+    }
+}
+
 private fun syncWebViewPool(
     host: FrameLayout,
     tabs: List<AiTabItem>,
@@ -1371,7 +1437,7 @@ private fun syncWebViewPool(
         var created = false
         if (view == null) {
             created = true
-            view = WebView(context)
+            view = EdgeAwareWebView(context)
             configureWebView(view, tab, manager, context, host, popupPool, browserPageFailedText)
             manager.registerWebView(tab.id, view)
             host.addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
@@ -1452,7 +1518,7 @@ private fun configureWebView(
         override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
             if (tab.isPrivate || !isUserGesture || resultMsg == null) return false
             val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
-            val popup = WebView(context)
+            val popup = EdgeAwareWebView(context)
             cookies.setAcceptCookie(true)
             popup.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                 enqueueBrowserDownload(context, popup, url, userAgent, contentDisposition, mimeType)
@@ -1499,10 +1565,12 @@ private fun configureWebView(
         }
 
         override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
+            (view as? EdgeAwareWebView)?.clearEditableFocus()
             manager.updatePage(tab.id, url ?: tab.url, view.title.orEmpty(), true, view.canGoBack(), view.canGoForward())
         }
 
         override fun onPageFinished(view: WebView, url: String?) {
+            (view as? EdgeAwareWebView)?.refreshEditableFocus()
             runCatching { cookieManagerFor(view).flush() }
             setWebContentDarkening(
                 view,
