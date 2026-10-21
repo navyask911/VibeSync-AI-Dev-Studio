@@ -420,4 +420,7 @@
     <string name="browser_settings_tls_unavailable">इस होस्ट के TLS विवरण प्राप्त नहीं हो सके।</string>
     <string name="browser_settings_download_started">डाउनलोड सिस्टम Download Manager में जोड़ दिया गया।</string>
     <string name="browser_settings_download_failed">डाउनलोड शुरू नहीं हो सका।</string>
+    <string name="browser_settings_clipboard_markdown_label">वेब पेज Markdown</string>
+    <string name="browser_settings_clipboard_text_label">वेब पेज का पाठ</string>
+    <string name="browser_settings_print_title">VibeSync पेज</string>
 </resources>
