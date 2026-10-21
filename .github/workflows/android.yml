@@ -75,8 +75,76 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_2
+          cores: 4
+          ram-size: 4096M
+          heap-size: 1024M
+          emulator-boot-timeout: 1200
           disable-animations: true
-          script: ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest
+          disable-spellchecker: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: |
+            set -euo pipefail
+            device="emulator-5554"
+
+            # sys.boot_completed can be true before Android's package manager is registered.
+            # The previous failure reached connectedDebugAndroidTest with the package service
+            # missing, so check the actual service before asking Gradle to install APKs.
+            wait_for_package_manager() {
+              local max_attempts="$1"
+              for attempt in $(seq 1 "$max_attempts"); do
+                local boot_status package_status
+                boot_status="$(adb -s "$device" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
+                package_status="$(adb -s "$device" shell service check package 2>&1 || true)"
+                if [[ "$boot_status" == "1" && "$package_status" == *"found"* ]]; then
+                  echo "Android boot and package manager are ready."
+                  return 0
+                fi
+                sleep 2
+              done
+              return 1
+            }
+
+            if ! wait_for_package_manager 60; then
+              echo "::warning::Emulator boot completed without a usable package manager; rebooting once."
+              adb -s "$device" reboot || true
+              adb -s "$device" wait-for-device
+              if ! wait_for_package_manager 180; then
+                adb -s "$device" shell service check package || true
+                echo "::error::Android package manager did not become available after emulator reboot."
+                exit 1
+              fi
+            fi
+
+            run_instrumentation() {
+              local log_file="$1"
+              local result
+              set +e
+              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest 2>&1 | tee "$log_file"
+              result=$?
+              set -e
+              return "$result"
+            }
+
+            if run_instrumentation instrumentation-attempt-1.log; then
+              exit 0
+            fi
+
+            # Retry only this known emulator boot/service failure. Do not retry or mask real
+            # application test failures, assertion errors, or Keystore test regressions.
+            if ! grep -Fq "Can't find service: package" instrumentation-attempt-1.log; then
+              echo "::error::Instrumentation failed for a reason other than missing Android package service; not retrying."
+              exit 1
+            fi
+
+            echo "::warning::Android package service disappeared during APK installation; rebooting and retrying instrumentation once."
+            adb -s "$device" reboot || true
+            adb -s "$device" wait-for-device
+            if ! wait_for_package_manager 180; then
+              adb -s "$device" shell service check package || true
+              echo "::error::Android package manager remained unavailable after retry reboot."
+              exit 1
+            fi
+            run_instrumentation instrumentation-attempt-2.log
 
       - name: Build debug APK for pull requests
         if: github.event_name == 'pull_request'
