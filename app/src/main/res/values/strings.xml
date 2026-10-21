@@ -568,4 +568,9 @@
     <string name="developer_resources_community_category">Community forums</string>
     <string name="developer_resources_internal_heading">Quick links to VibeSync tools</string>
     <string name="developer_resource_open_failed">Could not open that link. Check that a browser is installed.</string>
+    <string name="devoptions_device_model">Device / manufacturer</string>
+    <string name="devoptions_device_model_value">%1$s · %2$s · %3$s</string>
+    <string name="devoptions_security_patch">Security patch</string>
+    <string name="devoptions_fingerprint">Build fingerprint</string>
+    <string name="devoptions_share_snapshot">Share device snapshot</string>
 </resources>
