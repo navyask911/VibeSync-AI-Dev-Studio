@@ -40,12 +40,12 @@ jobs:
       - name: Install Android SDK 35 and 36
         run: |
           yes | sdkmanager --licenses >/dev/null
-          sdkmanager --install \\
-            "platforms;android-35" \\
-            "platforms;android-36" \\
-            "build-tools;35.0.0" \\
-            "build-tools;36.0.0" \\
-            "system-images;android-35;google_apis;x86_64" \\
+          sdkmanager --install \
+            "platforms;android-35" \
+            "platforms;android-36" \
+            "build-tools;35.0.0" \
+            "build-tools;36.0.0" \
+            "system-images;android-35;google_apis;x86_64" \
             "platform-tools"
 
       - name: Make Gradle wrapper executable
