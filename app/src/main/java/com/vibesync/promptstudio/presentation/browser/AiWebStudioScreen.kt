@@ -1462,7 +1462,7 @@ private class EdgeAwareWebView(context: Context) : WebView(context) {
     }
 
     fun clearEditableFocus() {
-        editableFocused = false
+        hasEditableFocus = false
     }
 
     fun refreshEditableFocus() {
