@@ -112,7 +112,7 @@ private fun modeResource(mode: String): Int = when (mode) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DeveloperToolboxScreen(onBack: () -> Unit) {
+fun DeveloperToolboxScreen(onBack: () -> Unit, showTopBar: Boolean = true) {
     val context = LocalContext.current.applicationContext
     val prefs = remember(context) { context.getSharedPreferences("vibesync_toolbox_v1", 0) }
     val clipboard = LocalClipboardManager.current
@@ -153,7 +153,7 @@ fun DeveloperToolboxScreen(onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            if (showTopBar) CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.developer_toolbox)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
