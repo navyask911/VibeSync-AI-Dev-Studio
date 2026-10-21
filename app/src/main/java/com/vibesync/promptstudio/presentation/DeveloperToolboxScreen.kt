@@ -156,16 +156,16 @@ fun DeveloperToolboxScreen(onBack: () -> Unit, showTopBar: Boolean = true) {
         contentWindowInsets = if (showTopBar) WindowInsets.systemBars else WindowInsets(0, 0, 0, 0),
         topBar = {
             if (showTopBar) {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.developer_toolbox)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                CenterAlignedTopAppBar(
+                    title = { Text(stringResource(R.string.developer_toolbox)) },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                        }
                     }
-                }
-            )
-        }
+                )
             }
+        }
     ) { padding ->
         if (selectedTool != null) {
             Column(
