@@ -1,6 +1,10 @@
 package com.vibesync.promptstudio.presentation.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.ColorScheme
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 
 val Emerald = Color(0xFF10A37F)
 val EmeraldDark = Color(0xFF006B51)
@@ -8,12 +12,6 @@ val Ink = Color(0xFF101418)
 val Mist = Color(0xFFE9F1EE)
 val Coral = Color(0xFFFF1744)
 val ElectricBlue = Color(0xFF2979FF)
-
- 
-import androidx.compose.material3.ColorScheme
-import kotlin.math.max
-import kotlin.math.min
-import kotlin.math.pow
 
 /** WCAG relative contrast ratio, with translucent foreground colors composited over the surface. */
 fun contrastRatio(foreground: Color, background: Color): Double {
