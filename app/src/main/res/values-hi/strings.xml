@@ -461,7 +461,7 @@
     <string name="home_developer_options_subtitle">डेवलपर मोड, ADB स्थिति, सिस्टम शॉर्टकट और हार्डवेयर सारांश।</string>
     <string name="home_section_developer_productivity">डेवलपर टूल और उत्पादकता</string>
     <string name="home_prompt_bank_title">डेवलपर प्रॉम्प्ट बैंक</string>
-    <string name="home_prompt_bank_subtitle">दोबारा उपयोग होने वाले प्रॉम्प्ट खोजें और AI Studio में भेजें।</string>
+    <string name="home_prompt_bank_subtitle">Android, फ्रंटएंड, बैकएंड, DevOps और सुरक्षा के 150 प्रॉम्प्ट खोजें और AI Studio में भेजें।</string>
     <string name="home_resources_title">डेवलपर संसाधन केंद्र</string>
     <string name="home_resources_subtitle">आधिकारिक दस्तावेज़, गाइड, सेवाएँ और समुदाय।</string>
     <string name="home_toolbox_title">ऑफ़लाइन डेवलपर टूलबॉक्स</string>
@@ -473,8 +473,8 @@
     <string name="home_commands_title">टर्मिनल कमांड मैट्रिक्स</string>
     <string name="home_commands_subtitle">ADB, PowerShell और Linux/Bash के कमांड चीट शीट।</string>
     <string name="home_section_diagnostics">डायग्नोस्टिक्स और नेटवर्क</string>
-    <string name="home_diagnostics_title">सिस्टम डायग्नोस्टिक्स</string>
-    <string name="home_diagnostics_subtitle">ऐप स्वास्थ्य रिकॉर्ड, साफ़ किए गए डायग्नोस्टिक रिपोर्ट और एक्सपोर्ट टूल।</string>
+    <string name="home_diagnostics_title">लाइव Logcat और सिस्टम डायग्नोस्टिक्स</string>
+    <string name="home_diagnostics_subtitle">ऐप प्रक्रिया के लाइव लॉग, साफ़ किए गए डायग्नोस्टिक रिपोर्ट और एक्सपोर्ट टूल।</string>
     <string name="home_network_title">नेटवर्क और DNS निरीक्षक</string>
     <string name="home_network_subtitle">A, AAAA, MX, TXT DNS खोज और HTTPS HEAD हेडर।</string>
     <string name="home_footer">स्थानीय टूल डिवाइस पर चलते हैं। नेटवर्क जाँच शुरू करने पर ही चुने गए DNS या HTTPS एंडपॉइंट से संपर्क करती है।</string>
@@ -550,7 +550,7 @@
     <string name="logcat_capture_error">Logcat कैप्चर विफल: %1$s</string>
     <string name="logcat_no_lines">अभी कोई लॉग एंट्री कैप्चर नहीं हुई। कैप्चर शुरू करें; कुछ डिवाइस पर सिस्टम सीमाएँ उपलब्धता सीमित कर सकती हैं।</string>
     <string name="logcat_open_diagnostics">ऐप स्वास्थ्य डायग्नोस्टिक्स खोलें</string>
-    <string name="home_diagnostics_title">लाइव Logcat और सिस्टम डायग्नोस्टिक्स</string>
-    <string name="home_diagnostics_subtitle">ऐप प्रक्रिया के लाइव लॉग, साफ़ किए गए डायग्नोस्टिक रिपोर्ट और एक्सपोर्ट टूल।</string>
-    <string name="home_prompt_bank_subtitle">Android, फ्रंटएंड, बैकएंड, DevOps और सुरक्षा के 150 प्रॉम्प्ट खोजें और AI Studio में भेजें।</string>
+    
+    
+    
 </resources>
