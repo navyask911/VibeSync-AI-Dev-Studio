@@ -172,6 +172,7 @@ fun PromptStudioScreen(
                             provider = state.provider,
                             modelId = state.modelId,
                             availableModels = state.availableModels,
+                            availableModelsByProvider = state.availableModelsByProvider,
                             providerKeyHealth = state.providerKeyHealth,
                             lastFailedProvider = state.lastFailedProvider,
                             isLoadingModels = state.isLoadingModels,
