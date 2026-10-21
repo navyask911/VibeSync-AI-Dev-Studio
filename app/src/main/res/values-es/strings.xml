@@ -536,4 +536,21 @@
     <string name="network_http_url_label">URL HTTPS</string>
     <string name="network_run_head">Enviar solicitud HEAD</string>
     <string name="network_privacy_note">Las comprobaciones envían el nombre de host o la URL introducidos al servicio remoto elegido. No introduzcas secretos ni nombres internos privados si no deseas compartirlos con ese servicio.</string>
+    <string name="logcat_live_title">Logcat en vivo y diagnóstico del sistema</string>
+    <string name="logcat_scope">Logcat del proceso actual · %1$s</string>
+    <string name="logcat_limit_note">Android restringe el acceso a los registros de otras apps. Esta vista captura solo el proceso de esta app y oculta patrones comunes de secretos o tokens antes de copiar o compartir. Abre el diagnóstico de la app para ver registros de salud de VibeSync saneados.</string>
+    <string name="logcat_filter_label">Filtrar texto del registro</string>
+    <string name="logcat_filter_hint">p. ej., navegador, autenticación, red</string>
+    <string name="logcat_level">Nivel mínimo de registro</string>
+    <string name="logcat_start">Iniciar captura</string>
+    <string name="logcat_stop">Detener captura</string>
+    <string name="logcat_clear">Borrar</string>
+    <string name="logcat_copy">Copiar registros</string>
+    <string name="logcat_share">Compartir registros</string>
+    <string name="logcat_capture_error">Error al capturar Logcat: %1$s</string>
+    <string name="logcat_no_lines">Aún no se han capturado registros. Inicia la captura; las restricciones del sistema pueden limitarla en algunos dispositivos.</string>
+    <string name="logcat_open_diagnostics">Abrir diagnóstico de salud de la app</string>
+    <string name="home_diagnostics_title">Logcat en vivo y diagnóstico del sistema</string>
+    <string name="home_diagnostics_subtitle">Registros en vivo del proceso de la app, informes de diagnóstico saneados y herramientas de exportación.</string>
+    <string name="home_prompt_bank_subtitle">150 prompts para Android, frontend, backend, DevOps y seguridad; búscalos y envíalos a AI Studio.</string>
 </resources>
