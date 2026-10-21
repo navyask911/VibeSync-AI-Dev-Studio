@@ -444,7 +444,7 @@
     <string name="model_key_health_error">Credential unavailable or last request failed</string>
     <string name="model_key_health_unknown">Key status unknown</string>
 
-    <string name="model_pricing_disclaimer">Standard API rates per 1M tokens. Long-context prompts and tools may cost more; rates can change.</string>
+    <string name="model_pricing_disclaimer">Indicative API rates per 1M tokens. Long-context prompts and tools may cost more; pricing tiers and rates can change.</string>
     <string name="browser_prompt_bar_hint">Ask this page or send a prompt…</string>
     <string name="browser_prompt_send">Send prompt to current page</string>
 
