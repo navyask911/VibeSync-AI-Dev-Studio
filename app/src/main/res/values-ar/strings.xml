@@ -420,4 +420,7 @@
     <string name="browser_settings_tls_unavailable">تعذر استرداد تفاصيل TLS لهذا المضيف.</string>
     <string name="browser_settings_download_started">تمت إضافة التنزيل إلى مدير التنزيلات في النظام.</string>
     <string name="browser_settings_download_failed">تعذر بدء التنزيل.</string>
+    <string name="browser_settings_clipboard_markdown_label">Markdown لصفحة الويب</string>
+    <string name="browser_settings_clipboard_text_label">نص صفحة الويب</string>
+    <string name="browser_settings_print_title">صفحة VibeSync</string>
 </resources>
