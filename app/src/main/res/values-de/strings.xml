@@ -420,4 +420,7 @@
     <string name="browser_settings_tls_unavailable">TLS-Details für diesen Host konnten nicht abgerufen werden.</string>
     <string name="browser_settings_download_started">Download zum System-Download-Manager hinzugefügt.</string>
     <string name="browser_settings_download_failed">Der Download konnte nicht gestartet werden.</string>
+    <string name="browser_settings_clipboard_markdown_label">Markdown der Webseite</string>
+    <string name="browser_settings_clipboard_text_label">Webseitentext</string>
+    <string name="browser_settings_print_title">VibeSync-Seite</string>
 </resources>
