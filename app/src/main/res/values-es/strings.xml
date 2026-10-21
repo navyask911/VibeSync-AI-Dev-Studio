@@ -461,7 +461,7 @@
     <string name="home_developer_options_subtitle">Modo desarrollador, estado ADB, accesos directos del sistema y resumen de hardware.</string>
     <string name="home_section_developer_productivity">Herramientas y productividad para desarrolladores</string>
     <string name="home_prompt_bank_title">Banco de prompts</string>
-    <string name="home_prompt_bank_subtitle">Busca prompts reutilizables y envíalos al estudio de IA.</string>
+    <string name="home_prompt_bank_subtitle">150 prompts para Android, frontend, backend, DevOps y seguridad; búscalos y envíalos a AI Studio.</string>
     <string name="home_resources_title">Centro de recursos para desarrolladores</string>
     <string name="home_resources_subtitle">Documentación oficial, guías, servicios y comunidades.</string>
     <string name="home_toolbox_title">Caja de herramientas sin conexión</string>
@@ -473,8 +473,8 @@
     <string name="home_commands_title">Matriz de comandos de terminal</string>
     <string name="home_commands_subtitle">Guías rápidas de comandos para ADB, PowerShell y Linux/Bash.</string>
     <string name="home_section_diagnostics">Diagnóstico y redes</string>
-    <string name="home_diagnostics_title">Diagnóstico del sistema</string>
-    <string name="home_diagnostics_subtitle">Estado de la app, informes de diagnóstico saneados y herramientas de exportación.</string>
+    <string name="home_diagnostics_title">Logcat en vivo y diagnóstico del sistema</string>
+    <string name="home_diagnostics_subtitle">Registros en vivo del proceso de la app, informes de diagnóstico saneados y herramientas de exportación.</string>
     <string name="home_network_title">Inspector de red y DNS</string>
     <string name="home_network_subtitle">Consultas DNS A, AAAA, MX y TXT, además de encabezados HTTPS HEAD.</string>
     <string name="home_footer">Las herramientas locales funcionan en el dispositivo. Los diagnósticos de red solo contactan con el DNS o la dirección HTTPS elegidos cuando inicias una comprobación.</string>
@@ -550,7 +550,7 @@
     <string name="logcat_capture_error">Error al capturar Logcat: %1$s</string>
     <string name="logcat_no_lines">Aún no se han capturado registros. Inicia la captura; las restricciones del sistema pueden limitarla en algunos dispositivos.</string>
     <string name="logcat_open_diagnostics">Abrir diagnóstico de salud de la app</string>
-    <string name="home_diagnostics_title">Logcat en vivo y diagnóstico del sistema</string>
-    <string name="home_diagnostics_subtitle">Registros en vivo del proceso de la app, informes de diagnóstico saneados y herramientas de exportación.</string>
-    <string name="home_prompt_bank_subtitle">150 prompts para Android, frontend, backend, DevOps y seguridad; búscalos y envíalos a AI Studio.</string>
+    
+    
+    
 </resources>
