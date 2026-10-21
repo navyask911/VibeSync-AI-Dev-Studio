@@ -448,4 +448,28 @@
     <string name="browser_prompt_bar_hint">Ask this page or send a prompt…</string>
     <string name="browser_prompt_send">Send prompt to current page</string>
 
+
+    <string name="language_picker_title">App language</string>
+    <string name="language_picker_content_description">Choose app language</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">Web Studio</string>
+    <string name="nav_api_diagnostics">API &amp; Diagnostics</string>
+    <string name="nav_prompt_bank">Prompt Bank</string>
+    <string name="nav_resources">Resources</string>
+    <string name="developer_resources_search">Search resources</string>
+    <string name="developer_search_show">Show search</string>
+    <string name="developer_search_hide">Hide search</string>
+    <string name="browser_auth_external_notice">Sign-in opened in your system browser. Site sessions are kept by the browser and are not copied into the embedded WebView.</string>
+    <string name="oauth_callback_success_message">OAuth completed. This identity token is stored separately; add the provider API key to run models.</string>
+    <string name="oauth_callback_failure_message">Sign-in could not be completed. Check the registered redirect URI and PKCE configuration, then try again.</string>
+    <string name="oauth_error_client_id_required">Enter a developer app Client ID.</string>
+    <string name="oauth_error_authorize_https">Authorization endpoint must use HTTPS.</string>
+    <string name="oauth_error_token_https">Token endpoint must use HTTPS.</string>
+    <string name="oauth_error_redirect_uri">OAuth callbacks are accepted only at vibesync://auth/callback.</string>
+    <string name="oauth_error_scope_required">Enter at least one OAuth scope.</string>
+    <string name="language_rtl_note">Arabic uses a right-to-left layout.</string>
 </resources>
