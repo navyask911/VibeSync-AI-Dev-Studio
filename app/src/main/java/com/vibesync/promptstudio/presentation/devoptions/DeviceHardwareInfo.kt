@@ -9,6 +9,11 @@ import java.util.Locale
 data class DeviceHardwareInfo(
     val androidRelease: String,
     val apiLevel: Int,
+    val manufacturer: String,
+    val deviceModel: String,
+    val deviceCodename: String,
+    val securityPatch: String,
+    val buildFingerprint: String,
     val kernelVersion: String,
     val socModel: String,
     val cpuAbi: String,
@@ -36,6 +41,15 @@ data class DeviceHardwareInfo(
             return DeviceHardwareInfo(
                 androidRelease = Build.VERSION.RELEASE ?: "Unknown",
                 apiLevel = Build.VERSION.SDK_INT,
+                manufacturer = Build.MANUFACTURER.ifBlank { "Unknown" },
+                deviceModel = Build.MODEL.ifBlank { "Unknown" },
+                deviceCodename = Build.DEVICE.ifBlank { "Unknown" },
+                securityPatch = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    Build.VERSION.SECURITY_PATCH.ifBlank { "Unavailable" }
+                } else {
+                    "Pre-Marshmallow"
+                },
+                buildFingerprint = Build.FINGERPRINT.ifBlank { "Unavailable" },
                 kernelVersion = System.getProperty("os.version") ?: "Unavailable",
                 socModel = soc.ifBlank { "Unavailable" },
                 cpuAbi = Build.SUPPORTED_ABIS.firstOrNull() ?: "Unavailable",
