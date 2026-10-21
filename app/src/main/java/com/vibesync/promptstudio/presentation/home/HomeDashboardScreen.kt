@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,8 +55,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Surface
 import androidx.core.os.LocaleListCompat
 import com.vibesync.promptstudio.R
 import com.vibesync.promptstudio.presentation.devoptions.DeviceHardwareInfo
@@ -135,6 +132,7 @@ fun HomeDashboardScreen(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.theme_light)) },
                             leadingIcon = { Icon(Icons.Default.Palette, contentDescription = null) },
+                            trailingIcon = { if (appearance == "normal") Text("✓", color = MaterialTheme.colorScheme.primary) },
                             onClick = {
                                 appearancePrefs.edit().putString("theme_mode", "normal").apply()
                                 appearance = "normal"
@@ -144,6 +142,7 @@ fun HomeDashboardScreen(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.theme_system)) },
                             leadingIcon = { Icon(Icons.Default.Tune, contentDescription = null) },
+                            trailingIcon = { if (appearance == "system") Text("✓", color = MaterialTheme.colorScheme.primary) },
                             onClick = {
                                 appearancePrefs.edit().putString("theme_mode", "system").apply()
                                 appearance = "system"
@@ -153,6 +152,7 @@ fun HomeDashboardScreen(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.theme_matrix)) },
                             leadingIcon = { Icon(Icons.Default.Memory, contentDescription = null) },
+                            trailingIcon = { if (appearance == "developer_dark") Text("✓", color = MaterialTheme.colorScheme.primary) },
                             onClick = {
                                 appearancePrefs.edit().putString("theme_mode", "developer_dark").apply()
                                 appearance = "developer_dark"
@@ -297,8 +297,13 @@ fun HomeDashboardScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 locales.forEach { locale ->
-                    val selected = AppCompatDelegate.getApplicationLocales().toLanguageTags()
-                        .split(',').any { it.substringBefore('-') == locale.tag }
+                    val appLanguageTags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                    val effectiveLanguageTags = appLanguageTags.ifBlank {
+                        context.resources.configuration.locales[0].language
+                    }
+                    val selected = effectiveLanguageTags.split(',').any {
+                        it.substringBefore('-') == locale.tag
+                    }
                     Card(
                         onClick = {
                             AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(locale.tag))
@@ -349,6 +354,7 @@ private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
                 stringResource(R.string.devoptions_android_version),
                 stringResource(R.string.devoptions_android_version_value, info.androidRelease, info.apiLevel)
             )
+            HardwareRow(stringResource(R.string.devoptions_kernel), info.kernelVersion)
             HardwareRow(stringResource(R.string.devoptions_cpu), "${info.socModel} · ${info.cpuAbi}")
             HardwareRow(
                 stringResource(R.string.devoptions_refresh_rate),
