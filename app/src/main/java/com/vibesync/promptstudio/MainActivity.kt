@@ -2,7 +2,7 @@ package com.vibesync.promptstudio
 
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,9 +28,10 @@ import com.vibesync.promptstudio.presentation.PromptStudioViewModel
 import com.vibesync.promptstudio.presentation.SettingsScreen
 import com.vibesync.promptstudio.presentation.SettingsViewModel
 import com.vibesync.promptstudio.presentation.theme.VibeSyncTheme
+import com.vibesync.promptstudio.presentation.navigation.AppNavGraph
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private var playExperience: PlayExperienceManager? = null
     private var inAppUpdateManager: InAppUpdateManager? = null
 
@@ -47,7 +48,7 @@ class MainActivity : ComponentActivity() {
                 .collectAsStateWithLifecycle(initialValue = ConnectivityStatus.CONNECTING)
             val isOnline by container.networkMonitor.isOnline.collectAsStateWithLifecycle()
             VibeSyncTheme {
-                AppNavigation(
+                AppNavGraph(
                     navController = rememberNavController(),
                     connectivityStatus = connectivity,
                     isOnline = isOnline,
@@ -92,77 +93,5 @@ class MainActivity : ComponentActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         inAppUpdateManager?.onActivityResult(requestCode, resultCode)
-    }
-}
-
-@androidx.compose.runtime.Composable
-private fun AppNavigation(
-    navController: NavHostController,
-    connectivityStatus: ConnectivityStatus,
-    isOnline: Boolean,
-    onConnectOAuth: (OAuthClientConfiguration) -> Unit,
-    onManageAdsPrivacy: () -> Unit,
-    onSuccessfulPromptRun: (String, Boolean) -> Unit
-) {
-    val container = (androidx.compose.ui.platform.LocalContext.current.applicationContext as VibeSyncApplication).container
-    val context = androidx.compose.ui.platform.LocalContext.current
-    NavHost(navController = navController, startDestination = "webstudio") {
-        composable("webstudio") {
-            AiWebStudioScreen(
-                onOpenDeveloperApi = { navController.navigate("studio") },
-                onOpenDeveloperResources = { navController.navigate("developerhub") { launchSingleTop = true } },
-                onBack = {
-                    if (!navController.popBackStack()) (context as? android.app.Activity)?.finish()
-                }
-            )
-        }
-        composable("studio") {
-            val studioViewModel: PromptStudioViewModel = viewModel(factory = container.promptStudioFactory)
-            PromptStudioScreen(
-                viewModel = studioViewModel,
-                onOpenSettings = { navController.navigate("settings") },
-                onOpenDiagnostics = { navController.navigate("diagnostics") },
-                onOpenToolbox = { navController.navigate("toolbox") },
-                onOpenDeveloperResources = { navController.navigate("developerhub") },
-                onOpenWebStudio = { navController.navigate("webstudio") },
-                connectivityStatus = connectivityStatus,
-                isOnline = isOnline,
-                adMobManager = container.adMobManager,
-                onSuccessfulPromptRun = { provider ->
-                    onSuccessfulPromptRun(provider, navController.currentDestination?.route == "studio")
-                }
-            )
-        }
-        composable("settings") {
-            val settingsViewModel: SettingsViewModel = viewModel(factory = container.settingsFactory)
-            SettingsScreen(
-                viewModel = settingsViewModel,
-                onBack = { navController.popBackStack() },
-                onConnectOAuth = onConnectOAuth,
-                onOpenDiagnostics = { navController.navigate("diagnostics") },
-                adMobManager = container.adMobManager,
-                onManageAdsPrivacy = onManageAdsPrivacy
-            )
-        }
-        composable("diagnostics") {
-            DiagnosticsScreen(store = container.diagnostics, onBack = { navController.popBackStack() })
-        }
-        composable("toolbox") {
-            DeveloperToolboxScreen(onBack = { navController.popBackStack() })
-        }
-        composable("developerhub") {
-            DeveloperResourcesScreen(
-                onBack = { navController.popBackStack() },
-                onOpenWebStudio = { navController.navigate("webstudio") { launchSingleTop = true } },
-                onSendPromptToBrowser = { prompt ->
-                    BrowserPromptBridge.enqueue(prompt)
-                    if (!navController.popBackStack("webstudio", false)) navController.navigate("webstudio") { launchSingleTop = true }
-                },
-                onOpenToolbox = { navController.navigate("toolbox") },
-                onOpenApiStudio = { navController.navigate("studio") },
-                onOpenDiagnostics = { navController.navigate("diagnostics") },
-                onOpenSettings = { navController.navigate("settings") }
-            )
-        }
     }
 }
