@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Web
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.PlayArrow
@@ -38,6 +37,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vibesync.promptstudio.domain.model.ProviderType
 import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
 import com.vibesync.promptstudio.data.ads.AdMobManager
+import com.vibesync.promptstudio.presentation.common.ModelSelector
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +63,6 @@ fun PromptStudioScreen(
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     val exportChooserTitle = stringResource(R.string.export_response_chooser)
-    var modelMenuExpanded by remember { mutableStateOf(false) }
     var topBarMenuExpanded by remember { mutableStateOf(false) }
     LaunchedEffect(state.provider) { viewModel.refreshModels() }
     val bannerLoadFailed by adMobManager.bannerLoadFailed.collectAsStateWithLifecycle()
@@ -71,8 +70,12 @@ fun PromptStudioScreen(
     val canRequestAds by adMobManager.canRequestAds.collectAsStateWithLifecycle()
     val adsReady by adMobManager.adsReady.collectAsStateWithLifecycle()
     LaunchedEffect(isOnline) { if (isOnline) adMobManager.resetBannerFailure() }
-    Scaffold(topBar = {
+    Scaffold(
+        modifier = Modifier.fillMaxSize().imePadding(),
+        contentWindowInsets = WindowInsets.systemBars,
+        topBar = {
         TopAppBar(
+            windowInsets = WindowInsets.statusBars,
             title = {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Image(painter = painterResource(R.drawable.ic_launcher), contentDescription = null, modifier = Modifier.size(30.dp))
@@ -166,51 +169,25 @@ fun PromptStudioScreen(
                         if (state.unresolvedVariables.isNotEmpty()) {
                             Text(stringResource(R.string.unresolved_prefix) + state.unresolvedVariables.joinToString { "{{" + it + "}}" }, color = MaterialTheme.colorScheme.error)
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ProviderPicker(state.provider.displayName) { label ->
-                                viewModel.updateProvider(ProviderType.entries.firstOrNull { it.displayName == label } ?: state.provider)
-                            }
-                            Box(Modifier.weight(1f)) {
-                                OutlinedTextField(
-                                    value = state.modelId,
-                                    onValueChange = viewModel::updateModel,
-                                    label = { Text(stringResource(R.string.model_id)) },
-                                    singleLine = true,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    trailingIcon = {
-                                        IconButton(onClick = {
-                                            modelMenuExpanded = true
-                                            viewModel.refreshModels()
-                                        }) {
-                                            Icon(Icons.Default.ArrowDropDown, contentDescription = stringResource(R.string.model_options))
-                                        }
-                                    }
-                                )
-                                DropdownMenu(
-                                    expanded = modelMenuExpanded,
-                                    onDismissRequest = { modelMenuExpanded = false }
-                                ) {
-                                    if (state.isLoadingModels) {
-                                        DropdownMenuItem(text = { Text(stringResource(R.string.model_discovery_loading)) }, onClick = {}, enabled = false)
-                                    }
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.discover_models)) },
-                                        onClick = { modelMenuExpanded = false; viewModel.refreshModels() }
-                                    )
-                                    (state.availableModels.ifEmpty { state.provider.modelOptions }).forEach { model ->
-                                        DropdownMenuItem(
-                                            text = { Text(model) },
-                                            onClick = { viewModel.updateModel(model); modelMenuExpanded = false }
-                                        )
-                                    }
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(R.string.model_discovery_note)) },
-                                        onClick = {},
-                                        enabled = false
-                                    )
-                                }
-                            }
-                        }
+                        ModelSelector(
+                            provider = state.provider,
+                            modelId = state.modelId,
+                            availableModels = state.availableModels,
+                            providerKeyHealth = state.providerKeyHealth,
+                            lastFailedProvider = state.lastFailedProvider,
+                            isLoadingModels = state.isLoadingModels,
+                            isStreaming = state.isStreaming,
+                            onOpen = {
+                                viewModel.refreshProviderKeyHealth()
+                                viewModel.refreshModels()
+                            },
+                            onSelectModel = { provider, modelId ->
+                                if (state.provider != provider) viewModel.updateProvider(provider)
+                                viewModel.updateModel(modelId)
+                            },
+                            onCancelStream = viewModel::cancelRun,
+                            onManageKeys = onOpenSettings
+                        )
                         Text(stringResource(R.string.saved_templates), style = MaterialTheme.typography.labelLarge)
                         if (state.savedTemplates.isEmpty()) Text(stringResource(R.string.save_prompt_offline), style = MaterialTheme.typography.bodySmall)
                         else state.savedTemplates.take(12).forEach { prompt ->
@@ -244,7 +221,9 @@ fun PromptStudioScreen(
                     }
                 }
             }
-            item {
+            item(key = "response-stream") {
+                // One response is streamed into this stable item; there is intentionally no token-level auto-scroll.
+                // Keeping a key preserves the reader's viewport while markdown content updates in place.
                 Card {
                     Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -289,20 +268,6 @@ fun PromptStudioScreen(
 @Composable
 private fun EstimateLine(label: String, value: String) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) { Text(label); Text(value, fontWeight = FontWeight.SemiBold) }
-}
-
-@Composable
-private fun ProviderPicker(selected: String, onSelected: (String) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Column {
-        Text(stringResource(R.string.provider), style = MaterialTheme.typography.labelSmall)
-        TextButton(onClick = { expanded = true }) { Text(selected) }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            ProviderType.entries.forEach { provider ->
-                DropdownMenuItem(text = { Text(provider.displayName) }, onClick = { onSelected(provider.displayName); expanded = false })
-            }
-        }
-    }
 }
 
 private enum class MarkdownKind { TEXT, HEADING, BULLET, CODE }
