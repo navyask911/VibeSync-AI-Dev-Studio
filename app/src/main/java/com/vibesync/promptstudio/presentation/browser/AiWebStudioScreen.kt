@@ -300,6 +300,11 @@ fun AiWebStudioScreen(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                    }
+                },
                 title = {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
