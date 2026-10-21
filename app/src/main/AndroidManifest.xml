@@ -15,6 +15,9 @@
         android:theme="@style/Theme.VibeSync"
         android:usesCleartextTraffic="false">
         <meta-data
+            android:name="autoStoreLocales"
+            android:value="true" />
+        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="${adsApplicationId}" />
         <activity
