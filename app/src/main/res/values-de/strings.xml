@@ -444,4 +444,5 @@
     <string name="model_key_health_error">Zugangsdaten nicht verfügbar oder letzte Anfrage fehlgeschlagen</string>
     <string name="model_key_health_unknown">Schlüsselstatus unbekannt</string>
 
+    <string name="model_pricing_disclaimer">Richtwerte pro 1 Mio. Tokens; Anbieterpreise können sich ändern.</string>
 </resources>
