@@ -265,11 +265,10 @@ private fun requestHead(input: String): String {
     connection.instanceFollowRedirects = false
     return try {
         val code = connection.responseCode
-        val headers = connection.headerFields
-            .filterKeys { it != null }
-            .toSortedMap(String.CASE_INSENSITIVE_ORDER)
-            .entries
-            .joinToString("\n") { (name, values) -> "$name: ${values.joinToString(", ")}" }
+        val headers = connection.headerFields.entries
+            .filter { !it.key.isNullOrBlank() }
+            .sortedBy { it.key!!.lowercase(java.util.Locale.ROOT) }
+            .joinToString("\n") { (name, values) -> "$name: ${values.orEmpty().joinToString(", ")}" }
         "HTTP status: $code\nURL: ${connection.url}\n\n" + headers.ifBlank { "No response headers were provided." }
     } finally {
         connection.disconnect()
