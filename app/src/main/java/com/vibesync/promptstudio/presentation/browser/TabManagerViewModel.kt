@@ -7,6 +7,8 @@ import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.lifecycle.ViewModel
+import androidx.webkit.ProfileStore
+import androidx.webkit.WebViewFeature
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +22,9 @@ data class AiTabItem(
     val loading: Boolean = true,
     val canGoBack: Boolean = false,
     val canGoForward: Boolean = false,
-    val favicon: Bitmap? = null
+    val favicon: Bitmap? = null,
+    val isPrivate: Boolean = false,
+    val profileName: String? = null
 )
 
 class TabManagerViewModel : ViewModel() {
@@ -45,20 +49,40 @@ class TabManagerViewModel : ViewModel() {
         mutableActiveTabId.value = tab.id
     }
 
+    fun openPrivateTab(provider: AiProvider = AiProvider.GEMINI, customUrl: String? = null): Boolean {
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) return false
+        val startUrl = customUrl?.let(::normalizeHttpUrl) ?: if (customUrl == null) provider.startUrl else null
+        if (startUrl == null) return false
+        val effectiveProvider = if (customUrl != null && AiProvider.fromHost(startUrl) == null) provider else
+            AiProvider.fromHost(startUrl) ?: provider
+        val id = UUID.randomUUID().toString()
+        val tab = AiTabItem(
+            id = id,
+            provider = effectiveProvider,
+            url = startUrl,
+            isPrivate = true,
+            profileName = "vibesync_private_$id"
+        )
+        mutableTabs.value = mutableTabs.value + tab
+        mutableActiveTabId.value = tab.id
+        return true
+    }
+
     fun switchTab(tabId: String) {
         if (mutableTabs.value.any { it.id == tabId }) mutableActiveTabId.value = tabId
     }
 
     fun closeTab(tabId: String) {
-        destroyTabWebView(tabId)
         val oldTabs = mutableTabs.value
+        val removed = oldTabs.firstOrNull { it.id == tabId } ?: return
         val index = oldTabs.indexOfFirst { it.id == tabId }
-        if (index < 0) return
+        destroyTabWebView(tabId)
         val next = oldTabs.filterNot { it.id == tabId }
         mutableTabs.value = next
         if (mutableActiveTabId.value == tabId) {
             mutableActiveTabId.value = next.getOrNull((index - 1).coerceAtLeast(0))?.id.orEmpty()
         }
+        if (removed.isPrivate) deletePrivateProfile(removed.profileName)
     }
 
     fun reorderTabs(fromIndex: Int, toIndex: Int) {
@@ -125,12 +149,20 @@ class TabManagerViewModel : ViewModel() {
     }
 
     override fun onCleared() {
+        val privateProfiles = mutableTabs.value.filter { it.isPrivate }.mapNotNull { it.profileName }
         val cleanup = {
             webViews.keys.toList().forEach(::destroyTabWebView)
+            privateProfiles.forEach(::deletePrivateProfile)
         }
         if (Looper.myLooper() == Looper.getMainLooper()) cleanup()
         else Handler(Looper.getMainLooper()).post { cleanup() }
         super.onCleared()
+    }
+
+    private fun deletePrivateProfile(profileName: String?) {
+        if (profileName.isNullOrBlank()) return
+        if (!runCatching { WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE) }.getOrDefault(false)) return
+        runCatching { ProfileStore.getInstance().deleteProfile(profileName) }
     }
 
     private fun normalizeHttpUrl(raw: String): String? {
