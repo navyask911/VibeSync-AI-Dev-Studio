@@ -43,6 +43,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +63,9 @@ import com.vibesync.promptstudio.presentation.devoptions.DeviceHardwareInfo
 import com.vibesync.promptstudio.presentation.home.components.DevOptionsHubCard
 import com.vibesync.promptstudio.presentation.home.components.HeroBrowserCard
 import com.vibesync.promptstudio.presentation.home.components.ToolGridItem
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 private data class DashboardLocale(val tag: String, val label: String)
 
@@ -80,6 +84,17 @@ fun HomeDashboardScreen(
     onOpenNetworkDiagnostics: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var hardwareSnapshot by remember(context) { mutableStateOf(DeviceHardwareInfo.read(context)) }
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hardwareSnapshot = DeviceHardwareInfo.read(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val appearancePrefs = remember(context) {
         context.getSharedPreferences("vibesync_appearance", android.content.Context.MODE_PRIVATE)
     }
@@ -200,7 +215,7 @@ fun HomeDashboardScreen(
             item { HeroBrowserCard(onClick = onOpenWebStudio) }
             item { SectionHeading(stringResource(R.string.home_section_device_system)) }
             item { DevOptionsHubCard(onClick = onOpenDeveloperOptions) }
-            item { HardwareSnapshotCard(DeviceHardwareInfo.read(context)) }
+            item { HardwareSnapshotCard(hardwareSnapshot) }
 
             item { SectionHeading(stringResource(R.string.home_section_developer_productivity)) }
             item {
