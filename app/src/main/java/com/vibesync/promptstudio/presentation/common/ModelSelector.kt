@@ -233,6 +233,12 @@ fun ModelSelector(
                         }
                     }
                 }
+                Text(
+                    androidx.compose.ui.res.stringResource(R.string.model_pricing_disclaimer),
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 TextButton(onClick = { sheetVisible = false; onManageKeys() }, modifier = Modifier.fillMaxWidth()) {
                     Text(androidx.compose.ui.res.stringResource(R.string.model_manage_providers_keys))
