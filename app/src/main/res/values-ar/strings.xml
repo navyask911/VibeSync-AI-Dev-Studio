@@ -1,7 +1,7 @@
 <resources>
     <string name="advertisement">إعلان</string>
     <string name="api_key">مفتاح API</string>
-    <string name="app_name">VibeSync AI Dev Studio</string>
+    <string name="app_name">مجموعة مطوري VibeSync AI</string>
     <string name="approx_input_tokens">رموز الإدخال التقريبية</string>
     <string name="approx_response_tokens">رموز الاستجابة التقريبية</string>
     <string name="back_to_catalogue">← الفهرس</string>
@@ -358,4 +358,6 @@
     <string name="browser_super_copy_markdown">استخراج الصفحة بتنسيق Markdown</string>
     <string name="browser_super_copy_success">نُسخ محتوى الصفحة إلى الحافظة.</string>
     <string name="browser_super_copy_empty">لا يوجد نص في الصفحة لنسخه.</string>
+    <string name="app_brand_title">VibeSync AI</string>
+    <string name="app_brand_subtitle">مجموعة المطورين</string>
 </resources>
