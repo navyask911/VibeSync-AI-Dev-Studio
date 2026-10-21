@@ -444,5 +444,5 @@
     <string name="model_key_health_error">Credencial no disponible o última solicitud fallida</string>
     <string name="model_key_health_unknown">Estado de la clave desconocido</string>
 
-    <string name="model_pricing_disclaimer">Precios API orientativos por millón de tokens; el proveedor puede cambiarlos.</string>
+    <string name="model_pricing_disclaimer">Tarifas API estándar por millón de tokens. El contexto largo y las herramientas pueden costar más; los precios cambian.</string>
 </resources>
