@@ -299,7 +299,7 @@ private fun modelOption(provider: ProviderType, modelId: String): ModelOption =
     when ("${provider.name}:$modelId") {
         // Input/output prices are USD per million tokens; unknown provider/model rates stay unknown.
         "OPENAI:gpt-4o" -> ModelOption(provider, modelId, "128k", 2.50, 10.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
-        "OPENAI:gpt-4o-mini" -> ModelOption(provider, modelId, "128k", 0.15, 0.60, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true)
+        "OPENAI:gpt-4o-mini" -> ModelOption(provider, modelId, "128k", 0.15, 0.60, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true, cheap = true)
         "OPENAI:gpt-4.1" -> ModelOption(provider, modelId, "1M", 2.00, 8.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), capable = true)
         "ANTHROPIC:claude-sonnet-4-5" -> ModelOption(provider, modelId, "200k", 3.00, 15.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json), fast = true, capable = true)
         "ANTHROPIC:claude-sonnet-4-6" -> ModelOption(provider, modelId, "1M beta", 3.00, 15.00, listOf(R.string.model_capability_tools, R.string.model_capability_vision, R.string.model_capability_json, R.string.model_capability_reasoning), fast = true, capable = true)
@@ -319,7 +319,7 @@ private fun matchesFilter(model: ModelOption, filter: ModelFilter): Boolean = wh
 }
 
 private fun priceLine(model: ModelOption, unknownPriceLabel: String): String =
-    if (model.inputUsd == null || model.outputUsd == null) "$— / $— · $unknownPriceLabel"
+    if (model.inputUsd == null || model.outputUsd == null) "\$— / \$— · $unknownPriceLabel"
     else "Input ${usd(model.inputUsd)} · Output ${usd(model.outputUsd)} / 1M tokens"
 
 private fun compactMetadata(model: ModelOption, streamingLabel: String): String {
