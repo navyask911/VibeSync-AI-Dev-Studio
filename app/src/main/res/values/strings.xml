@@ -346,4 +346,16 @@
     <string name="font_sans">Sans serif</string>
     <string name="font_mono">Monospace</string>
     <string name="font_license_note">The serif option uses Android’s built-in serif family for a Times-style look. No proprietary Times New Roman font file is bundled.</string>
+    <string name="browser_bookmark_current_page">Bookmark current page</string>
+    <string name="browser_open_bookmarks">Open bookmarks</string>
+    <string name="browser_bookmarks_title">Saved bookmarks</string>
+    <string name="browser_no_bookmarks_saved">No bookmarks saved yet.</string>
+    <string name="browser_bookmark_saved">Bookmark saved on this device.</string>
+    <string name="browser_bookmark_remove">Remove bookmark</string>
+    <string name="browser_desktop_mode">Switch to desktop layout</string>
+    <string name="browser_mobile_mode">Switch to mobile layout</string>
+    <string name="browser_super_copy_text">Super Copy: page text</string>
+    <string name="browser_super_copy_markdown">Extract page as Markdown</string>
+    <string name="browser_super_copy_success">Page content copied to clipboard.</string>
+    <string name="browser_super_copy_empty">No page text was available to copy.</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.vibesync.promptstudio.presentation.browser
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -9,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
+import android.webkit.WebSettings
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -37,6 +40,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -76,6 +81,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -97,6 +103,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vibesync.promptstudio.R
+import org.json.JSONArray
+import org.json.JSONTokener
 import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +124,12 @@ fun AiWebStudioScreen(
 
     var showProviderSheet by remember { mutableStateOf(false) }
     var showTabOverview by remember { mutableStateOf(false) }
+    var showBookmarksSheet by remember { mutableStateOf(false) }
     var browserMenuExpanded by remember { mutableStateOf(false) }
+    val browserPreferences = remember(context) { context.getSharedPreferences("vibesync_browser_preferences", 0) }
+    var desktopMode by remember(browserPreferences) { mutableStateOf(browserPreferences.getBoolean("desktop_mode", false)) }
+    var savedBookmarks by remember(context) { mutableStateOf(loadBrowserBookmarks(context)) }
+    val pendingBrowserPrompt by BrowserPromptBridge.pending.collectAsState()
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var prompt by remember { mutableStateOf("") }
@@ -130,10 +143,35 @@ fun AiWebStudioScreen(
     val promptFilledText = stringResource(R.string.prompt_filled_no_send)
     val promptNoInputText = stringResource(R.string.prompt_input_not_found)
     val promptUnsupportedText = stringResource(R.string.prompt_injection_unsupported)
+    val bookmarkSavedText = stringResource(R.string.browser_bookmark_saved)
+    val pageCopiedText = stringResource(R.string.browser_super_copy_success)
+    val pageEmptyText = stringResource(R.string.browser_super_copy_empty)
     val currentHost = activeTab?.url?.let { url ->
         runCatching { Uri.parse(url).host.orEmpty() }.getOrNull()
     }.orEmpty()
     val isSecureConnection = activeTab?.url?.startsWith("https://", ignoreCase = true) == true
+
+    LaunchedEffect(pendingBrowserPrompt?.id, activeId, activeTab?.url) {
+        val request = pendingBrowserPrompt ?: return@LaunchedEffect
+        prompt = request.text
+        val tab = activeTab
+        val webView = tab?.let { manager.webViewFor(it.id) }
+        if (tab == null || webView == null) {
+            feedback = promptNoInputText
+        } else if (!tab.provider.supportsPromptInjection(tab.url)) {
+            feedback = promptUnsupportedText
+        } else {
+            webView.evaluateJavascript(makePromptInjectionScript(request.text, tab.provider)) { result ->
+                feedback = when {
+                    result?.contains("no-input") == true -> promptNoInputText
+                    result?.contains("no-send") == true -> promptFilledText
+                    else -> promptSentText
+                }
+                if (result?.contains("no-input") != true) prompt = ""
+            }
+        }
+        BrowserPromptBridge.consume(request.id)
+    }
 
     BackHandler(enabled = activeTab != null) {
         val activeView = activeTab?.let { manager.webViewFor(it.id) }
@@ -241,6 +279,41 @@ fun AiWebStudioScreen(
                             expanded = browserMenuExpanded,
                             onDismissRequest = { browserMenuExpanded = false }
                         ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_bookmark_current_page)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    activeTab?.let { tab ->
+                                        savedBookmarks = addBrowserBookmark(context, tab.title.ifBlank { Uri.parse(tab.url).host.orEmpty() }, tab.url)
+                                        feedback = bookmarkSavedText
+                                    }
+                                },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_open_bookmarks)) },
+                                onClick = { browserMenuExpanded = false; showBookmarksSheet = true }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_super_copy_text)) },
+                                onClick = { browserMenuExpanded = false; extractPageToClipboard(context, manager.webViewFor(activeId), markdown = false, onResult = { text -> feedback = if (text) pageCopiedText else pageEmptyText }) },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_super_copy_markdown)) },
+                                onClick = { browserMenuExpanded = false; extractPageToClipboard(context, manager.webViewFor(activeId), markdown = true, onResult = { text -> feedback = if (text) pageCopiedText else pageEmptyText }) },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(if (desktopMode) R.string.browser_mobile_mode else R.string.browser_desktop_mode)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    desktopMode = !desktopMode
+                                    browserPreferences.edit().putBoolean("desktop_mode", desktopMode).apply()
+                                    tabs.forEach { tab -> manager.webViewFor(tab.id)?.let { applyDesktopLayout(it, context, desktopMode) } }
+                                    manager.webViewFor(activeId)?.reload()
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.open_external_browser)) },
                                 onClick = {
@@ -496,6 +569,48 @@ fun AiWebStudioScreen(
                         enabled = customUrl.isNotBlank()
                     ) {
                         Text(stringResource(R.string.open_tab))
+                    }
+                }
+            }
+        }
+    }
+
+    if (showBookmarksSheet) {
+        ModalBottomSheet(onDismissRequest = { showBookmarksSheet = false }) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(stringResource(R.string.browser_bookmarks_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                if (savedBookmarks.isEmpty()) {
+                    Text(stringResource(R.string.browser_no_bookmarks_saved), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(savedBookmarks, key = { it.url }) { bookmark ->
+                            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(
+                                        modifier = Modifier.weight(1f).clickable {
+                                            manager.openTab(AiProvider.fromHost(bookmark.url) ?: AiProvider.CUSTOM, bookmark.url)
+                                            showBookmarksSheet = false
+                                        }.padding(vertical = 8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(3.dp)
+                                    ) {
+                                        Text(bookmark.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(bookmark.url, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
+                                    IconButton(onClick = { savedBookmarks = removeBrowserBookmark(context, bookmark.url) }) {
+                                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.browser_bookmark_remove))
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -831,6 +946,97 @@ private fun BrowserTabChip(
     }
 }
 
+private data class BrowserBookmark(val title: String, val url: String)
+
+private fun loadBrowserBookmarks(context: Context): List<BrowserBookmark> {
+    val raw = context.getSharedPreferences("vibesync_browser_preferences", 0).getString("bookmarks", "[]")
+    return runCatching {
+        val array = JSONArray(raw)
+        (0 until array.length()).mapNotNull { index ->
+            val item = array.optJSONObject(index) ?: return@mapNotNull null
+            val title = item.optString("title").take(180)
+            val url = item.optString("url")
+            if (title.isBlank() || !url.startsWith("https://") && !url.startsWith("http://")) null
+            else BrowserBookmark(title, url)
+        }
+    }.getOrDefault(emptyList())
+}
+
+private fun persistBrowserBookmarks(context: Context, bookmarks: List<BrowserBookmark>) {
+    val array = JSONArray()
+    bookmarks.forEach { item ->
+        array.put(JSONObject().put("title", item.title).put("url", item.url))
+    }
+    context.getSharedPreferences("vibesync_browser_preferences", 0)
+        .edit().putString("bookmarks", array.toString()).apply()
+}
+
+private fun addBrowserBookmark(context: Context, title: String, url: String): List<BrowserBookmark> {
+    val next = (loadBrowserBookmarks(context).filterNot { it.url == url } + BrowserBookmark(title.take(180), url)).takeLast(100)
+    persistBrowserBookmarks(context, next)
+    return next
+}
+
+private fun removeBrowserBookmark(context: Context, url: String): List<BrowserBookmark> {
+    val next = loadBrowserBookmarks(context).filterNot { it.url == url }
+    persistBrowserBookmarks(context, next)
+    return next
+}
+
+private fun applyDesktopLayout(webView: WebView, context: Context, enabled: Boolean) {
+    webView.settings.apply {
+        useWideViewPort = true
+        loadWithOverviewMode = enabled
+        userAgentString = if (enabled) DESKTOP_USER_AGENT else WebSettings.getDefaultUserAgent(context)
+    }
+}
+
+private fun extractPageToClipboard(
+    context: Context,
+    webView: WebView?,
+    markdown: Boolean,
+    onResult: (Boolean) -> Unit
+) {
+    if (webView == null) {
+        onResult(false)
+        return
+    }
+    val script = if (markdown) {
+        """
+        (() => {
+          const content = document.querySelector('main') || document.querySelector('article') || document.body;
+          if (!content) return '';
+          const nodes = [...content.querySelectorAll('h1,h2,h3,h4,p,li,pre,blockquote')];
+          const pieces = nodes.map(el => {
+            const value = (el.innerText || el.textContent || '').trim();
+            if (!value) return '';
+            if (el.tagName === 'PRE') return '```\\n' + value + '\\n```';
+            if (/^H[1-4]$/.test(el.tagName)) return '#'.repeat(Number(el.tagName.slice(1))) + ' ' + value;
+            if (el.tagName === 'LI') return '- ' + value;
+            if (el.tagName === 'BLOCKQUOTE') return '> ' + value;
+            return value;
+          });
+          return pieces.filter(Boolean).join('\\n\\n');
+        })()
+        """.trimIndent()
+    } else {
+        """(() => (document.querySelector('main') || document.body)?.innerText || '')()"""
+    }
+    webView.evaluateJavascript(script) { raw ->
+        val extracted = runCatching { JSONTokener(raw ?: "\"\"").nextValue()?.toString().orEmpty() }.getOrDefault("")
+        if (extracted.isBlank()) {
+            onResult(false)
+        } else {
+            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+            clipboard?.setPrimaryClip(ClipData.newPlainText(if (markdown) "Web page Markdown" else "Web page text", extracted))
+            onResult(clipboard != null)
+        }
+    }
+}
+
+private const val DESKTOP_USER_AGENT =
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+
 private fun syncWebViewPool(
     host: FrameLayout,
     tabs: List<AiTabItem>,
@@ -906,8 +1112,13 @@ private fun configureWebView(
         safeBrowsingEnabled = true
         // Preserve the platform WebView identity. Spoofing Chrome does not make an embedded WebView
         // a supported OAuth user-agent and can violate provider sign-in restrictions.
-        // Keep the platform default user-agent; do not spoof Chrome to bypass provider sign-in restrictions.
+        // Login identity is not spoofed; known identity-provider flows are routed to Custom Tabs.
     }
+    applyDesktopLayout(
+        webView,
+        context,
+        context.getSharedPreferences("vibesync_browser_preferences", 0).getBoolean("desktop_mode", false)
+    )
     webView.webChromeClient = object : WebChromeClient() {
         override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
             manager.updateFavicon(tab.id, icon)
@@ -931,8 +1142,13 @@ private fun configureWebView(
                 javaScriptCanOpenWindowsAutomatically = true
                 setSupportMultipleWindows(true)
                 safeBrowsingEnabled = true
-                // Keep the platform default user-agent; do not spoof Chrome to bypass provider sign-in restrictions.
+                // Keep platform sign-in restrictions; identity-provider routes leave the embedded view.
             }
+            applyDesktopLayout(
+                popup,
+                context,
+                context.getSharedPreferences("vibesync_browser_preferences", 0).getBoolean("desktop_mode", false)
+            )
             popup.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                     val uri = request.url

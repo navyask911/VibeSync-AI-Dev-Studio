@@ -346,4 +346,16 @@
     <string name="font_sans">Seriflos</string>
     <string name="font_mono">Monospace</string>
     <string name="font_license_note">Serif verwendet die integrierte Android-Serifschrift für einen Times-ähnlichen Stil. Die proprietäre Times-New-Roman-Datei wird nicht mitgeliefert.</string>
+    <string name="browser_bookmark_current_page">Aktuelle Seite als Lesezeichen</string>
+    <string name="browser_open_bookmarks">Lesezeichen öffnen</string>
+    <string name="browser_bookmarks_title">Gespeicherte Lesezeichen</string>
+    <string name="browser_no_bookmarks_saved">Noch keine Lesezeichen gespeichert.</string>
+    <string name="browser_bookmark_saved">Lesezeichen auf diesem Gerät gespeichert.</string>
+    <string name="browser_bookmark_remove">Lesezeichen entfernen</string>
+    <string name="browser_desktop_mode">Desktop-Layout aktivieren</string>
+    <string name="browser_mobile_mode">Mobiles Layout aktivieren</string>
+    <string name="browser_super_copy_text">Super Copy: Seitentext</string>
+    <string name="browser_super_copy_markdown">Seite als Markdown extrahieren</string>
+    <string name="browser_super_copy_success">Seiteninhalt in die Zwischenablage kopiert.</string>
+    <string name="browser_super_copy_empty">Kein Seitentext zum Kopieren verfügbar.</string>
 </resources>

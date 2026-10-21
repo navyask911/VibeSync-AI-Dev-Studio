@@ -346,4 +346,16 @@
     <string name="font_sans">Sans serif</string>
     <string name="font_mono">Monospace</string>
     <string name="font_license_note">يستخدم خيار Serif خط Android المدمج المشابه لنمط Times. لا تتضمن الحزمة ملف Times New Roman الاحتكاري.</string>
+    <string name="browser_bookmark_current_page">إضافة الصفحة الحالية إلى العلامات</string>
+    <string name="browser_open_bookmarks">فتح العلامات المرجعية</string>
+    <string name="browser_bookmarks_title">العلامات المحفوظة</string>
+    <string name="browser_no_bookmarks_saved">لم تُحفظ أي علامة بعد.</string>
+    <string name="browser_bookmark_saved">حُفظت العلامة على هذا الجهاز.</string>
+    <string name="browser_bookmark_remove">إزالة العلامة</string>
+    <string name="browser_desktop_mode">التبديل إلى عرض سطح المكتب</string>
+    <string name="browser_mobile_mode">التبديل إلى عرض الجوال</string>
+    <string name="browser_super_copy_text">نسخ فائق: نص الصفحة</string>
+    <string name="browser_super_copy_markdown">استخراج الصفحة بتنسيق Markdown</string>
+    <string name="browser_super_copy_success">نُسخ محتوى الصفحة إلى الحافظة.</string>
+    <string name="browser_super_copy_empty">لا يوجد نص في الصفحة لنسخه.</string>
 </resources>

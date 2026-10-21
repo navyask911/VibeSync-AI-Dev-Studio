@@ -346,4 +346,16 @@
     <string name="font_sans">Sans serif</string>
     <string name="font_mono">Monospace</string>
     <string name="font_license_note">Serif विकल्प Android के बिल्ट-इन Serif फ़ॉन्ट का उपयोग करता है। मालिकाना Times New Roman फ़ाइल ऐप में शामिल नहीं है.</string>
+    <string name="browser_bookmark_current_page">वर्तमान पेज बुकमार्क करें</string>
+    <string name="browser_open_bookmarks">बुकमार्क खोलें</string>
+    <string name="browser_bookmarks_title">सहेजे गए बुकमार्क</string>
+    <string name="browser_no_bookmarks_saved">अभी कोई बुकमार्क सहेजा नहीं गया है।</string>
+    <string name="browser_bookmark_saved">बुकमार्क इस डिवाइस पर सहेजा गया।</string>
+    <string name="browser_bookmark_remove">बुकमार्क हटाएँ</string>
+    <string name="browser_desktop_mode">डेस्कटॉप लेआउट पर जाएँ</string>
+    <string name="browser_mobile_mode">मोबाइल लेआउट पर जाएँ</string>
+    <string name="browser_super_copy_text">Super Copy: पेज टेक्स्ट</string>
+    <string name="browser_super_copy_markdown">पेज को Markdown के रूप में निकालें</string>
+    <string name="browser_super_copy_success">पेज की सामग्री क्लिपबोर्ड पर कॉपी हुई।</string>
+    <string name="browser_super_copy_empty">कॉपी करने के लिए पेज टेक्स्ट नहीं मिला।</string>
 </resources>
