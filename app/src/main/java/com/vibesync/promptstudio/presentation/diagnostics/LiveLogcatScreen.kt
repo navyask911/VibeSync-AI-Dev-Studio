@@ -1,8 +1,6 @@
 package com.vibesync.promptstudio.presentation.diagnostics
 
-import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -59,8 +56,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import java.io.IOException
 
 private enum class LogLevel(val code: String, val rank: Int) {
     VERBOSE("V", 2), DEBUG("D", 3), INFO("I", 4), WARN("W", 5), ERROR("E", 6)
@@ -219,7 +214,7 @@ fun LiveLogcatScreen(
                                 enabled = lines.isNotEmpty()
                             ) {
                                 Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                Spacer(Modifier.height(0.dp))
+                                Spacer(Modifier.height(2.dp))
                                 Text(stringResource(R.string.logcat_copy))
                             }
                             OutlinedButton(
