@@ -580,17 +580,20 @@ fun DeveloperResourcesScreen(
                 }
 
                 ResourceSection.SERVICES -> {
-                    val services = listOf(
+                    val serviceEntries = listOf(
                         Triple(R.string.developer_service_offline_tools, R.string.developer_service_offline_tools_description, 0),
                         Triple(R.string.developer_service_diagnostics, R.string.developer_service_diagnostics_description, 1),
                         Triple(R.string.developer_service_api_studio, R.string.developer_service_api_studio_description, 2),
                         Triple(R.string.developer_service_web_studio, R.string.developer_service_web_studio_description, 3),
                         Triple(R.string.developer_service_appearance, R.string.developer_service_appearance_description, 4)
-                    ).filter { (titleRes, descriptionRes) ->
-                        search.isBlank() ||
-                            context.getString(titleRes).contains(search, ignoreCase = true) ||
-                            context.getString(descriptionRes).contains(search, ignoreCase = true)
+                    ).map { service ->
+                        Triple(service, stringResource(service.first), stringResource(service.second))
                     }
+                    val services = serviceEntries.filter { (_, title, description) ->
+                        search.isBlank() ||
+                            title.contains(search, ignoreCase = true) ||
+                            description.contains(search, ignoreCase = true)
+                    }.map { it.first }
                     LazyColumn(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
