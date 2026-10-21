@@ -35,6 +35,11 @@ class PromptRepositoryImpl(
         streamingClient.listModels(provider, key)
     }
 
+    override suspend fun hasApiKey(provider: ProviderType): Boolean = withContext(Dispatchers.IO) {
+        // getSecret decrypts the credential, so green status means it is readable from the vault.
+        vault.getSecret(EncryptedVault.apiKeyName(provider.name)) != null
+    }
+
     override fun execute(request: PromptRequest): Flow<String> = flow {
         val key = withContext(Dispatchers.IO) {
             try {
