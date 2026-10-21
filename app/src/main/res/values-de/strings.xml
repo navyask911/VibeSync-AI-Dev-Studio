@@ -445,4 +445,7 @@
     <string name="model_key_health_unknown">Schlüsselstatus unbekannt</string>
 
     <string name="model_pricing_disclaimer">Standard-API-Preise pro 1 Mio. Tokens. Lange Kontexte und Tools können mehr kosten; Preise können sich ändern.</string>
+    <string name="browser_prompt_bar_hint">Diese Seite fragen oder einen Prompt senden…</string>
+    <string name="browser_prompt_send">Prompt an aktuelle Seite senden</string>
+
 </resources>
