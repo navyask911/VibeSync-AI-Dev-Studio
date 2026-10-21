@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+enum class ProviderKeyHealth { UNKNOWN, PRESENT, MISSING, ERROR }
+
 data class PromptStudioUiState(
     val title: String = "New prompt",
     val systemPrompt: String = "You are a precise, helpful assistant. Follow the user's instructions and state uncertainty clearly.",
@@ -30,6 +32,8 @@ data class PromptStudioUiState(
     val modelId: String = ProviderType.OPENAI.defaultModel,
     val availableModels: List<String> = emptyList(),
     val isLoadingModels: Boolean = false,
+    val providerKeyHealth: Map<ProviderType, ProviderKeyHealth> = emptyMap(),
+    val lastFailedProvider: ProviderType? = null,
     val inputRateText: String = "",
     val outputRateText: String = "",
     val response: String = "",
@@ -66,6 +70,7 @@ class PromptStudioViewModel(
             }
         }
         recalculate()
+        refreshProviderKeyHealth()
     }
 
     fun updateTitle(value: String) { mutableState.update { it.copy(title = value.take(120)) } }
@@ -80,6 +85,18 @@ class PromptStudioViewModel(
             it.copy(provider = provider, modelId = provider.defaultModel, availableModels = emptyList(), isLoadingModels = false)
         }
         recalculate()
+    }
+
+    fun refreshProviderKeyHealth() {
+        viewModelScope.launch {
+            val health = ProviderType.entries.associateWith { provider ->
+                runCatching { repository.hasApiKey(provider) }.fold(
+                    onSuccess = { present -> if (present) ProviderKeyHealth.PRESENT else ProviderKeyHealth.MISSING },
+                    onFailure = { ProviderKeyHealth.ERROR }
+                )
+            }
+            mutableState.update { it.copy(providerKeyHealth = health) }
+        }
     }
 
     fun refreshModels() {
@@ -152,7 +169,7 @@ class PromptStudioViewModel(
         val request = PromptRequest(config, system.text, user.text)
         streamJob?.cancel()
         streamJob = viewModelScope.launch {
-            mutableState.update { it.copy(isStreaming = true, response = "", error = null) }
+            mutableState.update { it.copy(isStreaming = true, response = "", error = null, lastFailedProvider = null) }
             val responseBuffer = StringBuilder()
             var completedSuccessfully = false
             try {
@@ -181,7 +198,7 @@ class PromptStudioViewModel(
                     it.copy(error = when (error) {
                         is PromptFailure -> error.message
                         else -> error.message ?: "The request failed unexpectedly."
-                    })
+                    }, lastFailedProvider = snapshot.provider)
                 }
             } finally {
                 mutableState.update {
