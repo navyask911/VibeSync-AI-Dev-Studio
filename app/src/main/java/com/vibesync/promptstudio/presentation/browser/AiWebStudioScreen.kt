@@ -288,9 +288,9 @@ fun AiWebStudioScreen(
     }
 
     /*
-     * The root owns IME and navigation-bar insets. This avoids applying imePadding twice:
-     * the WebView's weighted container is measured inside the remaining height, so its
-     * native viewport shrinks for both Compose prompt focus and web-form focus.
+     * The root handles the status bar. The floating prompt surface owns the union of navigation
+     * and IME insets, so its input stays tappable above the keyboard without applying IME padding
+     * to the WebView itself. The weighted WebView viewport shrinks as the prompt bar moves up.
      */
     Column(
         modifier = Modifier
