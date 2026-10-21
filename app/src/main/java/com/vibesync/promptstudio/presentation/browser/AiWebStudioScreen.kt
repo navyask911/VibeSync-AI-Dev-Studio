@@ -46,8 +46,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -111,6 +112,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -170,6 +173,7 @@ fun AiWebStudioScreen(
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var addressSuggestionsVisible by remember { mutableStateOf(false) }
+    var browserPromptText by remember { mutableStateOf("") }
     var feedback by remember { mutableStateOf<String?>(null) }
     var hostContainer by remember { mutableStateOf<FrameLayout?>(null) }
     val popupPool = remember { mutableMapOf<String, MutableList<WebView>>() }
@@ -292,8 +296,6 @@ fun AiWebStudioScreen(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding()
-            .navigationBarsPadding()
-            .imePadding()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             TopAppBar(
@@ -657,6 +659,68 @@ fun AiWebStudioScreen(
                     Button(onClick = { showProviderSheet = true }) {
                         Text(stringResource(R.string.open_provider_directory))
                     }
+                }
+            }
+        }
+
+        val sendBrowserPrompt: () -> Unit = {
+            val prompt = browserPromptText.trim()
+            val tab = activeTab
+            val webView = tab?.let { manager.webViewFor(it.id) }
+            when {
+                prompt.isBlank() -> Unit
+                tab == null || webView == null -> feedback = promptNoInputText
+                !tab.provider.supportsPromptInjection(tab.url) -> feedback = promptUnsupportedText
+                else -> webView.evaluateJavascript(makePromptInjectionScript(prompt, tab.provider)) { result ->
+                    feedback = when {
+                        result?.contains("no-input") == true -> promptNoInputText
+                        result?.contains("no-send") == true -> promptFilledText
+                        else -> {
+                            browserPromptText = ""
+                            promptSentText
+                        }
+                    }
+                }
+            }
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            tonalElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = browserPromptText,
+                    onValueChange = { browserPromptText = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text(stringResource(R.string.browser_prompt_bar_hint)) },
+                    maxLines = 3,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text, imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { sendBrowserPrompt() }),
+                    enabled = activeTab != null,
+                    shape = RoundedCornerShape(20.dp)
+                )
+                IconButton(
+                    onClick = { sendBrowserPrompt() },
+                    enabled = activeTab != null && browserPromptText.isNotBlank(),
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        Icons.Default.ArrowForward,
+                        contentDescription = stringResource(R.string.browser_prompt_send),
+                        tint = if (activeTab != null && browserPromptText.isNotBlank())
+                            MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
