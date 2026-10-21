@@ -340,7 +340,7 @@
     <string name="appearance_theme_label">Color theme</string>
     <string name="theme_normal">Normal</string>
     <string name="theme_developer_dark">Developer Dark</string>
-    <string name="theme_system">System</string>
+    <string name="theme_system">Follow system light/dark</string>
     <string name="appearance_font_label">Typeface</string>
     <string name="font_serif_tnr">Times New Roman-style serif</string>
     <string name="font_sans">Sans serif</string>
@@ -463,7 +463,7 @@
     <string name="home_developer_options_subtitle">Developer mode, ADB status, system shortcuts, and hardware snapshot.</string>
     <string name="home_section_developer_productivity">Developer tooling &amp; productivity</string>
     <string name="home_prompt_bank_title">Developer Prompt Bank</string>
-    <string name="home_prompt_bank_subtitle">Search reusable prompts and send them to AI Studio.</string>
+    <string name="home_prompt_bank_subtitle">150 prompts across Android, frontend, backend, DevOps, and security—search and send them to AI Studio.</string>
     <string name="home_resources_title">Developer Resources Hub</string>
     <string name="home_resources_subtitle">Official documentation, guides, services, and community resources.</string>
     <string name="home_toolbox_title">Offline Developer Toolbox</string>
@@ -475,14 +475,14 @@
     <string name="home_commands_title">Terminal Command Matrix</string>
     <string name="home_commands_subtitle">ADB, PowerShell, and Linux/Bash command cheat sheets.</string>
     <string name="home_section_diagnostics">Diagnostics &amp; networking</string>
-    <string name="home_diagnostics_title">System Diagnostics</string>
-    <string name="home_diagnostics_subtitle">App health records, sanitized diagnostic reports, and export tools.</string>
+    <string name="home_diagnostics_title">Live Logcat &amp; System Diagnostics</string>
+    <string name="home_diagnostics_subtitle">Live logs from this app process, sanitized diagnostic reports, and export tools.</string>
     <string name="home_network_title">Network &amp; DNS Inspector</string>
     <string name="home_network_subtitle">DNS-over-HTTPS lookups for A, AAAA, MX, TXT and HTTPS HEAD headers.</string>
     <string name="home_footer">Local toolbox operations run on-device. Network diagnostics contact the chosen DNS or HTTPS endpoint only when you start a check.</string>
     <string name="home_theme">Theme options</string>
     <string name="theme_light">Normal · Light</string>
-    <string name="theme_system">Follow system light/dark</string>
+    
     <string name="theme_matrix">Developer · Matrix Dark</string>
     <string name="home_language">Language</string>
     <string name="home_choose_language">Choose app language</string>
@@ -544,9 +544,9 @@
     <string name="network_run_head">Send HEAD request</string>
     <string name="network_privacy_note">Network checks send the hostname or URL you enter to the selected remote endpoint. Do not enter secrets or private internal hostnames unless you are comfortable sending them to that endpoint.</string>
 
-    <string name="home_diagnostics_title">Live Logcat &amp; System Diagnostics</string>
-    <string name="home_diagnostics_subtitle">Live logs from this app process, sanitized diagnostic reports, and export tools.</string>
-    <string name="home_prompt_bank_subtitle">150 prompts across Android, frontend, backend, DevOps, and security—search and send them to AI Studio.</string>
+    
+    
+    
     <string name="logcat_live_title">Live Logcat &amp; System Diagnostics</string>
     <string name="logcat_scope">Current-process Logcat · %1$s</string>
     <string name="logcat_limit_note">Android restricts access to other apps’ logs. This view captures this app’s process only and redacts common secret/token patterns before copying or sharing. Use app diagnostics below for sanitized VibeSync health records.</string>
