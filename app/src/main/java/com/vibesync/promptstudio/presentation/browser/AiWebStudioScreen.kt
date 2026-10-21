@@ -1,20 +1,26 @@
 package com.vibesync.promptstudio.presentation.browser
 
+import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Environment
 import android.os.Message
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
+import android.webkit.DownloadListener
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.URLUtil
+import android.webkit.WebStorage
 import android.webkit.WebView
+import android.webkit.WebViewDatabase
 import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -61,6 +67,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Tab
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -101,10 +108,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.webkit.ProfileStore
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import com.vibesync.promptstudio.R
 import org.json.JSONArray
 import org.json.JSONTokener
 import org.json.JSONObject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.InetSocketAddress
+import java.net.Socket
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.SSLSocketFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,9 +142,22 @@ fun AiWebStudioScreen(
     var showProviderSheet by remember { mutableStateOf(false) }
     var showTabOverview by remember { mutableStateOf(false) }
     var showBookmarksSheet by remember { mutableStateOf(false) }
+    var showBrowserSettingsSheet by remember { mutableStateOf(false) }
+    var showClearBrowsingDataDialog by remember { mutableStateOf(false) }
+    var showFindBar by remember { mutableStateOf(false) }
+    var findQuery by remember { mutableStateOf("") }
+    var findCount by remember { mutableStateOf(0) }
+    var findOrdinal by remember { mutableStateOf(0) }
+    var showCertificateDialog by remember { mutableStateOf(false) }
+    var certificateSubject by remember { mutableStateOf("") }
+    var certificateIssuer by remember { mutableStateOf("") }
+    var certificateCipher by remember { mutableStateOf("") }
     var browserMenuExpanded by remember { mutableStateOf(false) }
     val browserPreferences = remember(context) { context.getSharedPreferences("vibesync_browser_preferences", 0) }
     var desktopMode by remember(browserPreferences) { mutableStateOf(browserPreferences.getBoolean("desktop_mode", false)) }
+    var textZoom by remember(browserPreferences) { mutableStateOf(browserPreferences.getInt("text_zoom", 100).coerceIn(50, 200)) }
+    var darkWebContent by remember(browserPreferences) { mutableStateOf(browserPreferences.getBoolean("dark_web_content", false)) }
+    var acceptThirdPartyCookies by remember(browserPreferences) { mutableStateOf(browserPreferences.getBoolean("third_party_cookies", true)) }
     var savedBookmarks by remember(context) { mutableStateOf(loadBrowserBookmarks(context)) }
     val pendingBrowserPrompt by BrowserPromptBridge.pending.collectAsState()
     var addressBarExpanded by remember { mutableStateOf(true) }
@@ -145,6 +175,11 @@ fun AiWebStudioScreen(
     val bookmarkSavedText = stringResource(R.string.browser_bookmark_saved)
     val pageCopiedText = stringResource(R.string.browser_super_copy_success)
     val pageEmptyText = stringResource(R.string.browser_super_copy_empty)
+    val privateModeUnavailableText = stringResource(R.string.browser_settings_private_mode_unavailable)
+    val browsingDataClearedText = stringResource(R.string.browser_settings_data_cleared)
+    val certificateUnavailableText = stringResource(R.string.browser_settings_certificate_unavailable)
+    val secureSiteRequiredText = stringResource(R.string.browser_settings_secure_site_required)
+    val tlsUnavailableText = stringResource(R.string.browser_settings_tls_unavailable)
     val currentHost = activeTab?.url?.let { url ->
         runCatching { Uri.parse(url).host.orEmpty() }.getOrNull()
     }.orEmpty()
@@ -172,6 +207,68 @@ fun AiWebStudioScreen(
 
     LaunchedEffect(feedback) {
         feedback?.let { message -> Toast.makeText(context, message, Toast.LENGTH_SHORT).show() }
+    }
+
+    LaunchedEffect(Unit) {
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+            val liveProfiles = manager.tabs.value.filter { it.isPrivate }.mapNotNull { it.profileName }.toSet()
+            runCatching {
+                ProfileStore.getInstance().getAllProfileNames()
+                    .filter { it.startsWith("vibesync_private_") && it !in liveProfiles }
+                    .forEach { orphan -> ProfileStore.getInstance().deleteProfile(orphan) }
+            }
+        }
+    }
+
+    LaunchedEffect(showCertificateDialog, activeId, activeTab?.url) {
+        if (!showCertificateDialog) return@LaunchedEffect
+        val webView = activeTab?.let { manager.webViewFor(it.id) }
+        val cert = webView?.certificate
+        certificateSubject = cert?.issuedTo?.dName?.takeIf { it.isNotBlank() } ?: certificateUnavailableText
+        certificateIssuer = cert?.issuedBy?.dName?.takeIf { it.isNotBlank() } ?: certificateUnavailableText
+        val uri = activeTab?.url?.let { runCatching { Uri.parse(it) }.getOrNull() }
+        val host = uri?.host
+        certificateCipher = if (uri?.scheme.equals("https", ignoreCase = true) && !host.isNullOrBlank()) {
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    Socket().use { rawSocket ->
+                        rawSocket.connect(InetSocketAddress(host, if (uri.port > 0) uri.port else 443), 4000)
+                        val sslSocket = (SSLSocketFactory.getDefault() as SSLSocketFactory)
+                            .createSocket(rawSocket, host, if (uri.port > 0) uri.port else 443, true) as SSLSocket
+                        sslSocket.use { secureSocket ->
+                            secureSocket.soTimeout = 4000
+                            val parameters = secureSocket.sslParameters
+                            parameters.endpointIdentificationAlgorithm = "HTTPS"
+                            secureSocket.sslParameters = parameters
+                            secureSocket.startHandshake()
+                            "${secureSocket.session.protocol} · ${secureSocket.session.cipherSuite}"
+                        }
+                    }
+                }.getOrDefault(tlsUnavailableText)
+            }
+        } else {
+            secureSiteRequiredText
+        }
+    }
+
+    LaunchedEffect(showFindBar, activeId, activeTab?.url, findQuery) {
+        val webView = activeTab?.let { manager.webViewFor(it.id) }
+        if (!showFindBar || webView == null) {
+            findCount = 0
+            findOrdinal = 0
+            return@LaunchedEffect
+        }
+        webView.setFindListener { activeMatchOrdinal, numberOfMatches, _ ->
+            findCount = numberOfMatches
+            findOrdinal = if (numberOfMatches > 0) activeMatchOrdinal + 1 else 0
+        }
+        if (findQuery.isBlank()) {
+            webView.clearMatches()
+            findCount = 0
+            findOrdinal = 0
+        } else {
+            webView.findAllAsync(findQuery)
+        }
     }
 
     BackHandler(enabled = activeTab != null) {
@@ -210,6 +307,9 @@ fun AiWebStudioScreen(
                                 style = MaterialTheme.typography.titleSmall
                             )
                             Row(
+                                modifier = Modifier.clickable(enabled = activeTab != null) {
+                                    showCertificateDialog = true
+                                },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
@@ -224,6 +324,7 @@ fun AiWebStudioScreen(
                                 )
                                 Text(
                                     text = if (activeTab == null) stringResource(R.string.browser_mode_label)
+                                        else if (activeTab.isPrivate) stringResource(R.string.browser_settings_private_host, currentHost.ifBlank { activeTab.url })
                                         else currentHost.ifBlank { activeTab.url },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -280,6 +381,36 @@ fun AiWebStudioScreen(
                             expanded = browserMenuExpanded,
                             onDismissRequest = { browserMenuExpanded = false }
                         ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_settings_title)) },
+                                onClick = { browserMenuExpanded = false; showBrowserSettingsSheet = true }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_settings_find_in_page)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    showFindBar = true
+                                    findQuery = ""
+                                    findCount = 0
+                                    findOrdinal = 0
+                                },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_settings_print_pdf)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    printBrowserPage(context, manager.webViewFor(activeId), activeTab?.title.orEmpty())
+                                },
+                                enabled = activeTab != null
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.browser_settings_new_private_tab)) },
+                                onClick = {
+                                    browserMenuExpanded = false
+                                    if (!manager.openPrivateTab(AiProvider.GEMINI)) feedback = privateModeUnavailableText
+                                }
+                            )
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.browser_bookmark_current_page)) },
                                 onClick = {
@@ -450,6 +581,39 @@ fun AiWebStudioScreen(
                 }
                 IconButton(onClick = { showTabOverview = true }) {
                     Icon(Icons.Default.Tab, contentDescription = stringResource(R.string.tab_overview))
+                }
+            }
+        }
+
+        if (showFindBar) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            ) {
+                OutlinedTextField(
+                    value = findQuery,
+                    onValueChange = { findQuery = it },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    label = { Text(stringResource(R.string.browser_settings_find_hint)) }
+                )
+                Text(
+                    text = stringResource(R.string.browser_settings_find_count, findOrdinal, findCount),
+                    style = MaterialTheme.typography.labelMedium
+                )
+                TextButton(onClick = { manager.webViewFor(activeId)?.findNext(false) }, enabled = findCount > 0) {
+                    Text(stringResource(R.string.browser_settings_previous_match))
+                }
+                TextButton(onClick = { manager.webViewFor(activeId)?.findNext(true) }, enabled = findCount > 0) {
+                    Text(stringResource(R.string.browser_settings_next_match))
+                }
+                TextButton(onClick = {
+                    manager.webViewFor(activeId)?.clearMatches()
+                    findQuery = ""
+                    showFindBar = false
+                }) {
+                    Text(stringResource(R.string.browser_settings_close_find))
                 }
             }
         }
@@ -748,7 +912,8 @@ fun AiWebStudioScreen(
                                                 fontWeight = FontWeight.SemiBold
                                             )
                                             Text(
-                                                text = if (tab.loading) stringResource(R.string.model_discovery_loading) else Uri.parse(tab.url).host.orEmpty(),
+                                                text = if (tab.isPrivate) stringResource(R.string.browser_settings_private_tab)
+                                                    else if (tab.loading) stringResource(R.string.model_discovery_loading) else Uri.parse(tab.url).host.orEmpty(),
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
                                                 style = MaterialTheme.typography.labelSmall
@@ -767,12 +932,85 @@ fun AiWebStudioScreen(
         }
     }
 
+    if (showBrowserSettingsSheet) {
+        BrowserSettingsSheet(
+            desktopMode = desktopMode,
+            textZoom = textZoom,
+            darkContent = darkWebContent,
+            thirdPartyCookies = acceptThirdPartyCookies,
+            onDesktopModeChange = { enabled ->
+                desktopMode = enabled
+                browserPreferences.edit().putBoolean("desktop_mode", enabled).apply()
+                tabs.forEach { tab -> manager.webViewFor(tab.id)?.let { applyDesktopLayout(it, context, enabled) } }
+                popupPool.values.flatten().forEach { applyDesktopLayout(it, context, enabled) }
+                manager.webViewFor(activeId)?.reload()
+            },
+            onTextZoomChange = { zoom ->
+                textZoom = zoom
+                browserPreferences.edit().putInt("text_zoom", zoom).apply()
+                tabs.forEach { tab -> manager.webViewFor(tab.id)?.settings?.textZoom = zoom }
+                popupPool.values.flatten().forEach { it.settings.textZoom = zoom }
+            },
+            onDarkContentChange = { enabled ->
+                darkWebContent = enabled
+                browserPreferences.edit().putBoolean("dark_web_content", enabled).apply()
+                tabs.forEach { tab -> manager.webViewFor(tab.id)?.let { setWebContentDarkening(it, enabled) } }
+                popupPool.values.flatten().forEach { setWebContentDarkening(it, enabled) }
+            },
+            onThirdPartyCookiesChange = { enabled ->
+                acceptThirdPartyCookies = enabled
+                browserPreferences.edit().putBoolean("third_party_cookies", enabled).apply()
+                tabs.forEach { tab -> manager.webViewFor(tab.id)?.let { setThirdPartyCookiePolicy(it, enabled) } }
+                popupPool.values.flatten().forEach { setThirdPartyCookiePolicy(it, enabled) }
+            },
+            onClearBrowsingData = {
+                showBrowserSettingsSheet = false
+                showClearBrowsingDataDialog = true
+            },
+            onDismiss = { showBrowserSettingsSheet = false }
+        )
+    }
+
+    if (showClearBrowsingDataDialog) {
+        ClearBrowsingDataDialog(
+            onDismiss = { showClearBrowsingDataDialog = false },
+            onConfirm = { cache, cookies, storage, forms ->
+                clearBrowserData(context, manager, tabs, popupPool, cache, cookies, storage, forms)
+                showClearBrowsingDataDialog = false
+                feedback = browsingDataClearedText
+            }
+        )
+    }
+
+    if (showCertificateDialog) {
+        AlertDialog(
+            onDismissRequest = { showCertificateDialog = false },
+            title = { Text(stringResource(R.string.browser_settings_certificate_title)) },
+            text = {
+                androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.browser_settings_certificate_subject), fontWeight = FontWeight.Bold)
+                    Text(certificateSubject.ifBlank { certificateUnavailableText })
+                    Text(stringResource(R.string.browser_settings_certificate_issuer), fontWeight = FontWeight.Bold)
+                    Text(certificateIssuer.ifBlank { certificateUnavailableText })
+                    Text(stringResource(R.string.browser_settings_certificate_cipher), fontWeight = FontWeight.Bold)
+                    Text(certificateCipher.ifBlank { certificateUnavailableText })
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showCertificateDialog = false }) {
+                    Text(stringResource(R.string.done))
+                }
+            }
+        )
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             // Main tab WebViews remain alive when this destination stays on the back stack.
             hostContainer?.let { host ->
                 for (i in 0 until host.childCount) host.getChildAt(i).visibility = View.GONE
             }
+            activeTab?.let { manager.webViewFor(it.id)?.clearMatches() }
             popupPool.values.flatten().forEach { popup ->
                 runCatching { (popup.parent as? ViewGroup)?.removeView(popup) }
                 runCatching { popup.stopLoading(); popup.removeAllViews(); popup.destroy() }
@@ -912,6 +1150,114 @@ private fun applyDesktopLayout(webView: WebView, context: Context, enabled: Bool
     }
 }
 
+private fun cookieManagerFor(webView: WebView): CookieManager {
+    return if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) {
+        runCatching { WebViewCompat.getProfile(webView).cookieManager }.getOrElse { CookieManager.getInstance() }
+    } else {
+        CookieManager.getInstance()
+    }
+}
+
+private fun setWebContentDarkening(webView: WebView, enabled: Boolean) {
+    val settings = webView.settings
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+        runCatching {
+            WebSettingsCompat.setForceDark(
+                settings,
+                if (enabled) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
+            )
+        }
+    }
+    if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+        runCatching { WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, enabled) }
+    }
+}
+
+private fun setThirdPartyCookiePolicy(webView: WebView, enabled: Boolean) {
+    runCatching { cookieManagerFor(webView).setAcceptThirdPartyCookies(webView, enabled) }
+}
+
+private fun applyBrowserPreferences(webView: WebView, context: Context) {
+    val preferences = context.getSharedPreferences("vibesync_browser_preferences", Context.MODE_PRIVATE)
+    applyDesktopLayout(webView, context, preferences.getBoolean("desktop_mode", false))
+    webView.settings.textZoom = preferences.getInt("text_zoom", 100).coerceIn(50, 200)
+    setWebContentDarkening(webView, preferences.getBoolean("dark_web_content", false))
+    setThirdPartyCookiePolicy(webView, preferences.getBoolean("third_party_cookies", true))
+}
+
+private fun clearBrowserData(
+    context: Context,
+    manager: TabManagerViewModel,
+    tabs: List<AiTabItem>,
+    popupPool: Map<String, List<WebView>>,
+    clearCache: Boolean,
+    clearCookies: Boolean,
+    clearStorage: Boolean,
+    clearForms: Boolean
+) {
+    val views = (manager.registeredWebViewIds().mapNotNull { manager.webViewFor(it) } +
+        popupPool.values.flatten()).distinct()
+    if (clearCache) views.forEach { runCatching { it.clearCache(true) } }
+    if (clearCookies) {
+        runCatching { CookieManager.getInstance().removeAllCookies(null) }
+        views.filter { view -> tabs.any { it.isPrivate && manager.webViewFor(it.id) === view } }
+            .forEach { view -> runCatching { cookieManagerFor(view).removeAllCookies(null) } }
+        runCatching { CookieManager.getInstance().flush() }
+    }
+    if (clearStorage) {
+        runCatching { WebStorage.getInstance().deleteAllData() }
+        views.filter { view -> tabs.any { it.isPrivate && manager.webViewFor(it.id) === view } }
+            .forEach { view ->
+                runCatching { WebViewCompat.getProfile(view).webStorage.deleteAllData() }
+            }
+    }
+    if (clearForms) {
+        views.forEach { runCatching { it.clearFormData() } }
+        runCatching { WebViewDatabase.getInstance(context).clearFormData() }
+    }
+}
+
+private fun printBrowserPage(context: Context, webView: WebView?, title: String) {
+    if (webView == null) return
+    val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager ?: return
+    val printTitle = title.ifBlank { Uri.parse(webView.url.orEmpty()).host.orEmpty().ifBlank { "VibeSync page" } }
+    runCatching {
+        printManager.print(
+            printTitle,
+            webView.createPrintDocumentAdapter(printTitle),
+            PrintAttributes.Builder().build()
+        )
+    }
+}
+
+private fun enqueueBrowserDownload(
+    context: Context,
+    webView: WebView,
+    url: String,
+    userAgent: String?,
+    contentDisposition: String?,
+    mimeType: String?
+) {
+    val message = runCatching {
+        val uri = Uri.parse(url)
+        require(uri.scheme.equals("https", true) || uri.scheme.equals("http", true))
+        val fileName = URLUtil.guessFileName(url, contentDisposition, mimeType).take(180)
+        val request = DownloadManager.Request(uri)
+            .setTitle(fileName)
+            .setDescription(uri.host.orEmpty())
+            .setMimeType(mimeType)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
+        userAgent?.takeIf { it.isNotBlank() }?.let { request.addRequestHeader("User-Agent", it) }
+        cookieManagerFor(webView).getCookie(url)?.takeIf { it.isNotBlank() }
+            ?.let { request.addRequestHeader("Cookie", it) }
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadManager.enqueue(request)
+        R.string.browser_settings_download_started
+    }.getOrElse { R.string.browser_settings_download_failed }
+    Toast.makeText(context, context.getString(message), Toast.LENGTH_LONG).show()
+}
+
 private fun extractPageToClipboard(
     context: Context,
     webView: WebView?,
@@ -1018,9 +1364,15 @@ private fun configureWebView(
     popupPool: MutableMap<String, MutableList<WebView>>,
     browserPageFailedText: String
 ) {
-    val cookies = CookieManager.getInstance()
+    if (tab.isPrivate) {
+        WebViewCompat.setProfile(webView, requireNotNull(tab.profileName))
+    }
+    val cookies = cookieManagerFor(webView)
     cookies.setAcceptCookie(true)
-    cookies.setAcceptThirdPartyCookies(webView, true)
+    cookies.setAcceptThirdPartyCookies(webView, context.getSharedPreferences("vibesync_browser_preferences", Context.MODE_PRIVATE).getBoolean("third_party_cookies", true))
+    webView.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType ->
+        enqueueBrowserDownload(context, webView, url, userAgent, contentDisposition, mimeType)
+    })
     webView.settings.apply {
         javaScriptEnabled = true
         domStorageEnabled = true
@@ -1033,11 +1385,7 @@ private fun configureWebView(
         // a supported OAuth user-agent and can violate provider sign-in restrictions.
         // Login identity is not spoofed; known identity-provider flows are routed to Custom Tabs.
     }
-    applyDesktopLayout(
-        webView,
-        context,
-        context.getSharedPreferences("vibesync_browser_preferences", 0).getBoolean("desktop_mode", false)
-    )
+    applyBrowserPreferences(webView, context)
     webView.webChromeClient = object : WebChromeClient() {
         override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
             manager.updateFavicon(tab.id, icon)
@@ -1049,10 +1397,13 @@ private fun configureWebView(
         }
 
         override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
-            if (!isUserGesture || resultMsg == null) return false
+            if (tab.isPrivate || !isUserGesture || resultMsg == null) return false
             val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
             val popup = WebView(context)
             cookies.setAcceptCookie(true)
+            popup.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType ->
+                enqueueBrowserDownload(context, popup, url, userAgent, contentDisposition, mimeType)
+            })
             cookies.setAcceptThirdPartyCookies(popup, true)
             popup.settings.apply {
                 javaScriptEnabled = true
@@ -1063,11 +1414,7 @@ private fun configureWebView(
                 safeBrowsingEnabled = true
                 // Keep platform sign-in restrictions; identity-provider routes leave the embedded view.
             }
-            applyDesktopLayout(
-                popup,
-                context,
-                context.getSharedPreferences("vibesync_browser_preferences", 0).getBoolean("desktop_mode", false)
-            )
+            applyBrowserPreferences(popup, context)
             popup.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                     val uri = request.url
