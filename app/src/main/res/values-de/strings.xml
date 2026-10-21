@@ -461,7 +461,7 @@
     <string name="home_developer_options_subtitle">Entwicklermodus, ADB-Status, Systemeinstellungen und Hardwareübersicht.</string>
     <string name="home_section_developer_productivity">Entwicklerwerkzeuge und Produktivität</string>
     <string name="home_prompt_bank_title">Prompt-Bibliothek</string>
-    <string name="home_prompt_bank_subtitle">Wiederverwendbare Prompts suchen und an das KI-Studio senden.</string>
+    <string name="home_prompt_bank_subtitle">150 Prompts für Android, Frontend, Backend, DevOps und Sicherheit suchen und an das KI-Studio senden.</string>
     <string name="home_resources_title">Ressourcen für Entwickler</string>
     <string name="home_resources_subtitle">Offizielle Dokumentation, Anleitungen, Dienste und Communitys.</string>
     <string name="home_toolbox_title">Offline-Entwicklerwerkzeuge</string>
@@ -473,8 +473,8 @@
     <string name="home_commands_title">Terminal-Befehlsmatrix</string>
     <string name="home_commands_subtitle">Befehlsübersichten für ADB, PowerShell und Linux/Bash.</string>
     <string name="home_section_diagnostics">Diagnose und Netzwerk</string>
-    <string name="home_diagnostics_title">Systemdiagnose</string>
-    <string name="home_diagnostics_subtitle">App-Status, bereinigte Diagnoseberichte und Exportwerkzeuge.</string>
+    <string name="home_diagnostics_title">Live-Logcat und Systemdiagnose</string>
+    <string name="home_diagnostics_subtitle">Live-Protokolle dieses App-Prozesses, bereinigte Diagnoseberichte und Exportwerkzeuge.</string>
     <string name="home_network_title">Netzwerk- und DNS-Inspektor</string>
     <string name="home_network_subtitle">DNS-Abfragen für A, AAAA, MX und TXT sowie HTTPS-HEAD-Header.</string>
     <string name="home_footer">Lokale Werkzeuge arbeiten auf dem Gerät. Netzwerkdiagnosen kontaktieren den gewählten DNS- oder HTTPS-Endpunkt erst nach dem Start einer Prüfung.</string>
@@ -550,7 +550,7 @@
     <string name="logcat_capture_error">Logcat-Erfassung fehlgeschlagen: %1$s</string>
     <string name="logcat_no_lines">Noch keine Protokolleinträge erfasst. Starte die Erfassung; Systembeschränkungen können sie auf manchen Geräten begrenzen.</string>
     <string name="logcat_open_diagnostics">App-Gesundheitsdiagnose öffnen</string>
-    <string name="home_diagnostics_title">Live-Logcat und Systemdiagnose</string>
-    <string name="home_diagnostics_subtitle">Live-Protokolle dieses App-Prozesses, bereinigte Diagnoseberichte und Exportwerkzeuge.</string>
-    <string name="home_prompt_bank_subtitle">150 Prompts für Android, Frontend, Backend, DevOps und Sicherheit suchen und an das KI-Studio senden.</string>
+    
+    
+    
 </resources>
