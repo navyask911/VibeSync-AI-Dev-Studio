@@ -444,5 +444,5 @@
     <string name="model_key_health_error">بيانات الاعتماد غير متاحة أو فشل آخر طلب</string>
     <string name="model_key_health_unknown">حالة المفتاح غير معروفة</string>
 
-    <string name="model_pricing_disclaimer">أسعار API إرشادية لكل مليون رمز؛ قد تتغير أسعار المزوّد.</string>
+    <string name="model_pricing_disclaimer">أسعار API القياسية لكل مليون رمز. قد تزيد تكلفة السياق الطويل والأدوات؛ ويمكن أن تتغير الأسعار.</string>
 </resources>
