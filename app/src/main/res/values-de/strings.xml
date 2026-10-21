@@ -423,4 +423,25 @@
     <string name="browser_settings_clipboard_markdown_label">Markdown der Webseite</string>
     <string name="browser_settings_clipboard_text_label">Webseitentext</string>
     <string name="browser_settings_print_title">VibeSync-Seite</string>
+
+    <string name="model_selector_title">Modell auswählen</string>
+    <string name="model_filter_all">Alle</string>
+    <string name="model_filter_fast">Schnell</string>
+    <string name="model_filter_cheap">Günstig</string>
+    <string name="model_filter_capable">Leistungsfähig</string>
+    <string name="model_capability_tools">Tools</string>
+    <string name="model_capability_vision">Bild</string>
+    <string name="model_capability_json">JSON</string>
+    <string name="model_capability_reasoning">Denken</string>
+    <string name="model_price_unknown">Preis unbekannt</string>
+    <string name="model_streaming_supported">Streaming</string>
+    <string name="model_manage_providers_keys">Anbieter und Schlüssel verwalten →</string>
+    <string name="model_switch_stream_title">Modell während des Streamings wechseln?</string>
+    <string name="model_switch_stream_message">Ein Modellwechsel bricht die aktuelle Antwort ab. Stream abbrechen und Modell wechseln?</string>
+    <string name="model_switch_stream_confirm">Abbrechen und wechseln</string>
+    <string name="model_key_health_ready">Zugangsschlüssel entschlüsselt</string>
+    <string name="model_key_health_missing">Kein API-Schlüssel gespeichert</string>
+    <string name="model_key_health_error">Zugangsdaten nicht verfügbar oder letzte Anfrage fehlgeschlagen</string>
+    <string name="model_key_health_unknown">Schlüsselstatus unbekannt</string>
+
 </resources>
