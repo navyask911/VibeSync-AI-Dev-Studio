@@ -58,7 +58,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -85,7 +84,6 @@ fun DeveloperResourcesScreen(
     showTopBar: Boolean = true
 ) {
     val clipboard = LocalClipboardManager.current
-    val context = LocalContext.current
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
     val commandCopied = stringResource(R.string.developer_command_copied_feedback)
     val playbookCopied = stringResource(R.string.developer_playbook_copied_feedback)
@@ -113,13 +111,19 @@ fun DeveloperResourcesScreen(
                     command.command.contains(search, ignoreCase = true))
         }
     }
-    val playbookResults = remember(search, context) {
-        DeveloperPlaybookCatalog.playbooks.filter { playbook ->
+    val playbookSearchEntries = DeveloperPlaybookCatalog.playbooks.map { playbook ->
+        Triple(
+            playbook,
+            stringResource(playbook.titleRes),
+            stringResource(playbook.summaryRes) + " " + stringResource(playbook.contentRes)
+        )
+    }
+    val playbookResults = remember(search, playbookSearchEntries) {
+        playbookSearchEntries.filter { (_, title, content) ->
             search.isBlank() ||
-                context.getString(playbook.titleRes).contains(search, ignoreCase = true) ||
-                context.getString(playbook.summaryRes).contains(search, ignoreCase = true) ||
-                context.getString(playbook.contentRes).contains(search, ignoreCase = true)
-        }
+                title.contains(search, ignoreCase = true) ||
+                content.contains(search, ignoreCase = true)
+        }.map { it.first }
     }
 
     Scaffold(
