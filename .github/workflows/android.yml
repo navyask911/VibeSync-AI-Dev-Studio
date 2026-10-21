@@ -83,22 +83,22 @@ jobs:
           disable-spellchecker: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
           script: |
-            set -euo pipefail
+            set -eu
             device="emulator-5554"
 
             # sys.boot_completed can be true before Android's package manager is registered.
-            # The previous failure reached connectedDebugAndroidTest with the package service
-            # missing, so check the actual service before asking Gradle to install APKs.
+            # Check the actual service before asking Gradle to install APKs.
             wait_for_package_manager() {
-              local max_attempts="$1"
-              for attempt in $(seq 1 "$max_attempts"); do
-                local boot_status package_status
+              max_attempts="$1"
+              attempt=1
+              while [ "$attempt" -le "$max_attempts" ]; do
                 boot_status="$(adb -s "$device" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
                 package_status="$(adb -s "$device" shell service check package 2>&1 || true)"
-                if [[ "$boot_status" == "1" && "$package_status" == *"Service package: found"* ]]; then
+                if [ "$boot_status" = "1" ] && printf '%s' "$package_status" | grep -Fq "Service package: found"; then
                   echo "Android boot and package manager are ready."
                   return 0
                 fi
+                attempt=$((attempt + 1))
                 sleep 2
               done
               return 1
@@ -116,13 +116,15 @@ jobs:
             fi
 
             run_instrumentation() {
-              local log_file="$1"
-              local result
-              set +e
-              ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest 2>&1 | tee "$log_file"
-              result=$?
-              set -e
-              return "$result"
+              log_file="$1"
+              if ./gradlew --no-daemon --stacktrace connectedDebugAndroidTest > "$log_file" 2>&1; then
+                cat "$log_file"
+                return 0
+              else
+                result=$?
+                cat "$log_file"
+                return "$result"
+              fi
             }
 
             if run_instrumentation instrumentation-attempt-1.log; then
