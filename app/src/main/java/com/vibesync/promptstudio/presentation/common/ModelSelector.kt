@@ -165,7 +165,7 @@ fun ModelSelector(
                                     else -> providerKeyHealth[option.provider] ?: ProviderKeyHealth.UNKNOWN
                                 }
                                 val (healthColor, healthLabel) = when (keyHealth) {
-                                    ProviderKeyHealth.PRESENT -> MaterialTheme.colorScheme.primary to androidx.compose.ui.res.stringResource(R.string.model_key_health_ready)
+                                    ProviderKeyHealth.PRESENT -> Color(0xFF2E7D32) to androidx.compose.ui.res.stringResource(R.string.model_key_health_ready)
                                     ProviderKeyHealth.MISSING -> Color(0xFFFFB300) to androidx.compose.ui.res.stringResource(R.string.model_key_health_missing)
                                     ProviderKeyHealth.ERROR -> MaterialTheme.colorScheme.error to androidx.compose.ui.res.stringResource(R.string.model_key_health_error)
                                     ProviderKeyHealth.UNKNOWN -> MaterialTheme.colorScheme.outline to androidx.compose.ui.res.stringResource(R.string.model_key_health_unknown)
