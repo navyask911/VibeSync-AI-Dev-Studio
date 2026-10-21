@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="ar">
     <string name="advertisement">إعلان</string>
     <string name="api_key">مفتاح API</string>
     <string name="app_name">مجموعة مطوري VibeSync AI</string>
@@ -448,4 +448,28 @@
     <string name="browser_prompt_bar_hint">اسأل هذه الصفحة أو أرسل مطالبة…</string>
     <string name="browser_prompt_send">إرسال المطالبة إلى الصفحة الحالية</string>
 
+
+    <string name="language_picker_title">لغة التطبيق</string>
+    <string name="language_picker_content_description">اختيار لغة التطبيق</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">استوديو الويب</string>
+    <string name="nav_api_diagnostics">واجهة API والتشخيص</string>
+    <string name="nav_prompt_bank">مكتبة المطالبات</string>
+    <string name="nav_resources">الموارد</string>
+    <string name="developer_resources_search">البحث في الموارد</string>
+    <string name="developer_search_show">إظهار البحث</string>
+    <string name="developer_search_hide">إخفاء البحث</string>
+    <string name="browser_auth_external_notice">فُتح تسجيل الدخول في متصفح النظام. تبقى جلسة الموقع في المتصفح ولا تُنسخ إلى WebView المضمّن.</string>
+    <string name="oauth_callback_success_message">اكتمل OAuth. يُخزَّن رمز الهوية هذا بشكل منفصل؛ أضف مفتاح API للمزوّد لتشغيل النماذج.</string>
+    <string name="oauth_callback_failure_message">تعذّر إكمال تسجيل الدخول. تحقّق من عنوان إعادة التوجيه المسجّل وإعداد PKCE ثم حاول مرة أخرى.</string>
+    <string name="oauth_error_client_id_required">أدخل معرّف عميل تطبيق المطوّر.</string>
+    <string name="oauth_error_authorize_https">يجب أن تستخدم نقطة نهاية التفويض HTTPS.</string>
+    <string name="oauth_error_token_https">يجب أن تستخدم نقطة نهاية الرمز HTTPS.</string>
+    <string name="oauth_error_redirect_uri">تُقبل عمليات رجوع OAuth على vibesync://auth/callback فقط.</string>
+    <string name="oauth_error_scope_required">أدخل نطاق OAuth واحدًا على الأقل.</string>
+    <string name="language_rtl_note">تستخدم العربية تخطيطًا من اليمين إلى اليسار.</string>
 </resources>
