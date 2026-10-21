@@ -1730,7 +1730,7 @@ private fun configureWebView(
 private fun routeWebNavigation(context: Context, uri: Uri): Boolean {
     if (uri.scheme == "http" || uri.scheme == "https") {
         val host = uri.host
-        if (!isIdentityProviderHost(host)) return false
+        if (!isIdentityProviderHost(host) && !isProviderAuthenticationUrl(uri.toString())) return false
         // Identity providers must authenticate in a system-controlled browser, not an app WebView.
         Toast.makeText(context, context.getString(R.string.browser_auth_external_notice), Toast.LENGTH_LONG).show()
         openExternalBrowser(context, uri.toString())

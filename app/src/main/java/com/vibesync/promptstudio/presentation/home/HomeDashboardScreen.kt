@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.core.os.LocaleListCompat
 import com.vibesync.promptstudio.R
+import com.vibesync.promptstudio.presentation.AppLanguage
 import com.vibesync.promptstudio.presentation.devoptions.DeviceHardwareInfo
 import com.vibesync.promptstudio.presentation.home.components.DevOptionsHubCard
 import com.vibesync.promptstudio.presentation.home.components.HeroBrowserCard
@@ -67,8 +68,6 @@ import com.vibesync.promptstudio.presentation.home.components.ToolGridItem
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-
-private data class DashboardLocale(val tag: String, val label: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,15 +115,7 @@ fun HomeDashboardScreen(
     var showThemeMenu by remember { mutableStateOf(false) }
     var showLanguageSheet by remember { mutableStateOf(false) }
     val languageSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val locales = remember {
-        listOf(
-            DashboardLocale("en", "English"),
-            DashboardLocale("es", "Español"),
-            DashboardLocale("de", "Deutsch"),
-            DashboardLocale("hi", "हिन्दी"),
-            DashboardLocale("ar", "العربية")
-        )
-    }
+    val locales = remember { AppLanguage.entries }
 
     Scaffold(
         topBar = {
@@ -330,11 +321,11 @@ fun HomeDashboardScreen(
                         configuration.locales[0].language
                     }
                     val selected = effectiveLanguageTags.split(',').any {
-                        it.substringBefore('-') == locale.tag
+                        it.substringBefore('-') == locale.languageTag
                     }
                     Card(
                         onClick = {
-                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(locale.tag))
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(locale.languageTag))
                             showLanguageSheet = false
                         },
                         modifier = Modifier.fillMaxWidth(),
@@ -348,7 +339,7 @@ fun HomeDashboardScreen(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 13.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(locale.label, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(locale.labelRes), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Spacer(Modifier.weight(1f))
                             if (selected) Text("✓", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
