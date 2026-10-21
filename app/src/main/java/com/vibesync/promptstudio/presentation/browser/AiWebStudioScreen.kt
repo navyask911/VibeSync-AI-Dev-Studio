@@ -9,6 +9,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Environment
 import android.os.Message
+import android.print.PrintAttributes
+import android.print.PrintManager
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -228,7 +230,7 @@ fun AiWebStudioScreen(
         certificateIssuer = cert?.issuedBy?.dName?.takeIf { it.isNotBlank() } ?: certificateUnavailableText
         val uri = activeTab?.url?.let { runCatching { Uri.parse(it) }.getOrNull() }
         val host = uri?.host
-        certificateCipher = if (uri?.scheme.equals("https", ignoreCase = true) && !host.isNullOrBlank()) {
+        certificateCipher = if (uri != null && uri.scheme.equals("https", ignoreCase = true) && !host.isNullOrBlank()) {
             withContext(Dispatchers.IO) {
                 runCatching {
                     Socket().use { rawSocket ->
