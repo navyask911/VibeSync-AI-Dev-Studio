@@ -14,6 +14,10 @@ import com.vibesync.promptstudio.domain.usecase.ExecutePromptUseCase
 import com.vibesync.promptstudio.domain.usecase.SubstituteVariablesUseCase
 import com.vibesync.promptstudio.domain.usecase.TokenCounterUseCase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +35,7 @@ data class PromptStudioUiState(
     val provider: ProviderType = ProviderType.OPENAI,
     val modelId: String = ProviderType.OPENAI.defaultModel,
     val availableModels: List<String> = emptyList(),
+    val availableModelsByProvider: Map<ProviderType, List<String>> = emptyMap(),
     val isLoadingModels: Boolean = false,
     val providerKeyHealth: Map<ProviderType, ProviderKeyHealth> = emptyMap(),
     val lastFailedProvider: ProviderType? = null,
@@ -82,7 +87,7 @@ class PromptStudioViewModel(
 
     fun updateProvider(provider: ProviderType) {
         mutableState.update {
-            it.copy(provider = provider, modelId = provider.defaultModel, availableModels = emptyList(), isLoadingModels = false)
+            it.copy(provider = provider, modelId = provider.defaultModel, availableModels = it.availableModelsByProvider[provider].orEmpty(), isLoadingModels = false)
         }
         recalculate()
     }
@@ -100,14 +105,27 @@ class PromptStudioViewModel(
     }
 
     fun refreshModels() {
-        val provider = mutableState.value.provider
         viewModelScope.launch {
             mutableState.update { it.copy(isLoadingModels = true) }
-            val discovered = runCatching { repository.listModels(provider) }.getOrDefault(emptyList())
+            val discoveredByProvider = coroutineScope {
+                ProviderType.entries.map { provider ->
+                    async(Dispatchers.IO) {
+                        val models = try {
+                            repository.listModels(provider)
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (_: Throwable) {
+                            emptyList()
+                        }
+                        provider to models.distinct()
+                    }
+                }.awaitAll().toMap()
+            }
             mutableState.update { current ->
-                if (current.provider != provider) current
-                else current.copy(
-                    availableModels = discovered.ifEmpty { provider.modelOptions },
+                current.copy(
+                    availableModelsByProvider = discoveredByProvider,
+                    availableModels = discoveredByProvider[current.provider].orEmpty()
+                        .ifEmpty { current.provider.modelOptions },
                     isLoadingModels = false
                 )
             }
