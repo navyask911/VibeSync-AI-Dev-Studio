@@ -304,7 +304,7 @@
     <string name="developer_prompt_count">%1$d curated prompts</string>
     <string name="developer_section_prompts">Prompt bank</string>
     <string name="developer_section_commands">Command hub</string>
-    <string name="developer_section_services">Services</string>
+    <string name="developer_section_services">Resources &amp; Tools</string>
     <string name="developer_prompt_search">Search all 150 prompts</string>
     <string name="developer_command_search">Search commands</string>
     <string name="developer_prompt_category_all">All categories</string>
@@ -561,4 +561,11 @@
     <string name="logcat_capture_error">Logcat capture failed: %1$s</string>
     <string name="logcat_no_lines">No log entries captured yet. Start capture; system restrictions may limit availability on some devices.</string>
     <string name="logcat_open_diagnostics">Open app health diagnostics</string>
+    <string name="developer_resources_online_heading">Curated documentation &amp; communities</string>
+    <string name="developer_resources_android_category">Android platform</string>
+    <string name="developer_resources_design_category">Design &amp; assets</string>
+    <string name="developer_resources_architecture_category">Engineering &amp; Kotlin</string>
+    <string name="developer_resources_community_category">Community forums</string>
+    <string name="developer_resources_internal_heading">Quick links to VibeSync tools</string>
+    <string name="developer_resource_open_failed">Could not open that link. Check that a browser is installed.</string>
 </resources>
