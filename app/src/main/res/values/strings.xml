@@ -544,4 +544,21 @@
     <string name="network_run_head">Send HEAD request</string>
     <string name="network_privacy_note">Network checks send the hostname or URL you enter to the selected remote endpoint. Do not enter secrets or private internal hostnames unless you are comfortable sending them to that endpoint.</string>
 
+    <string name="home_diagnostics_title">Live Logcat &amp; System Diagnostics</string>
+    <string name="home_diagnostics_subtitle">Live logs from this app process, sanitized diagnostic reports, and export tools.</string>
+    <string name="home_prompt_bank_subtitle">150 prompts across Android, frontend, backend, DevOps, and security—search and send them to AI Studio.</string>
+    <string name="logcat_live_title">Live Logcat &amp; System Diagnostics</string>
+    <string name="logcat_scope">Current-process Logcat · %1$s</string>
+    <string name="logcat_limit_note">Android restricts access to other apps’ logs. This view captures this app’s process only and redacts common secret/token patterns before copying or sharing. Use app diagnostics below for sanitized VibeSync health records.</string>
+    <string name="logcat_filter_label">Filter log text</string>
+    <string name="logcat_filter_hint">e.g. browser, auth, network</string>
+    <string name="logcat_level">Minimum log level</string>
+    <string name="logcat_start">Start capture</string>
+    <string name="logcat_stop">Stop capture</string>
+    <string name="logcat_clear">Clear</string>
+    <string name="logcat_copy">Copy logs</string>
+    <string name="logcat_share">Share logs</string>
+    <string name="logcat_capture_error">Logcat capture failed: %1$s</string>
+    <string name="logcat_no_lines">No log entries captured yet. Start capture; system restrictions may limit availability on some devices.</string>
+    <string name="logcat_open_diagnostics">Open app health diagnostics</string>
 </resources>
