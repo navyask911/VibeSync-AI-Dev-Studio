@@ -1415,7 +1415,7 @@ private fun configureWebView(
     val cookies = cookieManagerFor(webView)
     cookies.setAcceptCookie(true)
     cookies.setAcceptThirdPartyCookies(webView, context.getSharedPreferences("vibesync_browser_preferences", Context.MODE_PRIVATE).getBoolean("third_party_cookies", true))
-    webView.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType ->
+    webView.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
         enqueueBrowserDownload(context, webView, url, userAgent, contentDisposition, mimeType)
     })
     webView.settings.apply {
@@ -1454,7 +1454,7 @@ private fun configureWebView(
             val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
             val popup = WebView(context)
             cookies.setAcceptCookie(true)
-            popup.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType ->
+            popup.setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
                 enqueueBrowserDownload(context, popup, url, userAgent, contentDisposition, mimeType)
             })
             cookies.setAcceptThirdPartyCookies(popup, true)
