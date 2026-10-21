@@ -1,5 +1,5 @@
 <resources>
-    <style name="Theme.VibeSync" parent="android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.VibeSync" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:colorAccent">#10A37F</item>
         <item name="android:windowLightStatusBar">false</item>
