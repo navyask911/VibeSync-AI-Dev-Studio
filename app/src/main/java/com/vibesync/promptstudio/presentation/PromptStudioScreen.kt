@@ -34,7 +34,6 @@ import com.vibesync.promptstudio.R
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.vibesync.promptstudio.domain.model.ProviderType
 import com.vibesync.promptstudio.data.diagnostics.ConnectivityStatus
 import com.vibesync.promptstudio.data.ads.AdMobManager
 import com.vibesync.promptstudio.presentation.common.ModelSelector
