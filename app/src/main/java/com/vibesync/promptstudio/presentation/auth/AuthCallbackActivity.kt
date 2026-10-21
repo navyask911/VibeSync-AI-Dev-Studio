@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.vibesync.promptstudio.MainActivity
+import com.vibesync.promptstudio.R
 import com.vibesync.promptstudio.VibeSyncApplication
 import com.vibesync.promptstudio.data.diagnostics.DiagnosticSeverity
 import kotlinx.coroutines.launch
@@ -23,9 +24,9 @@ class AuthCallbackActivity : ComponentActivity() {
         lifecycleScope.launch {
             val result = runCatching { manager.handleCallback(callback) }
             val message = if (result.isSuccess) {
-                "OAuth identity token stored separately. Add a provider API key to run models."
+                getString(R.string.oauth_callback_success_message)
             } else {
-                "Sign-in could not be completed. Start again and check the registered redirect and PKCE configuration."
+                getString(R.string.oauth_callback_failure_message)
             }
             (application as VibeSyncApplication).diagnostics.record(
                 if (result.isSuccess) DiagnosticSeverity.INFO else DiagnosticSeverity.WARNING,

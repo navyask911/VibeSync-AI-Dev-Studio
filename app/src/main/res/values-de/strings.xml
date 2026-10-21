@@ -565,4 +565,29 @@
     <string name="devoptions_security_patch">Sicherheitspatch</string>
     <string name="devoptions_fingerprint">Build-Fingerprint</string>
     <string name="devoptions_share_snapshot">Geräteübersicht teilen</string>
+
+    <!-- Merged localized strings from app-shell/OAuth cleanup. -->
+    <string name="language_picker_title">App-Sprache</string>
+    <string name="language_picker_content_description">App-Sprache auswählen</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">Webstudio</string>
+    <string name="nav_api_diagnostics">API und Diagnose</string>
+    <string name="nav_prompt_bank">Prompt-Bibliothek</string>
+    <string name="nav_resources">Ressourcen</string>
+    <string name="developer_resources_search">Ressourcen suchen</string>
+    <string name="developer_search_show">Suche anzeigen</string>
+    <string name="developer_search_hide">Suche ausblenden</string>
+    <string name="browser_auth_external_notice">Die Anmeldung wurde im Systembrowser geöffnet. Die Website-Sitzung bleibt im Browser und wird nicht in die eingebettete WebView kopiert.</string>
+    <string name="oauth_callback_success_message">OAuth abgeschlossen. Dieses Identitätstoken wird separat gespeichert; füge zum Ausführen von Modellen den API-Schlüssel des Anbieters hinzu.</string>
+    <string name="oauth_callback_failure_message">Die Anmeldung konnte nicht abgeschlossen werden. Prüfe die registrierte Weiterleitungs-URI und die PKCE-Konfiguration und versuche es erneut.</string>
+    <string name="oauth_error_client_id_required">Gib eine Client-ID für die Entwickler-App ein.</string>
+    <string name="oauth_error_authorize_https">Der Autorisierungsendpunkt muss HTTPS verwenden.</string>
+    <string name="oauth_error_token_https">Der Token-Endpunkt muss HTTPS verwenden.</string>
+    <string name="oauth_error_redirect_uri">OAuth-Callbacks werden nur unter vibesync://auth/callback akzeptiert.</string>
+    <string name="oauth_error_scope_required">Gib mindestens einen OAuth-Scope ein.</string>
+    <string name="language_rtl_note">Arabisch verwendet ein Layout von rechts nach links.</string>
 </resources>
