@@ -95,7 +95,7 @@ jobs:
                 local boot_status package_status
                 boot_status="$(adb -s "$device" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)"
                 package_status="$(adb -s "$device" shell service check package 2>&1 || true)"
-                if [[ "$boot_status" == "1" && "$package_status" == *"found"* ]]; then
+                if [[ "$boot_status" == "1" && "$package_status" == *"Service package: found"* ]]; then
                   echo "Android boot and package manager are ready."
                   return 0
                 fi
