@@ -1,6 +1,7 @@
 package com.vibesync.promptstudio.presentation.devoptions
 
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -24,8 +25,23 @@ object DevSettingsHelper {
         runCatching { Settings.Global.getInt(context.contentResolver, key, 0) == 1 }
             .getOrDefault(false)
 
-    fun openDeveloperOptions(context: Context): Boolean =
-        launch(context, Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS))
+    /**
+     * Uses the public AOSP action first, then the common Settings component used by
+     * several OEM builds (Samsung One UI, Xiaomi/HyperOS/MIUI, and Huawei/EMUI).
+     * If both are unavailable, open About phone so the user can unlock Developer Options.
+     */
+    fun openDeveloperOptions(context: Context): Boolean {
+        val directActions = listOf(
+            Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS),
+            Intent().setComponent(
+                ComponentName("com.android.settings", "com.android.settings.DevelopmentSettings")
+            )
+        )
+        for (intent in directActions) {
+            if (launch(context, intent)) return true
+        }
+        return launch(context, Intent(Settings.ACTION_DEVICE_INFO_SETTINGS))
+    }
 
     fun openUsbDebugging(context: Context): Boolean =
         openDeveloperOptions(context)
