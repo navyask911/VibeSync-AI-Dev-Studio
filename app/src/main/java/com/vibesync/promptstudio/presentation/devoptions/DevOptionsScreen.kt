@@ -1,6 +1,7 @@
 package com.vibesync.promptstudio.presentation.devoptions
 
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.AlertDialog
@@ -197,7 +199,18 @@ fun DevOptionsScreen(onBack: () -> Unit) {
             }
 
             item { SectionHeading(stringResource(R.string.devoptions_hardware_snapshot)) }
-            item { HardwareSnapshotCard(snapshot) }
+            item {
+                HardwareSnapshotCard(snapshot) {
+                    val text = hardwareSnapshotText(context, snapshot)
+                    val intent = Intent(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.devoptions_share_snapshot))
+                        .putExtra(Intent.EXTRA_TEXT, text)
+                    runCatching {
+                        context.startActivity(Intent.createChooser(intent, context.getString(R.string.devoptions_share_snapshot)))
+                    }.onFailure { showLaunchFailure(context) }
+                }
+            }
             item {
                 Text(
                     stringResource(R.string.devoptions_limitations_note),
@@ -286,7 +299,7 @@ private fun StatusPill(enabled: Boolean) {
 }
 
 @Composable
-private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
+private fun HardwareSnapshotCard(info: DeviceHardwareInfo, onShare: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -294,6 +307,13 @@ private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(11.dp)) {
             HardwareInfoRow(stringResource(R.string.devoptions_android_version), "Android ${info.androidRelease} · API ${info.apiLevel}")
+            HorizontalDivider()
+            HardwareInfoRow(
+                stringResource(R.string.devoptions_device_model),
+                stringResource(R.string.devoptions_device_model_value, info.deviceModel, info.manufacturer, info.deviceCodename)
+            )
+            HorizontalDivider()
+            HardwareInfoRow(stringResource(R.string.devoptions_security_patch), info.securityPatch)
             HorizontalDivider()
             HardwareInfoRow(stringResource(R.string.devoptions_kernel), info.kernelVersion)
             HorizontalDivider()
@@ -312,6 +332,13 @@ private fun HardwareSnapshotCard(info: DeviceHardwareInfo) {
                     DeviceHardwareInfo.formatBytes(info.totalRamBytes)
                 )
             )
+            HorizontalDivider()
+            HardwareInfoRow(stringResource(R.string.devoptions_fingerprint), info.buildFingerprint)
+            OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Default.Share, contentDescription = null)
+                Spacer(Modifier.size(8.dp))
+                Text(stringResource(R.string.devoptions_share_snapshot))
+            }
         }
     }
 }
@@ -327,3 +354,17 @@ private fun HardwareInfoRow(label: String, value: String) {
 private fun showLaunchFailure(context: Context) {
     Toast.makeText(context, context.getString(R.string.devoptions_open_failed), Toast.LENGTH_LONG).show()
 }
+
+
+private fun hardwareSnapshotText(context: Context, info: DeviceHardwareInfo): String =
+    listOf(
+        context.getString(R.string.devoptions_hardware_snapshot),
+        "${context.getString(R.string.devoptions_android_version)}: Android ${info.androidRelease} · API ${info.apiLevel}",
+        "${context.getString(R.string.devoptions_device_model)}: ${info.deviceModel} · ${info.manufacturer} · ${info.deviceCodename}",
+        "${context.getString(R.string.devoptions_security_patch)}: ${info.securityPatch}",
+        "${context.getString(R.string.devoptions_kernel)}: ${info.kernelVersion}",
+        "${context.getString(R.string.devoptions_cpu)}: ${info.socModel} · ${info.cpuAbi}",
+        "${context.getString(R.string.devoptions_refresh_rate)}: ${info.refreshRateHz} Hz",
+        "${context.getString(R.string.devoptions_ram)}: ${DeviceHardwareInfo.formatBytes(info.availableRamBytes)} available / ${DeviceHardwareInfo.formatBytes(info.totalRamBytes)} total",
+        "${context.getString(R.string.devoptions_fingerprint)}: ${info.buildFingerprint}"
+    ).joinToString("\n")
