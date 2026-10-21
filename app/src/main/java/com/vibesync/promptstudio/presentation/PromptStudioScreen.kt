@@ -53,7 +53,7 @@ fun PromptStudioScreen(
     isOnline: Boolean,
     adMobManager: AdMobManager,
     onSuccessfulPromptRun: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var lastHandledSuccess by remember { mutableIntStateOf(state.successfulRunCount) }
