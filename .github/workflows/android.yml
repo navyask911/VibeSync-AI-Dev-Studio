@@ -92,10 +92,6 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -no-audio -no-boot-anim -camera-back none
           script: sh scripts/run-android-instrumentation.sh
 
-      - name: Build debug APK for pull requests
-        if: github.event_name == 'pull_request'
-        run: ./gradlew --no-daemon --stacktrace assembleDebug
-
       - name: Validate release signing secrets
         if: github.event_name != 'pull_request'
         shell: bash
