@@ -560,4 +560,9 @@
     <string name="developer_resources_community_category">منتديات المجتمع</string>
     <string name="developer_resources_internal_heading">روابط سريعة إلى أدوات VibeSync</string>
     <string name="developer_resource_open_failed">تعذر فتح الرابط. تحقق من تثبيت متصفح.</string>
+    <string name="devoptions_device_model">الجهاز / الشركة المصنعة</string>
+    <string name="devoptions_device_model_value">%1$s · %2$s · %3$s</string>
+    <string name="devoptions_security_patch">تصحيح الأمان</string>
+    <string name="devoptions_fingerprint">بصمة الإصدار</string>
+    <string name="devoptions_share_snapshot">مشاركة ملخص الجهاز</string>
 </resources>
