@@ -598,4 +598,46 @@
     <string name="oauth_error_redirect_uri">OAuth callbacks are accepted only at vibesync://auth/callback.</string>
     <string name="oauth_error_scope_required">Enter at least one OAuth scope.</string>
     <string name="language_rtl_note">Arabic uses a right-to-left layout.</string>
+
+
+    <!-- Localized Android Developer Resource Hub strings. -->
+    <string name="android_resource_hub_title">Android Developer Resource Hub</string>
+    <string name="android_resource_hub_tab">Android Resource Hub</string>
+    <string name="android_resource_hub_intro">A curated launchpad for official documentation, engineering articles, practical tools, and community answers.</string>
+    <string name="android_resource_search">Search resource names, topics, or URLs</string>
+    <string name="android_resource_category_all">All categories</string>
+    <string name="android_resource_category_official">Official &amp; Core Platforms</string>
+    <string name="android_resource_category_news">Newsletters &amp; Blogs</string>
+    <string name="android_resource_category_utilities">Utilities &amp; Productivity Tools</string>
+    <string name="android_resource_category_community">Community &amp; Discussion Forums</string>
+    <string name="android_resource_open">Open</string>
+    <string name="android_resource_copy_link">Copy link</string>
+    <string name="android_resource_share">Share</string>
+    <string name="android_resource_copied_feedback">Resource link copied to clipboard.</string>
+    <string name="android_resource_share_chooser">Share Android developer resource</string>
+    <string name="android_resource_empty">No resources match your search.</string>
+    <string name="android_resource_android_developers_title">Android Developers</string>
+    <string name="android_resource_android_developers_description">Official Android API documentation, codelabs, architecture guides, and platform updates.</string>
+    <string name="android_resource_material_design_title">Material Design</string>
+    <string name="android_resource_material_design_description">Material Design guidance for components, design tokens, themes, and motion.</string>
+    <string name="android_resource_android_weekly_title">Android Weekly</string>
+    <string name="android_resource_android_weekly_description">A community-curated weekly digest of Android tutorials, open-source libraries, and ecosystem news.</string>
+    <string name="android_resource_proandroiddev_title">ProAndroidDev</string>
+    <string name="android_resource_proandroiddev_description">In-depth technical articles and implementation guidance from experienced Android engineers.</string>
+    <string name="android_resource_styling_android_title">Styling Android</string>
+    <string name="android_resource_styling_android_description">Focused articles on Android layouts, advanced Canvas drawing, and UI styling.</string>
+    <string name="android_resource_dan_lew_codes_title">Dan Lew Codes</string>
+    <string name="android_resource_dan_lew_codes_description">Practical engineering insights on reactive programming, Kotlin, and application architecture.</string>
+    <string name="android_resource_android_arsenal_title">Android Arsenal</string>
+    <string name="android_resource_android_arsenal_description">A categorized directory of Android libraries, developer utilities, and open-source projects.</string>
+    <string name="android_resource_icon_kitchen_title">IconKitchen</string>
+    <string name="android_resource_icon_kitchen_description">Create Android adaptive launcher icons and store-ready graphic assets in your browser.</string>
+    <string name="android_resource_kotlin_playground_title">Kotlin Playground</string>
+    <string name="android_resource_kotlin_playground_description">Write, compile, and test Kotlin snippets in an interactive web sandbox.</string>
+    <string name="android_resource_perfetto_ui_title">Perfetto UI</string>
+    <string name="android_resource_perfetto_ui_description">Analyze performance traces for CPU scheduling, memory, and application startup.</string>
+    <string name="android_resource_reddit_androiddev_title">r/androiddev</string>
+    <string name="android_resource_reddit_androiddev_description">Community discussion about Android platform changes, architecture decisions, and libraries.</string>
+    <string name="android_resource_stackoverflow_android_title">Stack Overflow (Android tag)</string>
+    <string name="android_resource_stackoverflow_android_description">Search technical questions and answers covering Android bugs, edge cases, and debugging.</string>
 </resources>

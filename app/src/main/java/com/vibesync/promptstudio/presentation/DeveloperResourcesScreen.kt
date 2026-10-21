@@ -84,7 +84,8 @@ fun DeveloperResourcesScreen(
     onOpenApiStudio: () -> Unit,
     onOpenDiagnostics: () -> Unit,
     onOpenSettings: () -> Unit,
-    initialSection: String = "prompts"
+    initialSection: String = "prompts",
+    onOpenAndroidResourceHub: () -> Unit = {}
 ) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
@@ -386,6 +387,15 @@ fun DeveloperResourcesScreen(
                                     }
                                 }
                             }
+                        }
+                        item {
+                            ServiceCard(
+                                stringResource(R.string.android_resource_hub_tab),
+                                stringResource(R.string.android_resource_hub_intro),
+                                { Icon(Icons.Default.Web, contentDescription = null) },
+                                stringResource(R.string.developer_service_open),
+                                onOpenAndroidResourceHub
+                            )
                         }
                         item {
                             Text(

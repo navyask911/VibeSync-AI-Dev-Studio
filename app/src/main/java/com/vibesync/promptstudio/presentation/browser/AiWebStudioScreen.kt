@@ -171,6 +171,7 @@ fun AiWebStudioScreen(
     var acceptThirdPartyCookies by remember(browserPreferences) { mutableStateOf(browserPreferences.getBoolean("third_party_cookies", true)) }
     var savedBookmarks by remember(context) { mutableStateOf(loadBrowserBookmarks(context)) }
     val pendingBrowserPrompt by BrowserPromptBridge.pending.collectAsState()
+    val pendingBrowserUrl by BrowserPromptBridge.pendingUrl.collectAsState()
     var addressBarExpanded by remember { mutableStateOf(true) }
     var address by remember(activeId, activeTab?.url) { mutableStateOf(activeTab?.url.orEmpty()) }
     var addressSuggestionsVisible by remember { mutableStateOf(false) }
@@ -215,6 +216,16 @@ fun AiWebStudioScreen(
             }
         }
         BrowserPromptBridge.consume(request.id)
+    }
+
+    LaunchedEffect(pendingBrowserUrl?.id) {
+        val request = pendingBrowserUrl ?: return@LaunchedEffect
+        manager.openTab(AiProvider.CUSTOM, request.url)
+        address = request.url
+        addressBarExpanded = true
+        addressSuggestionsVisible = false
+        feedback = null
+        BrowserPromptBridge.consumeUrl(request.id)
     }
 
     LaunchedEffect(feedback) {

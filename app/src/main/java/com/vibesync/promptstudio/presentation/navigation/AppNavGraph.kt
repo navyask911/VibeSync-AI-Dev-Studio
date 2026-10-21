@@ -28,6 +28,7 @@ import com.vibesync.promptstudio.presentation.devoptions.DevOptionsScreen
 import com.vibesync.promptstudio.presentation.diagnostics.LiveLogcatScreen
 import com.vibesync.promptstudio.presentation.home.HomeDashboardScreen
 import com.vibesync.promptstudio.presentation.network.NetworkDnsDiagnosticsScreen
+import com.vibesync.promptstudio.presentation.resources.AndroidDeveloperResourceHubScreen
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
@@ -131,7 +132,17 @@ fun AppNavGraph(
                 onOpenApiStudio = { navController.navigateTool("studio") },
                 onOpenDiagnostics = { navController.navigateTool("diagnostics") },
                 onOpenSettings = { navController.navigateTool("settings") },
-                initialSection = section
+                initialSection = section,
+                onOpenAndroidResourceHub = { navController.navigateTool("android_resource_hub") }
+            )
+        }
+        composable("android_resource_hub") {
+            AndroidDeveloperResourceHubScreen(
+                onBack = { navController.returnHome() },
+                onOpenUrl = { url ->
+                    BrowserPromptBridge.enqueueUrl(url)
+                    navController.navigateTool("webstudio")
+                }
             )
         }
         composable("devoptions") {
