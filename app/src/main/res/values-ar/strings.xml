@@ -445,4 +445,7 @@
     <string name="model_key_health_unknown">حالة المفتاح غير معروفة</string>
 
     <string name="model_pricing_disclaimer">أسعار API القياسية لكل مليون رمز. قد تزيد تكلفة السياق الطويل والأدوات؛ ويمكن أن تتغير الأسعار.</string>
+    <string name="browser_prompt_bar_hint">اسأل هذه الصفحة أو أرسل مطالبة…</string>
+    <string name="browser_prompt_send">إرسال المطالبة إلى الصفحة الحالية</string>
+
 </resources>
