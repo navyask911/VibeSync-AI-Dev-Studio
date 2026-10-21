@@ -560,4 +560,9 @@
     <string name="developer_resources_community_category">Community-Foren</string>
     <string name="developer_resources_internal_heading">Direktzugriffe auf VibeSync-Werkzeuge</string>
     <string name="developer_resource_open_failed">Der Link konnte nicht geöffnet werden. Prüfe, ob ein Browser installiert ist.</string>
+    <string name="devoptions_device_model">Gerät / Hersteller</string>
+    <string name="devoptions_device_model_value">%1$s · %2$s · %3$s</string>
+    <string name="devoptions_security_patch">Sicherheitspatch</string>
+    <string name="devoptions_fingerprint">Build-Fingerprint</string>
+    <string name="devoptions_share_snapshot">Geräteübersicht teilen</string>
 </resources>
