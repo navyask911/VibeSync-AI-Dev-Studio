@@ -448,4 +448,28 @@
     <string name="browser_prompt_bar_hint">Pregunta a esta página o escribe un prompt…</string>
     <string name="browser_prompt_send">Enviar prompt a la página actual</string>
 
+
+    <string name="language_picker_title">Idioma de la aplicación</string>
+    <string name="language_picker_content_description">Elegir idioma de la aplicación</string>
+    <string name="language_english">English</string>
+    <string name="language_spanish">Español</string>
+    <string name="language_german">Deutsch</string>
+    <string name="language_hindi">हिन्दी</string>
+    <string name="language_arabic">العربية</string>
+    <string name="nav_web_studio">Estudio web</string>
+    <string name="nav_api_diagnostics">API y diagnósticos</string>
+    <string name="nav_prompt_bank">Banco de prompts</string>
+    <string name="nav_resources">Recursos</string>
+    <string name="developer_resources_search">Buscar recursos</string>
+    <string name="developer_search_show">Mostrar búsqueda</string>
+    <string name="developer_search_hide">Ocultar búsqueda</string>
+    <string name="browser_auth_external_notice">El inicio de sesión se abrió en el navegador del sistema. La sesión del sitio permanece en el navegador y no se copia a la WebView integrada.</string>
+    <string name="oauth_callback_success_message">OAuth se completó. El token de identidad se guarda por separado; añade la clave API del proveedor para ejecutar modelos.</string>
+    <string name="oauth_callback_failure_message">No se pudo completar el inicio de sesión. Comprueba el URI de redirección registrado y la configuración PKCE e inténtalo de nuevo.</string>
+    <string name="oauth_error_client_id_required">Introduce el ID de cliente de la aplicación de desarrollador.</string>
+    <string name="oauth_error_authorize_https">El endpoint de autorización debe usar HTTPS.</string>
+    <string name="oauth_error_token_https">El endpoint de token debe usar HTTPS.</string>
+    <string name="oauth_error_redirect_uri">Solo se aceptan callbacks OAuth en vibesync://auth/callback.</string>
+    <string name="oauth_error_scope_required">Introduce al menos un ámbito OAuth.</string>
+    <string name="language_rtl_note">El árabe utiliza una disposición de derecha a izquierda.</string>
 </resources>
