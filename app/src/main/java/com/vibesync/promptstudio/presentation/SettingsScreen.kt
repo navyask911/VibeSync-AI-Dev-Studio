@@ -3,6 +3,7 @@ import androidx.compose.ui.res.stringResource
 import com.vibesync.promptstudio.R
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -53,6 +54,9 @@ fun SettingsScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val privacyOptionsRequired by adMobManager.privacyOptionsRequired.collectAsStateWithLifecycle()
+    val appearancePrefs = remember(context) { context.getSharedPreferences("vibesync_appearance", 0) }
+    var themeMode by remember(appearancePrefs) { mutableStateOf(appearancePrefs.getString("theme_mode", "normal") ?: "normal") }
+    var fontChoice by remember(appearancePrefs) { mutableStateOf(appearancePrefs.getString("font_family", "serif") ?: "serif") }
     var providerMenuExpanded by remember { mutableStateOf(false) }
     var oauthProviderMenuExpanded by remember { mutableStateOf(false) }
     var showVaultResetConfirmation by remember { mutableStateOf(false) }
@@ -81,6 +85,25 @@ fun SettingsScreen(
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(stringResource(R.string.appearance_settings), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.appearance_description), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.appearance_theme_label), style = MaterialTheme.typography.labelLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = themeMode == "normal", onClick = { themeMode = "normal"; appearancePrefs.edit().putString("theme_mode", themeMode).apply() }, label = { Text(stringResource(R.string.theme_normal)) })
+                        FilterChip(selected = themeMode == "developer_dark", onClick = { themeMode = "developer_dark"; appearancePrefs.edit().putString("theme_mode", themeMode).apply() }, label = { Text(stringResource(R.string.theme_developer_dark)) })
+                        FilterChip(selected = themeMode == "system", onClick = { themeMode = "system"; appearancePrefs.edit().putString("theme_mode", themeMode).apply() }, label = { Text(stringResource(R.string.theme_system)) })
+                    }
+                    Text(stringResource(R.string.appearance_font_label), style = MaterialTheme.typography.labelLarge, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = fontChoice == "serif", onClick = { fontChoice = "serif"; appearancePrefs.edit().putString("font_family", fontChoice).apply() }, label = { Text(stringResource(R.string.font_serif_tnr)) })
+                        FilterChip(selected = fontChoice == "sans", onClick = { fontChoice = "sans"; appearancePrefs.edit().putString("font_family", fontChoice).apply() }, label = { Text(stringResource(R.string.font_sans)) })
+                        FilterChip(selected = fontChoice == "mono", onClick = { fontChoice = "mono"; appearancePrefs.edit().putString("font_family", fontChoice).apply() }, label = { Text(stringResource(R.string.font_mono)) })
+                    }
+                    Text(stringResource(R.string.font_license_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {

@@ -21,6 +21,8 @@ import com.vibesync.promptstudio.presentation.DiagnosticsScreen
 import com.vibesync.promptstudio.presentation.browser.AiWebStudioScreen
 import com.vibesync.promptstudio.presentation.auth.OAuthClientConfiguration
 import com.vibesync.promptstudio.presentation.DeveloperToolboxScreen
+import com.vibesync.promptstudio.presentation.DeveloperResourcesScreen
+import com.vibesync.promptstudio.presentation.browser.BrowserPromptBridge
 import com.vibesync.promptstudio.presentation.PromptStudioScreen
 import com.vibesync.promptstudio.presentation.PromptStudioViewModel
 import com.vibesync.promptstudio.presentation.SettingsScreen
@@ -120,6 +122,7 @@ private fun AppNavigation(
                 onOpenSettings = { navController.navigate("settings") },
                 onOpenDiagnostics = { navController.navigate("diagnostics") },
                 onOpenToolbox = { navController.navigate("toolbox") },
+                onOpenDeveloperResources = { navController.navigate("developerhub") },
                 onOpenWebStudio = { navController.navigate("webstudio") },
                 connectivityStatus = connectivityStatus,
                 isOnline = isOnline,
@@ -145,6 +148,20 @@ private fun AppNavigation(
         }
         composable("toolbox") {
             DeveloperToolboxScreen(onBack = { navController.popBackStack() })
+        }
+        composable("developerhub") {
+            DeveloperResourcesScreen(
+                onBack = { navController.popBackStack() },
+                onOpenWebStudio = { navController.navigate("webstudio") { launchSingleTop = true } },
+                onSendPromptToBrowser = { prompt ->
+                    BrowserPromptBridge.enqueue(prompt)
+                    if (!navController.popBackStack("webstudio", false)) navController.navigate("webstudio") { launchSingleTop = true }
+                },
+                onOpenToolbox = { navController.navigate("toolbox") },
+                onOpenApiStudio = { navController.navigate("studio") },
+                onOpenDiagnostics = { navController.navigate("diagnostics") },
+                onOpenSettings = { navController.navigate("settings") }
+            )
         }
     }
 }

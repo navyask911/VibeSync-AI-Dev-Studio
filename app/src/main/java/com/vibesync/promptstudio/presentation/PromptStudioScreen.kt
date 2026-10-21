@@ -1,6 +1,7 @@
 package com.vibesync.promptstudio.presentation
 
 import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.vibesync.promptstudio.R
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ fun PromptStudioScreen(
     onOpenSettings: () -> Unit,
     onOpenDiagnostics: () -> Unit,
     onOpenToolbox: () -> Unit,
+    onOpenDeveloperResources: () -> Unit,
     onOpenWebStudio: () -> Unit,
     connectivityStatus: ConnectivityStatus,
     isOnline: Boolean,
@@ -72,6 +75,8 @@ fun PromptStudioScreen(
         TopAppBar(
             title = {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Image(painter = painterResource(R.drawable.ic_launcher), contentDescription = null, modifier = Modifier.size(30.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         stringResource(R.string.app_name),
                         modifier = Modifier.weight(1f, fill = false),
@@ -89,6 +94,7 @@ fun PromptStudioScreen(
                     DropdownMenu(expanded = topBarMenuExpanded, onDismissRequest = { topBarMenuExpanded = false }) {
                         DropdownMenuItem(text = { Text(stringResource(R.string.diagnostics)) }, onClick = { topBarMenuExpanded = false; onOpenDiagnostics() })
                         DropdownMenuItem(text = { Text(stringResource(R.string.tools)) }, onClick = { topBarMenuExpanded = false; onOpenToolbox() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.developer_resources)) }, onClick = { topBarMenuExpanded = false; onOpenDeveloperResources() })
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings)) }, onClick = { topBarMenuExpanded = false; onOpenSettings() })
                     }
                 }
