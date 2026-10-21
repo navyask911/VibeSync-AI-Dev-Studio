@@ -1,6 +1,11 @@
 package com.vibesync.promptstudio.presentation
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +25,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
@@ -47,6 +54,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -56,6 +65,14 @@ import androidx.compose.ui.unit.dp
 import com.vibesync.promptstudio.R
 
 private enum class ResourceSection { PROMPTS, COMMANDS, PLAYBOOKS, SERVICES }
+
+private data class ExternalResourceLink(val title: String, val url: String)
+private data class ExternalResourceGroup(
+    val id: String,
+    val titleRes: Int,
+    val icon: ImageVector,
+    val links: List<ExternalResourceLink>
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +87,7 @@ fun DeveloperResourcesScreen(
     initialSection: String = "prompts"
 ) {
     val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
     val promptCopied = stringResource(R.string.developer_prompt_copied_feedback)
     val commandCopied = stringResource(R.string.developer_command_copied_feedback)
     val playbookCopied = stringResource(R.string.developer_playbook_copied_feedback)
@@ -87,6 +105,51 @@ fun DeveloperResourcesScreen(
     var selectedCategory by remember { mutableStateOf<DeveloperPromptCategory?>(null) }
     var selectedPlatform by remember { mutableStateOf<Int?>(null) }
     var feedback by remember { mutableStateOf<String?>(null) }
+    var expandedResourceGroups by remember { mutableStateOf(setOf("android")) }
+    val externalResourceGroups = remember {
+        listOf(
+            ExternalResourceGroup(
+                "android",
+                R.string.developer_resources_android_category,
+                Icons.Default.Code,
+                listOf(
+                    ExternalResourceLink("Android Developers", "https://developer.android.com/"),
+                    ExternalResourceLink("Android Developers Guides", "https://developer.android.com/guide"),
+                    ExternalResourceLink("Android Studio", "https://developer.android.com/studio")
+                )
+            ),
+            ExternalResourceGroup(
+                "design",
+                R.string.developer_resources_design_category,
+                Icons.Default.Web,
+                listOf(
+                    ExternalResourceLink("Material Design 3", "https://m3.material.io/"),
+                    ExternalResourceLink("IconKitchen", "https://icon.kitchen/"),
+                    ExternalResourceLink("Material Symbols", "https://fonts.google.com/icons")
+                )
+            ),
+            ExternalResourceGroup(
+                "engineering",
+                R.string.developer_resources_architecture_category,
+                Icons.Default.Terminal,
+                listOf(
+                    ExternalResourceLink("ProAndroidDev", "https://proandroiddev.com/"),
+                    ExternalResourceLink("Kotlin Documentation", "https://kotlinlang.org/docs/home.html"),
+                    ExternalResourceLink("Jetpack Compose Guides", "https://developer.android.com/develop/ui/compose")
+                )
+            ),
+            ExternalResourceGroup(
+                "community",
+                R.string.developer_resources_community_category,
+                Icons.Default.CheckCircle,
+                listOf(
+                    ExternalResourceLink("Stack Overflow · Android", "https://stackoverflow.com/questions/tagged/android"),
+                    ExternalResourceLink("Reddit · r/androiddev", "https://www.reddit.com/r/androiddev/"),
+                    ExternalResourceLink("Kotlin Discussions", "https://discuss.kotlinlang.org/")
+                )
+            )
+        )
+    }
     val promptResults = remember(search, selectedCategory) {
         DeveloperPromptCatalog.prompts.filter { p ->
             (selectedCategory == null || p.category == selectedCategory) && p.text.contains(search, ignoreCase = true)
